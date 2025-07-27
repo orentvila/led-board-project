@@ -1,0 +1,4 @@
+rpi.gpio==0.7.1
+rpi-ws281x==4.3.4
+numpy==1.24.3
+Pillow==10.0.0 

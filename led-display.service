@@ -1,0 +1,16 @@
+[Unit]
+Description=LED Display Service
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/home/pi/board-led-project
+ExecStart=/usr/bin/python3 /home/pi/board-led-project/main.py
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target 
