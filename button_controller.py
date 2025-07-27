@@ -1,7 +1,14 @@
-import RPi.GPIO as GPIO
 import time
 import threading
+import sys
 import config
+
+# Use mock GPIO on Windows, real GPIO on Raspberry Pi
+if sys.platform.startswith('win'):
+    from mock_rpi import GPIO
+    print("Using mock GPIO for Windows development")
+else:
+    import RPi.GPIO as GPIO
 
 class ButtonController:
     def __init__(self):

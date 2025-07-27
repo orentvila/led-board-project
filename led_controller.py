@@ -1,7 +1,16 @@
 import time
 import numpy as np
-from rpi_ws281x import PixelStrip, Color
+import sys
 import config
+
+# Use mock modules on Windows, real modules on Raspberry Pi
+if sys.platform.startswith('win'):
+    from mock_rpi import WS281x
+    PixelStrip = WS281x
+    Color = lambda r, g, b: (r, g, b)
+    print("Using mock Raspberry Pi modules for Windows development")
+else:
+    from rpi_ws281x import PixelStrip, Color
 
 class LEDController:
     def __init__(self):
