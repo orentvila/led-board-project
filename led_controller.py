@@ -157,26 +157,35 @@ class LEDController:
     
     def _get_led_index(self, x, y):
         """Convert (x, y) coordinates to LED strip index."""
-        # LED mapping: Right to left, serpentine vertical
-        # Start from bottom-right (31, 0), go right to left
-        # Even columns (right side): Y goes up
-        # Odd columns (left side): Y goes down
+        # LED mapping: Right to left, serpentine vertical within 8-row bands
+        # X=0 is rightmost, X=31 is leftmost
+        # Y=0 is bottom, Y=39 is top
+        # Serpentine pattern: even X columns go up, odd X columns go down
         
-        # Calculate which column we're in (0 = rightmost, 31 = leftmost)
-        column = config.TOTAL_WIDTH - 1 - x  # Invert X so 0 = rightmost
+        # Calculate which 8-row band we're in (0-4)
+        band = y // 8
         
-        # Calculate base index for this column
-        base_index = column * config.TOTAL_HEIGHT
+        # Calculate Y position within the current 8-row band
+        y_in_band = y % 8
         
-        # Calculate Y position within the column
-        if column % 2 == 0:
-            # Even columns: Y goes up (0→7, 8→15, etc.)
-            y_in_column = y
+        # Calculate X position (0 = rightmost, 31 = leftmost)
+        # But we need to invert X since our coordinate system has X=0 as leftmost
+        x_led = config.TOTAL_WIDTH - 1 - x  # Convert our X to LED X
+        
+        # Calculate base index for this band
+        base_index = band * (config.TOTAL_WIDTH * 8)
+        
+        # Calculate index within the band
+        if x_led % 2 == 0:
+            # Even X columns: scan upward (0→7)
+            y_offset = y_in_band
         else:
-            # Odd columns: Y goes down (7→0, 15→8, etc.)
-            y_in_column = config.TOTAL_HEIGHT - 1 - y
+            # Odd X columns: scan downward (7→0)
+            y_offset = 7 - y_in_band
         
-        return base_index + y_in_column
+        # Calculate final index
+        band_index = x_led * 8 + y_offset
+        return base_index + band_index
     
     def show(self):
         """Update the physical LED display."""
