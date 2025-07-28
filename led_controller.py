@@ -46,16 +46,16 @@ class LEDController:
         """Clear the entire display."""
         self.display_matrix.fill(0)
         for i in range(config.TOTAL_LEDS):
-            self.strip.setPixelColor(i, Color(0, 0, 0))
+            self.strip.setPixelColorRGB(i, 0, 0, 0)
     
     def set_pixel(self, x, y, color):
         """Set a single pixel at position (x, y) with the given color."""
         if 0 <= x < config.TOTAL_WIDTH and 0 <= y < config.TOTAL_HEIGHT:
             self.display_matrix[y, x] = color
             led_index = self._get_led_index(x, y)
-            # Pass RGB values individually to Color function
-            r, g, b = color
-            self.strip.setPixelColor(led_index, Color(r, g, b))
+            # Use setPixelColorRGB method which is more reliable
+            r, g, b = int(color[0]), int(color[1]), int(color[2])
+            self.strip.setPixelColorRGB(led_index, r, g, b)
     
     def set_panel_pixel(self, panel, x, y, color):
         """Set a pixel within a specific panel."""
@@ -76,9 +76,9 @@ class LEDController:
         """Fill the entire display with a color."""
         self.display_matrix.fill(color)
         for i in range(config.TOTAL_LEDS):
-            # Pass RGB values individually to Color function
-            r, g, b = color
-            self.strip.setPixelColor(i, Color(r, g, b))
+            # Use setPixelColorRGB method which is more reliable
+            r, g, b = int(color[0]), int(color[1]), int(color[2])
+            self.strip.setPixelColorRGB(i, r, g, b)
     
     def draw_rectangle(self, x1, y1, x2, y2, color, fill=False):
         """Draw a rectangle from (x1, y1) to (x2, y2)."""
