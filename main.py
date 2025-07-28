@@ -163,6 +163,7 @@ class LEDDisplayApp:
         print("Cleanup completed.")
 
 def main():
+    ##Hello
     """Main entry point."""
     try:
         app = LEDDisplayApp()
