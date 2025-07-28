@@ -10,7 +10,13 @@ if sys.platform.startswith('win'):
     Color = lambda r, g, b: (r, g, b)
     print("Using mock Raspberry Pi modules for Windows development")
 else:
-    from rpi_ws281x import PixelStrip, Color
+    try:
+        from rpi_ws281x import PixelStrip, Color
+    except ImportError:
+        print("Warning: rpi_ws281x not found, using mock modules")
+        from mock_rpi import WS281x
+        PixelStrip = WS281x
+        Color = lambda r, g, b: (r, g, b)
 
 class LEDController:
     def __init__(self):
