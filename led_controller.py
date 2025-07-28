@@ -157,11 +157,26 @@ class LEDController:
     
     def _get_led_index(self, x, y):
         """Convert (x, y) coordinates to LED strip index."""
-        # Assuming serpentine pattern: left to right, then right to left
-        if y % 2 == 0:
-            return y * config.TOTAL_WIDTH + x
+        # LED mapping: Right to left, serpentine vertical
+        # Start from bottom-right (31, 0), go right to left
+        # Even columns (right side): Y goes up
+        # Odd columns (left side): Y goes down
+        
+        # Calculate which column we're in (0 = rightmost, 31 = leftmost)
+        column = config.TOTAL_WIDTH - 1 - x  # Invert X so 0 = rightmost
+        
+        # Calculate base index for this column
+        base_index = column * config.TOTAL_HEIGHT
+        
+        # Calculate Y position within the column
+        if column % 2 == 0:
+            # Even columns: Y goes up (0→7, 8→15, etc.)
+            y_in_column = y
         else:
-            return y * config.TOTAL_WIDTH + (config.TOTAL_WIDTH - 1 - x)
+            # Odd columns: Y goes down (7→0, 15→8, etc.)
+            y_in_column = config.TOTAL_HEIGHT - 1 - y
+        
+        return base_index + y_in_column
     
     def show(self):
         """Update the physical LED display."""
