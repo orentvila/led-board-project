@@ -11,8 +11,8 @@ LED_CHANNEL = 0  # PWM channel
 PANELS_COUNT = 5  # Number of LED panels
 PANEL_WIDTH = 32  # Width of each panel
 PANEL_HEIGHT = 8  # Height of each panel
-TOTAL_WIDTH = PANELS_COUNT * PANEL_WIDTH  # 160 pixels
-TOTAL_HEIGHT = PANEL_HEIGHT  # 8 pixels
+TOTAL_WIDTH = PANEL_WIDTH  # 32 pixels (width of each panel)
+TOTAL_HEIGHT = PANELS_COUNT * PANEL_HEIGHT  # 40 pixels (5 panels stacked)
 TOTAL_LEDS = TOTAL_WIDTH * TOTAL_HEIGHT  # 1280 LEDs
 
 # Display Settings
