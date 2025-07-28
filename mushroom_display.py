@@ -20,7 +20,7 @@ class MushroomDisplay:
         self.colors = {
             'stem': (139, 69, 19),      # Brown
             'cap': (255, 0, 0),         # Red
-            'spots': (255, 255, 255),   # White
+            'spots': (180, 180, 180),   # Light gray (balanced white)
             'background': (0, 0, 0)     # Black
         }
     
