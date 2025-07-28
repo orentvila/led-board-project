@@ -90,35 +90,27 @@ class LEDDisplayApp:
         """Run a demo sequence of various patterns."""
         print("Starting demo sequence...")
         
-        # Demo 1: Panel sequence
-        print("Demo 1: Panel sequence")
+        # Demo 1: Mushroom display
+        print("Demo 1: Mushroom display")
+        from mushroom_display import MushroomDisplay
+        mushroom = MushroomDisplay()
+        mushroom.display_mushroom(duration=5)
+        mushroom.display_mushroom_animation(duration=5)
+        mushroom.cleanup()
+        
+        # Demo 2: Panel sequence
+        print("Demo 2: Panel sequence")
         colors = [config.COLORS['RED'], config.COLORS['GREEN'], config.COLORS['BLUE'], 
                  config.COLORS['YELLOW'], config.COLORS['MAGENTA']]
-        self.patterns.panel_sequence(colors, duration=5)
+        self.patterns.panel_sequence(colors, duration=3)
         
-        # Demo 2: Rainbow wave
-        print("Demo 2: Rainbow wave")
-        self.patterns.rainbow_wave(duration=5)
+        # Demo 3: Rainbow wave
+        print("Demo 3: Rainbow wave")
+        self.patterns.rainbow_wave(duration=3)
         
-        # Demo 3: Bouncing ball
-        print("Demo 3: Bouncing ball")
-        self.patterns.bouncing_ball(config.COLORS['CYAN'], duration=5)
-        
-        # Demo 4: Matrix rain
-        print("Demo 4: Matrix rain")
-        self.patterns.matrix_rain(duration=5)
-        
-        # Demo 5: Spiral pattern
-        print("Demo 5: Spiral pattern")
-        self.patterns.spiral_pattern(config.COLORS['ORANGE'], duration=5)
-        
-        # Demo 6: Text scroll
-        print("Demo 6: Text scroll")
-        self.patterns.scrolling_text("WS2812B LED DISPLAY", config.COLORS['WHITE'], duration=5)
-        
-        # Demo 7: Fire effect
-        print("Demo 7: Fire effect")
-        self.patterns.fire_effect(duration=5)
+        # Demo 4: Text scroll
+        print("Demo 4: Text scroll")
+        self.patterns.scrolling_text("MUSHROOM LED DISPLAY", config.COLORS['WHITE'], duration=3)
         
         print("Demo sequence completed!")
     
