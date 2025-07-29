@@ -33,6 +33,11 @@ class AnimalSequenceAnimation:
             'pupils': (0, 0, 0)          # Black pupils
         }
         
+    def safe_set_pixel(self, array, x, y, color):
+        """Safely set a pixel if coordinates are within bounds."""
+        if 0 <= x < self.width and 0 <= y < self.height:
+            array[y, x] = color
+        
     def create_cat(self):
         """Create a cat pattern."""
         cat = np.full((self.height, self.width, 3), self.colors['background'], dtype=np.uint8)
@@ -51,38 +56,38 @@ class AnimalSequenceAnimation:
         
         # Cat ears (triangular)
         # Left ear
-        for y in range(center_y - 8, center_y - 2):
-            for x in range(center_x - 6, center_x - 1):
+        for y in range(max(0, center_y - 8), min(self.height, center_y - 2)):
+            for x in range(max(0, center_x - 6), min(self.width, center_x - 1)):
                 if y - (center_y - 8) >= (x - (center_x - 6)) * 0.8:
                     cat[y, x] = self.colors['cat_orange']
         
         # Right ear
-        for y in range(center_y - 8, center_y - 2):
-            for x in range(center_x + 1, center_x + 6):
+        for y in range(max(0, center_y - 8), min(self.height, center_y - 2)):
+            for x in range(max(0, center_x + 1), min(self.width, center_x + 6)):
                 if y - (center_y - 8) >= ((center_x + 6) - x) * 0.8:
                     cat[y, x] = self.colors['cat_orange']
         
         # Cat eyes
-        cat[center_y - 2, center_x - 3] = self.colors['eyes']  # Left eye
-        cat[center_y - 2, center_x + 3] = self.colors['eyes']  # Right eye
-        cat[center_y - 2, center_x - 3] = self.colors['pupils']  # Left pupil
-        cat[center_y - 2, center_x + 3] = self.colors['pupils']  # Right pupil
+        self.safe_set_pixel(cat, center_x - 3, center_y - 2, self.colors['eyes'])  # Left eye
+        self.safe_set_pixel(cat, center_x + 3, center_y - 2, self.colors['eyes'])  # Right eye
+        self.safe_set_pixel(cat, center_x - 3, center_y - 2, self.colors['pupils'])  # Left pupil
+        self.safe_set_pixel(cat, center_x + 3, center_y - 2, self.colors['pupils'])  # Right pupil
         
         # Cat nose
-        cat[center_y, center_x] = self.colors['cat_pink']
+        self.safe_set_pixel(cat, center_x, center_y, self.colors['cat_pink'])
         
         # Cat mouth
-        cat[center_y + 2, center_x - 1] = self.colors['cat_black']
-        cat[center_y + 2, center_x + 1] = self.colors['cat_black']
+        self.safe_set_pixel(cat, center_x - 1, center_y + 2, self.colors['cat_black'])
+        self.safe_set_pixel(cat, center_x + 1, center_y + 2, self.colors['cat_black'])
         
         # Cat whiskers
         for i in range(3):
-            cat[center_y, center_x - 5 - i] = self.colors['cat_white']  # Left whiskers
-            cat[center_y, center_x + 5 + i] = self.colors['cat_white']  # Right whiskers
+            self.safe_set_pixel(cat, center_x - 5 - i, center_y, self.colors['cat_white'])  # Left whiskers
+            self.safe_set_pixel(cat, center_x + 5 + i, center_y, self.colors['cat_white'])  # Right whiskers
         
         # Cat body
-        for y in range(center_y + 4, min(center_y + 12, self.height)):
-            for x in range(max(0, center_x - 4), min(center_x + 5, self.width)):
+        for y in range(max(0, center_y + 4), min(self.height, center_y + 12)):
+            for x in range(max(0, center_x - 4), min(self.width, center_x + 5)):
                 if (y - center_y - 4) <= 8:
                     cat[y, x] = self.colors['cat_orange']
         
@@ -94,8 +99,7 @@ class AnimalSequenceAnimation:
             (center_x + 12, center_y + 2)
         ]
         for px, py in tail_points:
-            if 0 <= px < self.width and 0 <= py < self.height:
-                cat[py, px] = self.colors['cat_orange']
+            self.safe_set_pixel(cat, px, py, self.colors['cat_orange'])
         
         return cat
     
@@ -117,45 +121,45 @@ class AnimalSequenceAnimation:
         
         # Dog ears (floppy)
         # Left ear
-        for y in range(center_y - 10, center_y - 1):
-            for x in range(center_x - 8, center_x - 2):
+        for y in range(max(0, center_y - 10), min(self.height, center_y - 1)):
+            for x in range(max(0, center_x - 8), min(self.width, center_x - 2)):
                 if y - (center_y - 10) >= (x - (center_x - 8)) * 0.6:
                     dog[y, x] = self.colors['dog_brown']
         
         # Right ear
-        for y in range(center_y - 10, center_y - 1):
-            for x in range(center_x + 2, center_x + 8):
+        for y in range(max(0, center_y - 10), min(self.height, center_y - 1)):
+            for x in range(max(0, center_x + 2), min(self.width, center_x + 8)):
                 if y - (center_y - 10) >= ((center_x + 8) - x) * 0.6:
                     dog[y, x] = self.colors['dog_brown']
         
         # Dog eyes (bigger than cat)
-        dog[center_y - 3, center_x - 4] = self.colors['eyes']  # Left eye
-        dog[center_y - 3, center_x + 4] = self.colors['eyes']  # Right eye
-        dog[center_y - 3, center_x - 4] = self.colors['pupils']  # Left pupil
-        dog[center_y - 3, center_x + 4] = self.colors['pupils']  # Right pupil
+        self.safe_set_pixel(dog, center_x - 4, center_y - 3, self.colors['eyes'])  # Left eye
+        self.safe_set_pixel(dog, center_x + 4, center_y - 3, self.colors['eyes'])  # Right eye
+        self.safe_set_pixel(dog, center_x - 4, center_y - 3, self.colors['pupils'])  # Left pupil
+        self.safe_set_pixel(dog, center_x + 4, center_y - 3, self.colors['pupils'])  # Right pupil
         
         # Dog nose (bigger)
-        dog[center_y, center_x - 1] = self.colors['dog_black']
-        dog[center_y, center_x] = self.colors['dog_black']
-        dog[center_y, center_x + 1] = self.colors['dog_black']
+        self.safe_set_pixel(dog, center_x - 1, center_y, self.colors['dog_black'])
+        self.safe_set_pixel(dog, center_x, center_y, self.colors['dog_black'])
+        self.safe_set_pixel(dog, center_x + 1, center_y, self.colors['dog_black'])
         
         # Dog mouth (smile)
-        dog[center_y + 2, center_x - 2] = self.colors['dog_black']
-        dog[center_y + 3, center_x - 1] = self.colors['dog_black']
-        dog[center_y + 3, center_x + 1] = self.colors['dog_black']
-        dog[center_y + 2, center_x + 2] = self.colors['dog_black']
+        self.safe_set_pixel(dog, center_x - 2, center_y + 2, self.colors['dog_black'])
+        self.safe_set_pixel(dog, center_x - 1, center_y + 3, self.colors['dog_black'])
+        self.safe_set_pixel(dog, center_x + 1, center_y + 3, self.colors['dog_black'])
+        self.safe_set_pixel(dog, center_x + 2, center_y + 2, self.colors['dog_black'])
         
         # Dog body (larger than cat)
-        for y in range(center_y + 4, min(center_y + 15, self.height)):
-            for x in range(max(0, center_x - 6), min(center_x + 7, self.width)):
+        for y in range(max(0, center_y + 4), min(self.height, center_y + 15)):
+            for x in range(max(0, center_x - 6), min(self.width, center_x + 7)):
                 if (y - center_y - 4) <= 11:
                     dog[y, x] = self.colors['dog_brown']
         
         # Dog legs
-        for y in range(center_y + 15, min(center_y + 20, self.height)):
-            for x in range(max(0, center_x - 5), min(center_x - 2, self.width)):  # Front left
+        for y in range(max(0, center_y + 15), min(self.height, center_y + 20)):
+            for x in range(max(0, center_x - 5), min(self.width, center_x - 2)):  # Front left
                 dog[y, x] = self.colors['dog_brown']
-            for x in range(max(0, center_x + 2), min(center_x + 5, self.width)):  # Front right
+            for x in range(max(0, center_x + 2), min(self.width, center_x + 5)):  # Front right
                 dog[y, x] = self.colors['dog_brown']
         
         # Dog tail (wagging)
@@ -166,8 +170,7 @@ class AnimalSequenceAnimation:
             (center_x + 14, center_y + 4)
         ]
         for px, py in tail_points:
-            if 0 <= px < self.width and 0 <= py < self.height:
-                dog[py, px] = self.colors['dog_brown']
+            self.safe_set_pixel(dog, px, py, self.colors['dog_brown'])
         
         return dog
     
@@ -199,43 +202,42 @@ class AnimalSequenceAnimation:
             (center_x - 2, center_y + 16)
         ]
         for px, py in trunk_points:
-            if 0 <= px < self.width and 0 <= py < self.height:
-                elephant[py, px] = self.colors['elephant_gray']
+            self.safe_set_pixel(elephant, px, py, self.colors['elephant_gray'])
         
         # Elephant eyes (small)
-        elephant[center_y - 2, center_x - 3] = self.colors['eyes']  # Left eye
-        elephant[center_y - 2, center_x + 3] = self.colors['eyes']  # Right eye
-        elephant[center_y - 2, center_x - 3] = self.colors['pupils']  # Left pupil
-        elephant[center_y - 2, center_x + 3] = self.colors['pupils']  # Right pupil
+        self.safe_set_pixel(elephant, center_x - 3, center_y - 2, self.colors['eyes'])  # Left eye
+        self.safe_set_pixel(elephant, center_x + 3, center_y - 2, self.colors['eyes'])  # Right eye
+        self.safe_set_pixel(elephant, center_x - 3, center_y - 2, self.colors['pupils'])  # Left pupil
+        self.safe_set_pixel(elephant, center_x + 3, center_y - 2, self.colors['pupils'])  # Right pupil
         
         # Elephant ears (large and floppy)
         # Left ear
-        for y in range(center_y - 12, center_y - 2):
-            for x in range(center_x - 10, center_x - 2):
+        for y in range(max(0, center_y - 12), min(self.height, center_y - 2)):
+            for x in range(max(0, center_x - 10), min(self.width, center_x - 2)):
                 if y - (center_y - 12) >= (x - (center_x - 10)) * 0.5:
                     elephant[y, x] = self.colors['elephant_gray']
         
         # Right ear
-        for y in range(center_y - 12, center_y - 2):
-            for x in range(center_x + 2, center_x + 10):
+        for y in range(max(0, center_y - 12), min(self.height, center_y - 2)):
+            for x in range(max(0, center_x + 2), min(self.width, center_x + 10)):
                 if y - (center_y - 12) >= ((center_x + 10) - x) * 0.5:
                     elephant[y, x] = self.colors['elephant_gray']
         
         # Elephant body (very large)
-        for y in range(center_y + 4, center_y + 20):
-            for x in range(center_x - 8, center_x + 9):
+        for y in range(max(0, center_y + 4), min(self.height, center_y + 20)):
+            for x in range(max(0, center_x - 8), min(self.width, center_x + 9)):
                 if (y - center_y - 4) <= 16:
                     elephant[y, x] = self.colors['elephant_gray']
         
         # Elephant legs (thick)
-        for y in range(center_y + 20, center_y + 25):
-            for x in range(center_x - 6, center_x - 3):  # Front left
+        for y in range(max(0, center_y + 20), min(self.height, center_y + 25)):
+            for x in range(max(0, center_x - 6), min(self.width, center_x - 3)):  # Front left
                 elephant[y, x] = self.colors['elephant_gray']
-            for x in range(center_x - 2, center_x + 1):  # Front right
+            for x in range(max(0, center_x - 2), min(self.width, center_x + 1)):  # Front right
                 elephant[y, x] = self.colors['elephant_gray']
-            for x in range(center_x + 1, center_x + 4):  # Back left
+            for x in range(max(0, center_x + 1), min(self.width, center_x + 4)):  # Back left
                 elephant[y, x] = self.colors['elephant_gray']
-            for x in range(center_x + 3, center_x + 6):  # Back right
+            for x in range(max(0, center_x + 3), min(self.width, center_x + 6)):  # Back right
                 elephant[y, x] = self.colors['elephant_gray']
         
         return elephant
