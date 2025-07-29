@@ -81,8 +81,8 @@ class AnimalSequenceAnimation:
             cat[center_y, center_x + 5 + i] = self.colors['cat_white']  # Right whiskers
         
         # Cat body
-        for y in range(center_y + 4, center_y + 12):
-            for x in range(center_x - 4, center_x + 5):
+        for y in range(center_y + 4, min(center_y + 12, self.height)):
+            for x in range(max(0, center_x - 4), min(center_x + 5, self.width)):
                 if (y - center_y - 4) <= 8:
                     cat[y, x] = self.colors['cat_orange']
         
@@ -146,16 +146,16 @@ class AnimalSequenceAnimation:
         dog[center_y + 2, center_x + 2] = self.colors['dog_black']
         
         # Dog body (larger than cat)
-        for y in range(center_y + 4, center_y + 15):
-            for x in range(center_x - 6, center_x + 7):
+        for y in range(center_y + 4, min(center_y + 15, self.height)):
+            for x in range(max(0, center_x - 6), min(center_x + 7, self.width)):
                 if (y - center_y - 4) <= 11:
                     dog[y, x] = self.colors['dog_brown']
         
         # Dog legs
-        for y in range(center_y + 15, center_y + 20):
-            for x in range(center_x - 5, center_x - 2):  # Front left
+        for y in range(center_y + 15, min(center_y + 20, self.height)):
+            for x in range(max(0, center_x - 5), min(center_x - 2, self.width)):  # Front left
                 dog[y, x] = self.colors['dog_brown']
-            for x in range(center_x + 2, center_x + 5):  # Front right
+            for x in range(max(0, center_x + 2), min(center_x + 5, self.width)):  # Front right
                 dog[y, x] = self.colors['dog_brown']
         
         # Dog tail (wagging)
