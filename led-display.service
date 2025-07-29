@@ -1,16 +1,19 @@
 [Unit]
-Description=LED Display Service
+Description=LED Display Application with Auto Updates
 After=network.target
 
 [Service]
 Type=simple
-User=root
-WorkingDirectory=/home/pi/board-led-project
-ExecStart=/usr/bin/python3 /home/pi/board-led-project/main.py
+User=led-board
+WorkingDirectory=/home/led-board/Desktop/led-board-project
+ExecStart=/home/led-board/Desktop/led-board-project/venv/bin/python /home/led-board/Desktop/led-board-project/update_and_run.py
 Restart=always
 RestartSec=10
 StandardOutput=journal
 StandardError=journal
+
+# Environment variables
+Environment=PYTHONPATH=/home/led-board/Desktop/led-board-project
 
 [Install]
 WantedBy=multi-user.target 

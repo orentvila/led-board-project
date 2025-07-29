@@ -154,10 +154,78 @@ class LEDDisplayApp:
         self.led.cleanup()
         print("Cleanup completed.")
 
+def git_pull_update():
+    """Pull latest changes from git repository."""
+    import subprocess
+    import os
+    
+    try:
+        print("Checking for updates...")
+        
+        # Get the current directory
+        current_dir = os.getcwd()
+        print(f"Current directory: {current_dir}")
+        
+        # Check if this is a git repository
+        if not os.path.exists('.git'):
+            print("Not a git repository, skipping update check")
+            return False
+        
+        # Fetch latest changes
+        print("Fetching latest changes...")
+        result = subprocess.run(['git', 'fetch'], 
+                              capture_output=True, text=True, cwd=current_dir)
+        
+        if result.returncode != 0:
+            print(f"Git fetch failed: {result.stderr}")
+            return False
+        
+        # Check if there are any changes to pull
+        result = subprocess.run(['git', 'status', '--porcelain'], 
+                              capture_output=True, text=True, cwd=current_dir)
+        
+        # Check if we're behind the remote
+        result_behind = subprocess.run(['git', 'rev-list', 'HEAD..origin/main', '--count'], 
+                                     capture_output=True, text=True, cwd=current_dir)
+        
+        if result_behind.returncode == 0 and result_behind.stdout.strip() != '0':
+            commits_behind = int(result_behind.stdout.strip())
+            print(f"Found {commits_behind} new commits, pulling updates...")
+            
+            # Pull the changes
+            result = subprocess.run(['git', 'pull', 'origin', 'main'], 
+                                  capture_output=True, text=True, cwd=current_dir)
+            
+            if result.returncode == 0:
+                print("✅ Successfully updated from git repository!")
+                print("Changes pulled:")
+                print(result.stdout)
+                return True
+            else:
+                print(f"❌ Git pull failed: {result.stderr}")
+                return False
+        else:
+            print("✅ Already up to date!")
+            return False
+            
+    except Exception as e:
+        print(f"❌ Error during git update: {e}")
+        return False
+
 def main():
-    ##Hello
     """Main entry point."""
     try:
+        # Check for git updates first
+        updated = git_pull_update()
+        
+        if updated:
+            print("🔄 Restarting application with updated code...")
+            # Restart the application to load new code
+            import os
+            import sys
+            os.execv(sys.executable, ['python'] + sys.argv)
+        
+        # Start the application
         app = LEDDisplayApp()
         app.run()
     except Exception as e:
