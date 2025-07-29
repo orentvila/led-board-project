@@ -198,7 +198,7 @@ class GravityBendAnimation:
                     
                     # Apply subtle color shift
                     original_color = frame[y, x]
-                    if original_color != self.colors['space']:
+                    if not np.array_equal(original_color, self.colors['space']):
                         warp_intensity = int(50 * (warp_strength + ripple))
                         frame[y, x] = tuple(min(255, c + warp_intensity) for c in original_color)
     
