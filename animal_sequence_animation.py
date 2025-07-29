@@ -16,6 +16,8 @@ class AnimalSequenceAnimation:
         self.width = config.TOTAL_WIDTH  # 32
         self.height = config.TOTAL_HEIGHT  # 40
         
+        print(f"Display dimensions: {self.width}x{self.height}")
+        
         # Colors
         self.colors = {
             'background': (0, 0, 0),     # Black background
@@ -37,14 +39,19 @@ class AnimalSequenceAnimation:
         """Safely set a pixel if coordinates are within bounds."""
         if 0 <= x < self.width and 0 <= y < self.height:
             array[y, x] = color
+        else:
+            print(f"Warning: Pixel out of bounds ({x}, {y}) - bounds: 0-{self.width-1}, 0-{self.height-1}")
         
     def create_cat(self):
         """Create a cat pattern."""
+        print("Creating cat pattern...")
         cat = np.full((self.height, self.width, 3), self.colors['background'], dtype=np.uint8)
         
         # Cat position (centered)
         center_x = self.width // 2
         center_y = self.height // 2
+        
+        print(f"Cat center: ({center_x}, {center_y})")
         
         # Cat head (oval shape)
         for y in range(self.height):
@@ -54,16 +61,24 @@ class AnimalSequenceAnimation:
                 if dx*dx + dy*dy <= 1:
                     cat[y, x] = self.colors['cat_orange']
         
-        # Cat ears (triangular)
+        # Cat ears (triangular) - with strict bounds checking
         # Left ear
-        for y in range(max(0, center_y - 8), min(self.height, center_y - 2)):
-            for x in range(max(0, center_x - 6), min(self.width, center_x - 1)):
+        ear_y_start = max(0, center_y - 8)
+        ear_y_end = min(self.height, center_y - 2)
+        ear_x_start = max(0, center_x - 6)
+        ear_x_end = min(self.width, center_x - 1)
+        
+        for y in range(ear_y_start, ear_y_end):
+            for x in range(ear_x_start, ear_x_end):
                 if y - (center_y - 8) >= (x - (center_x - 6)) * 0.8:
                     cat[y, x] = self.colors['cat_orange']
         
         # Right ear
-        for y in range(max(0, center_y - 8), min(self.height, center_y - 2)):
-            for x in range(max(0, center_x + 1), min(self.width, center_x + 6)):
+        ear_x_start = max(0, center_x + 1)
+        ear_x_end = min(self.width, center_x + 6)
+        
+        for y in range(ear_y_start, ear_y_end):
+            for x in range(ear_x_start, ear_x_end):
                 if y - (center_y - 8) >= ((center_x + 6) - x) * 0.8:
                     cat[y, x] = self.colors['cat_orange']
         
@@ -85,9 +100,14 @@ class AnimalSequenceAnimation:
             self.safe_set_pixel(cat, center_x - 5 - i, center_y, self.colors['cat_white'])  # Left whiskers
             self.safe_set_pixel(cat, center_x + 5 + i, center_y, self.colors['cat_white'])  # Right whiskers
         
-        # Cat body
-        for y in range(max(0, center_y + 4), min(self.height, center_y + 12)):
-            for x in range(max(0, center_x - 4), min(self.width, center_x + 5)):
+        # Cat body - with strict bounds checking
+        body_y_start = max(0, center_y + 4)
+        body_y_end = min(self.height, center_y + 12)
+        body_x_start = max(0, center_x - 4)
+        body_x_end = min(self.width, center_x + 5)
+        
+        for y in range(body_y_start, body_y_end):
+            for x in range(body_x_start, body_x_end):
                 if (y - center_y - 4) <= 8:
                     cat[y, x] = self.colors['cat_orange']
         
@@ -101,10 +121,12 @@ class AnimalSequenceAnimation:
         for px, py in tail_points:
             self.safe_set_pixel(cat, px, py, self.colors['cat_orange'])
         
+        print("Cat pattern created successfully")
         return cat
     
     def create_dog(self):
         """Create a dog pattern."""
+        print("Creating dog pattern...")
         dog = np.full((self.height, self.width, 3), self.colors['background'], dtype=np.uint8)
         
         # Dog position (centered)
@@ -119,16 +141,24 @@ class AnimalSequenceAnimation:
                 if dx*dx + dy*dy <= 1:
                     dog[y, x] = self.colors['dog_brown']
         
-        # Dog ears (floppy)
+        # Dog ears (floppy) - with strict bounds checking
+        ear_y_start = max(0, center_y - 10)
+        ear_y_end = min(self.height, center_y - 1)
+        ear_x_start = max(0, center_x - 8)
+        ear_x_end = min(self.width, center_x - 2)
+        
         # Left ear
-        for y in range(max(0, center_y - 10), min(self.height, center_y - 1)):
-            for x in range(max(0, center_x - 8), min(self.width, center_x - 2)):
+        for y in range(ear_y_start, ear_y_end):
+            for x in range(ear_x_start, ear_x_end):
                 if y - (center_y - 10) >= (x - (center_x - 8)) * 0.6:
                     dog[y, x] = self.colors['dog_brown']
         
         # Right ear
-        for y in range(max(0, center_y - 10), min(self.height, center_y - 1)):
-            for x in range(max(0, center_x + 2), min(self.width, center_x + 8)):
+        ear_x_start = max(0, center_x + 2)
+        ear_x_end = min(self.width, center_x + 8)
+        
+        for y in range(ear_y_start, ear_y_end):
+            for x in range(ear_x_start, ear_x_end):
                 if y - (center_y - 10) >= ((center_x + 8) - x) * 0.6:
                     dog[y, x] = self.colors['dog_brown']
         
@@ -149,14 +179,22 @@ class AnimalSequenceAnimation:
         self.safe_set_pixel(dog, center_x + 1, center_y + 3, self.colors['dog_black'])
         self.safe_set_pixel(dog, center_x + 2, center_y + 2, self.colors['dog_black'])
         
-        # Dog body (larger than cat)
-        for y in range(max(0, center_y + 4), min(self.height, center_y + 15)):
-            for x in range(max(0, center_x - 6), min(self.width, center_x + 7)):
+        # Dog body (larger than cat) - with strict bounds checking
+        body_y_start = max(0, center_y + 4)
+        body_y_end = min(self.height, center_y + 15)
+        body_x_start = max(0, center_x - 6)
+        body_x_end = min(self.width, center_x + 7)
+        
+        for y in range(body_y_start, body_y_end):
+            for x in range(body_x_start, body_x_end):
                 if (y - center_y - 4) <= 11:
                     dog[y, x] = self.colors['dog_brown']
         
-        # Dog legs
-        for y in range(max(0, center_y + 15), min(self.height, center_y + 20)):
+        # Dog legs - with strict bounds checking
+        leg_y_start = max(0, center_y + 15)
+        leg_y_end = min(self.height, center_y + 20)
+        
+        for y in range(leg_y_start, leg_y_end):
             for x in range(max(0, center_x - 5), min(self.width, center_x - 2)):  # Front left
                 dog[y, x] = self.colors['dog_brown']
             for x in range(max(0, center_x + 2), min(self.width, center_x + 5)):  # Front right
@@ -172,10 +210,12 @@ class AnimalSequenceAnimation:
         for px, py in tail_points:
             self.safe_set_pixel(dog, px, py, self.colors['dog_brown'])
         
+        print("Dog pattern created successfully")
         return dog
     
     def create_elephant(self):
         """Create an elephant pattern."""
+        print("Creating elephant pattern...")
         elephant = np.full((self.height, self.width, 3), self.colors['background'], dtype=np.uint8)
         
         # Elephant position (centered)
@@ -210,27 +250,43 @@ class AnimalSequenceAnimation:
         self.safe_set_pixel(elephant, center_x - 3, center_y - 2, self.colors['pupils'])  # Left pupil
         self.safe_set_pixel(elephant, center_x + 3, center_y - 2, self.colors['pupils'])  # Right pupil
         
-        # Elephant ears (large and floppy)
+        # Elephant ears (large and floppy) - with strict bounds checking
+        ear_y_start = max(0, center_y - 12)
+        ear_y_end = min(self.height, center_y - 2)
+        ear_x_start = max(0, center_x - 10)
+        ear_x_end = min(self.width, center_x - 2)
+        
         # Left ear
-        for y in range(max(0, center_y - 12), min(self.height, center_y - 2)):
-            for x in range(max(0, center_x - 10), min(self.width, center_x - 2)):
+        for y in range(ear_y_start, ear_y_end):
+            for x in range(ear_x_start, ear_x_end):
                 if y - (center_y - 12) >= (x - (center_x - 10)) * 0.5:
                     elephant[y, x] = self.colors['elephant_gray']
         
         # Right ear
-        for y in range(max(0, center_y - 12), min(self.height, center_y - 2)):
-            for x in range(max(0, center_x + 2), min(self.width, center_x + 10)):
+        ear_x_start = max(0, center_x + 2)
+        ear_x_end = min(self.width, center_x + 10)
+        
+        for y in range(ear_y_start, ear_y_end):
+            for x in range(ear_x_start, ear_x_end):
                 if y - (center_y - 12) >= ((center_x + 10) - x) * 0.5:
                     elephant[y, x] = self.colors['elephant_gray']
         
-        # Elephant body (very large)
-        for y in range(max(0, center_y + 4), min(self.height, center_y + 20)):
-            for x in range(max(0, center_x - 8), min(self.width, center_x + 9)):
+        # Elephant body (very large) - with strict bounds checking
+        body_y_start = max(0, center_y + 4)
+        body_y_end = min(self.height, center_y + 20)
+        body_x_start = max(0, center_x - 8)
+        body_x_end = min(self.width, center_x + 9)
+        
+        for y in range(body_y_start, body_y_end):
+            for x in range(body_x_start, body_x_end):
                 if (y - center_y - 4) <= 16:
                     elephant[y, x] = self.colors['elephant_gray']
         
-        # Elephant legs (thick)
-        for y in range(max(0, center_y + 20), min(self.height, center_y + 25)):
+        # Elephant legs (thick) - with strict bounds checking
+        leg_y_start = max(0, center_y + 20)
+        leg_y_end = min(self.height, center_y + 25)
+        
+        for y in range(leg_y_start, leg_y_end):
             for x in range(max(0, center_x - 6), min(self.width, center_x - 3)):  # Front left
                 elephant[y, x] = self.colors['elephant_gray']
             for x in range(max(0, center_x - 2), min(self.width, center_x + 1)):  # Front right
@@ -240,6 +296,7 @@ class AnimalSequenceAnimation:
             for x in range(max(0, center_x + 3), min(self.width, center_x + 6)):  # Back right
                 elephant[y, x] = self.colors['elephant_gray']
         
+        print("Elephant pattern created successfully")
         return elephant
     
     def display_animal(self, animal_pattern, animal_name, duration=5):
@@ -309,6 +366,8 @@ def main():
         animals.cleanup()
     except Exception as e:
         print(f"Error: {e}")
+        import traceback
+        traceback.print_exc()
         animals.cleanup()
 
 if __name__ == "__main__":
