@@ -44,7 +44,7 @@ class TreeGrowingAnimation:
     def create_ground_only(self, frame):
         """Create only the ground on black background."""
         # Start with black background
-        frame.fill(self.colors['background'])
+        frame[:] = self.colors['background']
         
         # Ground (lower 30% of display)
         ground_start = int(self.height * 0.7)
