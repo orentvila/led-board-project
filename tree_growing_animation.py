@@ -19,21 +19,19 @@ class TreeGrowingAnimation:
         
         # Colors
         self.colors = {
-            'sky': (135, 206, 235),        # Light blue sky
-            'ground': (139, 69, 19),       # Brown ground
-            'trunk': (101, 67, 33),        # Dark brown trunk
-            'trunk_light': (139, 69, 19),  # Lighter brown trunk
-            'branch': (101, 67, 33),       # Brown branches
-            'leaves_dark': (34, 139, 34),  # Dark green leaves
-            'leaves_light': (50, 205, 50), # Light green leaves
+            'background': (0, 0, 0),        # Black background
+            'ground': (139, 69, 19),        # Brown ground
+            'trunk': (101, 67, 33),         # Dark brown trunk
+            'trunk_light': (139, 69, 19),   # Lighter brown trunk
+            'branch': (101, 67, 33),        # Brown branches
+            'leaves_dark': (34, 139, 34),   # Dark green leaves
+            'leaves_light': (50, 205, 50),  # Light green leaves
             'leaves_yellow': (255, 255, 0), # Yellow leaves
             'leaves_orange': (255, 165, 0), # Orange leaves
-            'leaves_red': (255, 0, 0),     # Red leaves
-            'roots': (101, 67, 33),        # Brown roots
-            'grass': (34, 139, 34),        # Green grass
-            'sun': (255, 255, 0),          # Yellow sun
-            'cloud': (255, 255, 255),      # White clouds
-            'soil': (160, 82, 45)          # Soil color
+            'leaves_red': (255, 0, 0),      # Red leaves
+            'roots': (101, 67, 33),         # Brown roots
+            'grass': (34, 139, 34),         # Green grass
+            'soil': (160, 82, 45)           # Soil color
         }
         
         # Animation parameters
@@ -43,46 +41,22 @@ class TreeGrowingAnimation:
         self.season_timer = 0
         self.max_height = self.height * 0.8  # Maximum tree height
         
-    def create_sky_and_ground(self, frame):
-        """Create sky and ground background."""
-        # Sky (upper 70% of display)
-        sky_height = int(self.height * 0.7)
-        for y in range(sky_height):
-            for x in range(self.width):
-                frame[y, x] = self.colors['sky']
+    def create_ground_only(self, frame):
+        """Create only the ground on black background."""
+        # Start with black background
+        frame.fill(self.colors['background'])
         
         # Ground (lower 30% of display)
-        for y in range(sky_height, self.height):
+        ground_start = int(self.height * 0.7)
+        for y in range(ground_start, self.height):
             for x in range(self.width):
                 frame[y, x] = self.colors['ground']
         
-        # Add some grass texture
-        for y in range(sky_height, sky_height + 3):
+        # Add some grass texture at the top of ground
+        for y in range(ground_start, ground_start + 3):
             for x in range(self.width):
                 if np.random.random() < 0.3:  # 30% chance for grass
                     frame[y, x] = self.colors['grass']
-    
-    def create_sun_and_clouds(self, frame):
-        """Create sun and moving clouds."""
-        # Sun
-        sun_x = int(self.width * 0.8)
-        sun_y = int(self.height * 0.15)
-        for y in range(sun_y - 2, sun_y + 3):
-            for x in range(sun_x - 2, sun_x + 3):
-                if 0 <= x < self.width and 0 <= y < self.height:
-                    frame[y, x] = self.colors['sun']
-        
-        # Moving clouds
-        cloud_positions = [
-            (int(self.width * 0.2 + self.growth_timer * 0.1) % self.width, int(self.height * 0.1)),
-            (int(self.width * 0.6 + self.growth_timer * 0.15) % self.width, int(self.height * 0.08))
-        ]
-        
-        for cx, cy in cloud_positions:
-            for y in range(cy - 1, cy + 2):
-                for x in range(cx - 3, cx + 4):
-                    if 0 <= x < self.width and 0 <= y < self.height:
-                        frame[y, x] = self.colors['cloud']
     
     def create_roots(self, frame):
         """Create tree roots in the ground."""
@@ -224,9 +198,8 @@ class TreeGrowingAnimation:
         growth_duration = 200  # frames for full growth
         current_growth = min(1.0, self.growth_timer / growth_duration)
         
-        # Create background
-        self.create_sky_and_ground(frame)
-        self.create_sun_and_clouds(frame)
+        # Start with ground only
+        self.create_ground_only(frame)
         
         # Create roots (always visible)
         self.create_roots(frame)
@@ -244,13 +217,13 @@ class TreeGrowingAnimation:
         """Display the tree growing animation."""
         print("🌳 Tree Growing Animation 🌳")
         print(f"Displaying for {duration} seconds...")
-        print("Features: Tree growing from ground, branches, seasonal leaves")
+        print("Features: Tree growing from ground on black background")
         
         start_time = time.time()
         
         while time.time() - start_time < duration:
             # Create the frame
-            frame = np.full((self.height, self.width, 3), self.colors['sky'], dtype=np.uint8)
+            frame = np.full((self.height, self.width, 3), self.colors['background'], dtype=np.uint8)
             self.create_growing_animation(frame)
             
             # Display the frame
