@@ -48,7 +48,7 @@ def test_basic_functionality():
         time.sleep(2)
         
         # Test 5: Panel test
-        print("\nTest 5: Testing individual panels...")
+        print("\nTest 6: Testing individual panels...")
         for panel in range(config.PANELS_COUNT):
             print(f"  Lighting panel {panel + 1}...")
             led.fill_panel(panel, config.COLORS['WHITE'])

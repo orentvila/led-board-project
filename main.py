@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Main application for Raspberry Pi LED Display Project
-Controls 5 LED panels (32x8 each) to create a 40x32 display
+Controls 6 LED panels (32x8 each) to create a 48x32 display
 """
 
 import time

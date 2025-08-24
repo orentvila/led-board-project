@@ -15,7 +15,7 @@ class BigShapesAnimation:
         """Initialize the big shapes animation."""
         self.led = LEDControllerFixed()
         self.width = config.TOTAL_WIDTH  # 32
-        self.height = config.TOTAL_HEIGHT  # 40
+        self.height = config.TOTAL_HEIGHT  # 48
         
         # Colors for each shape
         self.colors = {

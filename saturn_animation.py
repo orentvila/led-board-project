@@ -15,7 +15,7 @@ class SaturnAnimation:
         """Initialize the Saturn animation."""
         self.led = LEDControllerFixed()
         self.width = config.TOTAL_WIDTH  # 32
-        self.height = config.TOTAL_HEIGHT  # 40
+        self.height = config.TOTAL_HEIGHT  # 48
         
         # Colors
         self.colors = {

@@ -15,7 +15,7 @@ class CalmingAmbientAnimation:
         """Initialize the calming ambient animation."""
         self.led = LEDControllerFixed()
         self.width = config.TOTAL_WIDTH  # 32
-        self.height = config.TOTAL_HEIGHT  # 40
+        self.height = config.TOTAL_HEIGHT  # 48
         
         # Soft, calming color palette
         self.colors = {

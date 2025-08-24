@@ -15,7 +15,7 @@ class DudiPaddleboardingAnimation:
         """Initialize the Dudi paddleboarding animation."""
         self.led = LEDControllerFixed()
         self.width = config.TOTAL_WIDTH  # 32
-        self.height = config.TOTAL_HEIGHT  # 40
+        self.height = config.TOTAL_HEIGHT  # 48
         
         # Colors
         self.colors = {

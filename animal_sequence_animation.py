@@ -14,7 +14,7 @@ class AnimalSequenceAnimation:
         """Initialize the animal sequence animation."""
         self.led = LEDControllerFixed()
         self.width = config.TOTAL_WIDTH  # 32
-        self.height = config.TOTAL_HEIGHT  # 40
+        self.height = config.TOTAL_HEIGHT  # 48
         
         print(f"Display dimensions: {self.width}x{self.height}")
         
