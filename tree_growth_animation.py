@@ -215,7 +215,8 @@ class TreeGrowthAnimation:
                     # Combine ground and sprout
                     for y in range(self.height):
                         for x in range(self.width):
-                            if sprout[y, x] != self.colors['background']:
+                            # Compare RGB values properly
+                            if not np.array_equal(sprout[y, x], self.colors['background']):
                                 frame[y, x] = sprout[y, x]
                 else:
                     # Phase 3: Full tree with leaves and apples
