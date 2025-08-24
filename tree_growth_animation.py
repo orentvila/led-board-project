@@ -18,20 +18,20 @@ class TreeGrowthAnimation:
         
         print(f"Display dimensions: {self.width}x{self.height}")
         
-        # Colors - more natural and calming palette
+        # Colors - cartoon-style vibrant palette
         self.colors = {
-            'background': (15, 25, 10),      # Dark forest green background
-            'soil': (45, 25, 15),            # Rich brown soil
-            'soil_light': (60, 35, 20),      # Lighter soil variation
-            'sprout': (20, 120, 20),         # Fresh green sprout
-            'trunk': (70, 45, 25),           # Natural brown trunk
-            'trunk_dark': (50, 30, 15),      # Darker trunk variation
-            'branches': (60, 40, 20),        # Branch color
-            'leaves': (30, 140, 30),         # Vibrant green leaves
-            'leaves_light': (50, 160, 50),   # Lighter leaf variation
-            'apples': (180, 20, 20),         # Rich red apples
-            'apples_highlight': (220, 40, 40), # Brighter apple highlights
-            'ground': (25, 35, 15)           # Ground color
+            'background': (255, 255, 255),   # Pure white background
+            'soil': (255, 200, 100),         # Light orange-yellow ground
+            'soil_light': (255, 220, 120),   # Lighter ground variation
+            'sprout': (50, 200, 50),         # Bright green sprout
+            'trunk': (120, 80, 40),          # Dark brown trunk
+            'trunk_dark': (100, 60, 30),     # Darker trunk variation
+            'branches': (110, 70, 35),       # Branch color
+            'leaves': (50, 200, 50),         # Bright green leaves
+            'leaves_light': (80, 220, 80),   # Lighter green highlights
+            'apples': (255, 50, 50),         # Bright red apples
+            'apples_highlight': (255, 80, 80), # Lighter red highlights
+            'ground': (255, 180, 80)         # Ground color
         }
         
         # Animation timing (20 seconds total)
@@ -160,22 +160,23 @@ class TreeGrowthAnimation:
                     self.safe_set_pixel(tree, x, branch_y - 1, self.colors['branches'])
     
     def add_leaves(self, tree, center_x, trunk_start_y, trunk_height, leaves_progress):
-        """Add leaves to the tree branches with natural distribution."""
-        # Define leaf positions around branches
+        """Add leaves to create a rounded, cloud-like canopy like the reference image."""
+        # Define leaf positions for a rounded canopy
         leaf_positions = []
         
-        # Main canopy area - only in upper portion of tree
-        canopy_start_y = trunk_start_y + int(trunk_height * 0.4)
-        canopy_end_y = trunk_start_y + int(trunk_height * 0.85)
+        # Main canopy area - create rounded shape
+        canopy_start_y = trunk_start_y + int(trunk_height * 0.3)
+        canopy_end_y = trunk_start_y + int(trunk_height * 0.8)
         
         for y in range(canopy_start_y, canopy_end_y):
-            # Calculate leaf spread based on height (wider in middle, narrower at top)
+            # Calculate leaf spread for rounded canopy (wider in middle)
             height_ratio = (y - canopy_start_y) / (canopy_end_y - canopy_start_y)
-            max_spread = int(12 * (1 - abs(height_ratio - 0.5) * 1.2))
+            # Create more rounded, cloud-like shape
+            max_spread = int(14 * (1 - (height_ratio - 0.5) ** 2))
             
             for x in range(center_x - max_spread, center_x + max_spread + 1):
-                # Add some randomness to leaf placement for natural look
-                if np.random.random() < 0.5:
+                # Create denser, more uniform canopy
+                if np.random.random() < 0.7:
                     leaf_positions.append((x, y))
         
         # Show leaves based on progress with easing
@@ -185,35 +186,27 @@ class TreeGrowthAnimation:
         for i in range(num_leaves_to_show):
             if i < len(leaf_positions):
                 x, y = leaf_positions[i]
-                # Add leaf color variation
-                if np.random.random() < 0.3:
+                # Add leaf color variation for depth
+                if np.random.random() < 0.2:
                     self.safe_set_pixel(tree, x, y, self.colors['leaves_light'])
                 else:
                     self.safe_set_pixel(tree, x, y, self.colors['leaves'])
     
     def add_apples(self, tree, center_x, trunk_start_y, trunk_height, apples_progress):
-        """Add apples to the tree branches."""
-        # Define apple positions on branches
-        apple_positions = []
-        
-        # Apple positions on main branches
-        branch_positions = [
-            (center_x - 8, trunk_start_y + int(trunk_height * 0.4)),
-            (center_x + 8, trunk_start_y + int(trunk_height * 0.4)),
-            (center_x - 6, trunk_start_y + int(trunk_height * 0.55)),
-            (center_x + 6, trunk_start_y + int(trunk_height * 0.55)),
-            (center_x - 4, trunk_start_y + int(trunk_height * 0.7)),
-            (center_x + 4, trunk_start_y + int(trunk_height * 0.7)),
-            (center_x - 2, trunk_start_y + int(trunk_height * 0.5)),
-            (center_x + 2, trunk_start_y + int(trunk_height * 0.5)),
-            (center_x, trunk_start_y + int(trunk_height * 0.8)),
+        """Add apples to the tree branches - exactly 5 apples like the reference image."""
+        # Define exactly 5 apple positions to match the reference image
+        apple_positions = [
+            # Upper left apple
+            (center_x - 6, trunk_start_y + int(trunk_height * 0.3)),
+            # Upper right apple  
+            (center_x + 6, trunk_start_y + int(trunk_height * 0.3)),
+            # Lower left apple
+            (center_x - 4, trunk_start_y + int(trunk_height * 0.6)),
+            # Lower right apple
+            (center_x + 4, trunk_start_y + int(trunk_height * 0.6)),
+            # Center apple
+            (center_x, trunk_start_y + int(trunk_height * 0.5)),
         ]
-        
-        for x, y in branch_positions:
-            apple_positions.append((x, y))
-            # Add some variation in apple positions
-            apple_positions.append((x + 1, y))
-            apple_positions.append((x, y + 1))
         
         # Show apples based on progress with easing
         eased_progress = self.ease_in_out(apples_progress)
@@ -222,11 +215,10 @@ class TreeGrowthAnimation:
         for i in range(num_apples_to_show):
             if i < len(apple_positions):
                 x, y = apple_positions[i]
-                # Add highlight to some apples for depth
-                if np.random.random() < 0.4:
-                    self.safe_set_pixel(tree, x, y, self.colors['apples_highlight'])
-                else:
-                    self.safe_set_pixel(tree, x, y, self.colors['apples'])
+                # Draw apple with stem
+                self.safe_set_pixel(tree, x, y, self.colors['apples'])
+                # Add small green stem on top
+                self.safe_set_pixel(tree, x, y - 1, self.colors['leaves'])
     
     def ease_in_out(self, t):
         """Smooth easing function for natural movement."""
