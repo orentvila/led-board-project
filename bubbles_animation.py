@@ -31,7 +31,7 @@ class BubblesAnimation:
             (100, 255, 255),  # Cyan
         ]
         
-        self.background_color = (20, 40, 80)  # Dark blue background
+        self.background_color = (0, 0, 0)  # Black background
         
         # Animation parameters
         self.total_duration = 30.0  # 30 seconds
