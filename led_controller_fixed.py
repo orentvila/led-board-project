@@ -25,7 +25,7 @@ else:
 
 class LEDControllerFixed:
     def __init__(self):
-        """Initialize the LED controller for the 32x40 display."""
+        """Initialize the LED controller for the 32x48 display."""
         # Convert brightness to uint8 (0-255)
         brightness_uint8 = int(config.BRIGHTNESS * 255)
         
@@ -40,7 +40,7 @@ class LEDControllerFixed:
         )
         self.strip.begin()
         
-        # Create display matrix (32x40)
+        # Create display matrix (32x48)
         self.display_matrix = np.zeros((config.TOTAL_HEIGHT, config.TOTAL_WIDTH, 3), dtype=np.uint8)
         
         # Create LED to coordinate mapping
@@ -65,7 +65,7 @@ class LEDControllerFixed:
     
     def _led_to_coordinate(self, led_num):
         """
-        Convert LED number to X,Y coordinates for 5 stacked 32x8 matrices.
+        Convert LED number to X,Y coordinates for 6 stacked 32x8 matrices.
         
         Matrix layout (each 32x8 = 256 LEDs):
         Matrix 1: Y 0-7   (LEDs 1-256)   - Left to right serpentine
@@ -73,6 +73,7 @@ class LEDControllerFixed:
         Matrix 3: Y 16-23 (LEDs 513-768) - Left to right serpentine
         Matrix 4: Y 24-31 (LEDs 769-1024)- Right to left serpentine
         Matrix 5: Y 32-39 (LEDs 1025-1280)- Left to right serpentine
+        Matrix 6: Y 40-47 (LEDs 1281-1536)- Right to left serpentine
         """
         
         if led_num < 1 or led_num > config.TOTAL_LEDS:
@@ -80,7 +81,7 @@ class LEDControllerFixed:
         
         # Convert to 0-based and find matrix
         led_index = led_num - 1
-        matrix = led_index // 256  # Which matrix (0-4)
+        matrix = led_index // 256  # Which matrix (0-5)
         pos_in_matrix = led_index % 256  # Position within matrix (0-255)
         
         # Calculate column and row within matrix

@@ -8,12 +8,12 @@ LED_INVERT = False  # Signal inversion
 LED_CHANNEL = 0  # PWM channel
 
 # Display Configuration
-PANELS_COUNT = 5  # Number of LED panels
+PANELS_COUNT = 6  # Number of LED panels (increased from 5 to 6)
 PANEL_WIDTH = 32  # Width of each panel
 PANEL_HEIGHT = 8  # Height of each panel
 TOTAL_WIDTH = PANEL_WIDTH  # 32 pixels (width of each panel)
-TOTAL_HEIGHT = PANELS_COUNT * PANEL_HEIGHT  # 40 pixels (5 panels stacked)
-TOTAL_LEDS = TOTAL_WIDTH * TOTAL_HEIGHT  # 1280 LEDs
+TOTAL_HEIGHT = PANELS_COUNT * PANEL_HEIGHT  # 48 pixels (6 panels stacked)
+TOTAL_LEDS = TOTAL_WIDTH * TOTAL_HEIGHT  # 1536 LEDs
 
 # Display Settings
 BRIGHTNESS = 0.3  # Brightness level (0.0 to 1.0)

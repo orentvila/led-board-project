@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Mushroom Display for LED Board - Fixed Version
-Creates a mushroom image on the 32x40 LED display using the correct mapping
+Creates a mushroom image on the 32x48 LED display using the correct mapping
 """
 
 import time
@@ -14,7 +14,7 @@ class MushroomDisplayFixed:
         """Initialize the mushroom display."""
         self.led = LEDControllerFixed()
         self.width = config.TOTAL_WIDTH  # 32
-        self.height = config.TOTAL_HEIGHT  # 40
+        self.height = config.TOTAL_HEIGHT  # 48
         
         # Mushroom colors
         self.colors = {
@@ -25,11 +25,11 @@ class MushroomDisplayFixed:
         }
     
     def create_mushroom_pattern(self):
-        """Create a mushroom pattern for 32x40 display."""
+        """Create a mushroom pattern for 32x48 display."""
         # Create empty display matrix
         display = np.full((self.height, self.width, 3), self.colors['background'], dtype=np.uint8)
         
-        # Mushroom dimensions (scaled for 32x40 display)
+        # Mushroom dimensions (scaled for 32x48 display)
         # Stem: 12 pixels tall, 8 pixels wide
         # Cap: 18 pixels tall, 24 pixels wide
         

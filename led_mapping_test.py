@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-LED Mapping Test for 32x40 Display
+LED Mapping Test for 32x48 Display
 This script helps determine the correct LED strip mapping
 """
 
@@ -14,7 +14,7 @@ class LEDMappingTest:
         """Initialize the LED mapping test."""
         self.led = LEDController()
         self.width = config.TOTAL_WIDTH  # 32
-        self.height = config.TOTAL_HEIGHT  # 40
+        self.height = config.TOTAL_HEIGHT  # 48
         
     def test_sequential_mapping(self):
         """Test sequential LED mapping (0, 1, 2, 3, ...)."""
@@ -42,9 +42,9 @@ class LEDMappingTest:
         test_positions = [
             (0, 0),      # Top-left
             (31, 0),     # Top-right
-            (0, 39),     # Bottom-left
-            (31, 39),    # Bottom-right
-            (15, 19),    # Center
+            (0, 47),     # Bottom-left
+            (31, 47),    # Bottom-right
+            (15, 23),    # Center
         ]
         
         for x, y in test_positions:
