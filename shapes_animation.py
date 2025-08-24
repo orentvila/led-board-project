@@ -27,8 +27,12 @@ class ShapesAnimation:
         }
         
         # Animation timing
-        self.total_duration = 15.0  # 15 seconds total (5 seconds per shape)
-        self.shape_duration = 5.0   # Each shape shows for 5 seconds
+        self.total_duration = 40.0  # 40 seconds total
+        self.shape_duration = 13.33  # Each shape shows for ~13.33 seconds
+        
+        # Movement parameters
+        self.movement_speed = 2.0  # pixels per second
+        self.shape_size = 8  # Size for all shapes
         
     def safe_set_pixel(self, array, x, y, color):
         """Safely set a pixel if coordinates are within bounds."""
@@ -77,11 +81,31 @@ class ShapesAnimation:
             for x in range(left_edge, right_edge + 1):
                 self.safe_set_pixel(array, x, y, color)
     
+    def calculate_bouncing_position(self, current_time, shape_start_time, direction=1):
+        """Calculate bouncing position for a shape."""
+        # Calculate time since shape started
+        shape_time = current_time - shape_start_time
+        
+        # Calculate position with bouncing
+        distance = shape_time * self.movement_speed
+        
+        # Bounce off edges
+        max_distance = self.width - self.shape_size
+        if max_distance <= 0:
+            max_distance = self.width // 2
+        
+        # Calculate bouncing position
+        position = distance % (2 * max_distance)
+        if position > max_distance:
+            position = 2 * max_distance - position
+        
+        return int(position + self.shape_size // 2)
+    
     def run_animation(self):
         """Run the complete shapes animation."""
-        print("🔴🟢🔵 Shapes Animation 🔴🟢🔵")
-        print("Duration: 15 seconds")
-        print("Sequence: Circle (5s) → Square (5s) → Triangle (5s)")
+        print("🔴🟢🔵 Bouncing Shapes Animation 🔴🟢🔵")
+        print("Duration: 40 seconds")
+        print("Sequence: Circle (13.33s) → Square (13.33s) → Triangle (13.33s)")
         
         start_time = time.time()
         
@@ -94,19 +118,22 @@ class ShapesAnimation:
                 
                 # Determine which shape to show based on time
                 if current_time < self.shape_duration:
-                    # Show circle (0-5 seconds)
-                    self.draw_circle(frame, self.width // 2, self.height // 2, 8, self.colors['circle'])
-                    print(f"Showing circle... ({current_time:.1f}s)")
+                    # Show bouncing circle (0-13.33 seconds)
+                    circle_x = self.calculate_bouncing_position(current_time, 0)
+                    self.draw_circle(frame, circle_x, self.height // 2, self.shape_size, self.colors['circle'])
+                    print(f"Showing bouncing circle at x={circle_x}... ({current_time:.1f}s)")
                     
                 elif current_time < self.shape_duration * 2:
-                    # Show square (5-10 seconds)
-                    self.draw_square(frame, self.width // 2, self.height // 2, 12, self.colors['square'])
-                    print(f"Showing square... ({current_time:.1f}s)")
+                    # Show bouncing square (13.33-26.66 seconds)
+                    square_x = self.calculate_bouncing_position(current_time, self.shape_duration)
+                    self.draw_square(frame, square_x, self.height // 2, self.shape_size, self.colors['square'])
+                    print(f"Showing bouncing square at x={square_x}... ({current_time:.1f}s)")
                     
                 elif current_time < self.shape_duration * 3:
-                    # Show triangle (10-15 seconds)
-                    self.draw_triangle(frame, self.width // 2, self.height // 2, 12, self.colors['triangle'])
-                    print(f"Showing triangle... ({current_time:.1f}s)")
+                    # Show bouncing triangle (26.66-40 seconds)
+                    triangle_x = self.calculate_bouncing_position(current_time, self.shape_duration * 2)
+                    self.draw_triangle(frame, triangle_x, self.height // 2, self.shape_size, self.colors['triangle'])
+                    print(f"Showing bouncing triangle at x={triangle_x}... ({current_time:.1f}s)")
                 
                 # Display the frame
                 for y in range(self.height):
@@ -120,7 +147,7 @@ class ShapesAnimation:
                     print("Shapes animation completed!")
                     break
                 
-                time.sleep(0.1)  # 10 FPS for smooth animation
+                time.sleep(0.05)  # 20 FPS for smooth animation
                 
         except KeyboardInterrupt:
             print("\nShapes animation interrupted by user")
