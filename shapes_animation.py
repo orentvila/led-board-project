@@ -31,8 +31,16 @@ class ShapesAnimation:
         self.shape_duration = 13.33  # Each shape shows for ~13.33 seconds
         
         # Movement parameters
-        self.movement_speed = 2.0  # pixels per second
+        self.movement_speed = 1.5  # pixels per second
         self.shape_size = 8  # Size for all shapes
+        
+        # Movement state for each shape
+        self.circle_dx = 1
+        self.circle_dy = 1
+        self.square_dx = -1
+        self.square_dy = 1
+        self.triangle_dx = 1
+        self.triangle_dy = -1
         
     def safe_set_pixel(self, array, x, y, color):
         """Safely set a pixel if coordinates are within bounds."""
@@ -81,25 +89,83 @@ class ShapesAnimation:
             for x in range(left_edge, right_edge + 1):
                 self.safe_set_pixel(array, x, y, color)
     
-    def calculate_bouncing_position(self, current_time, shape_start_time, direction=1):
-        """Calculate bouncing position for a shape."""
+    def calculate_bouncing_position(self, current_time, shape_start_time, shape_type):
+        """Calculate bouncing position for a shape with realistic edge collision."""
         # Calculate time since shape started
         shape_time = current_time - shape_start_time
         
-        # Calculate position with bouncing
-        distance = shape_time * self.movement_speed
+        # Get current direction for this shape
+        if shape_type == 'circle':
+            dx = self.circle_dx
+            dy = self.circle_dy
+        elif shape_type == 'square':
+            dx = self.square_dx
+            dy = self.square_dy
+        else:  # triangle
+            dx = self.triangle_dx
+            dy = self.triangle_dy
         
-        # Bounce off edges
-        max_distance = self.width - self.shape_size
-        if max_distance <= 0:
-            max_distance = self.width // 2
+        # Calculate new position
+        x_offset = dx * shape_time * self.movement_speed
+        y_offset = dy * shape_time * self.movement_speed
         
-        # Calculate bouncing position
-        position = distance % (2 * max_distance)
-        if position > max_distance:
-            position = 2 * max_distance - position
+        # Start positions (different for each shape to avoid overlap)
+        if shape_type == 'circle':
+            start_x = self.shape_size // 2
+            start_y = self.height // 2
+        elif shape_type == 'square':
+            start_x = self.width - self.shape_size // 2
+            start_y = self.shape_size // 2
+        else:  # triangle
+            start_x = self.shape_size // 2
+            start_y = self.height - self.shape_size // 2
         
-        return int(position + self.shape_size // 2)
+        # Calculate current position
+        x = start_x + x_offset
+        y = start_y + y_offset
+        
+        # Check for edge collisions and bounce
+        x, dx = self.check_edge_collision_x(x, dx, shape_type)
+        y, dy = self.check_edge_collision_y(y, dy, shape_type)
+        
+        # Update direction for this shape
+        if shape_type == 'circle':
+            self.circle_dx = dx
+            self.circle_dy = dy
+        elif shape_type == 'square':
+            self.square_dx = dx
+            self.square_dy = dy
+        else:  # triangle
+            self.triangle_dx = dx
+            self.triangle_dy = dy
+        
+        return int(x), int(y)
+    
+    def check_edge_collision_x(self, x, dx, shape_type):
+        """Check for horizontal edge collision and reverse direction."""
+        # Check left edge
+        if x <= self.shape_size // 2:
+            x = self.shape_size // 2
+            dx = abs(dx)  # Reverse direction
+        # Check right edge
+        elif x >= self.width - self.shape_size // 2:
+            x = self.width - self.shape_size // 2
+            dx = -abs(dx)  # Reverse direction
+        
+        return x, dx
+    
+    def check_edge_collision_y(self, y, dy, shape_type):
+        """Check for vertical edge collision and reverse direction."""
+        # Check top edge
+        if y <= self.shape_size // 2:
+            y = self.shape_size // 2
+            dy = abs(dy)  # Reverse direction
+        # Check bottom edge
+        elif y >= self.height - self.shape_size // 2:
+            y = self.height - self.shape_size // 2
+            dy = -abs(dy)  # Reverse direction
+        
+        return y, dy
     
     def run_animation(self):
         """Run the complete shapes animation."""
@@ -119,21 +185,21 @@ class ShapesAnimation:
                 # Determine which shape to show based on time
                 if current_time < self.shape_duration:
                     # Show bouncing circle (0-13.33 seconds)
-                    circle_x = self.calculate_bouncing_position(current_time, 0)
-                    self.draw_circle(frame, circle_x, self.height // 2, self.shape_size, self.colors['circle'])
-                    print(f"Showing bouncing circle at x={circle_x}... ({current_time:.1f}s)")
+                    circle_x, circle_y = self.calculate_bouncing_position(current_time, 0, 'circle')
+                    self.draw_circle(frame, circle_x, circle_y, self.shape_size, self.colors['circle'])
+                    print(f"Showing bouncing circle at ({circle_x}, {circle_y})... ({current_time:.1f}s)")
                     
                 elif current_time < self.shape_duration * 2:
                     # Show bouncing square (13.33-26.66 seconds)
-                    square_x = self.calculate_bouncing_position(current_time, self.shape_duration)
-                    self.draw_square(frame, square_x, self.height // 2, self.shape_size, self.colors['square'])
-                    print(f"Showing bouncing square at x={square_x}... ({current_time:.1f}s)")
+                    square_x, square_y = self.calculate_bouncing_position(current_time, self.shape_duration, 'square')
+                    self.draw_square(frame, square_x, square_y, self.shape_size, self.colors['square'])
+                    print(f"Showing bouncing square at ({square_x}, {square_y})... ({current_time:.1f}s)")
                     
                 elif current_time < self.shape_duration * 3:
                     # Show bouncing triangle (26.66-40 seconds)
-                    triangle_x = self.calculate_bouncing_position(current_time, self.shape_duration * 2)
-                    self.draw_triangle(frame, triangle_x, self.height // 2, self.shape_size, self.colors['triangle'])
-                    print(f"Showing bouncing triangle at x={triangle_x}... ({current_time:.1f}s)")
+                    triangle_x, triangle_y = self.calculate_bouncing_position(current_time, self.shape_duration * 2, 'triangle')
+                    self.draw_triangle(frame, triangle_x, triangle_y, self.shape_size, self.colors['triangle'])
+                    print(f"Showing bouncing triangle at ({triangle_x}, {triangle_y})... ({current_time:.1f}s)")
                 
                 # Display the frame
                 for y in range(self.height):
