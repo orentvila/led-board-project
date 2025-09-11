@@ -99,10 +99,11 @@ class PortraitTreeAnimation:
             self._draw_pixel(x, config.TOTAL_HEIGHT - 1, self.ground_color)
     
     def _grow_trunk(self, height):
-        """Grow the main trunk to the specified height."""
+        """Grow the main trunk to the specified height (from top to bottom)."""
         center_x = config.TOTAL_WIDTH // 2
         
-        for y in range(config.TOTAL_HEIGHT - 1, config.TOTAL_HEIGHT - 1 - height, -1):
+        # Grow from top to bottom
+        for y in range(height):
             # Draw trunk with varying width
             trunk_width = 3
             if height > 20:  # Make trunk wider at the base
@@ -127,6 +128,51 @@ class PortraitTreeAnimation:
                         self._draw_pixel(leaf_x, leaf_y, self.leaf_color)
                         self.leaves.add((leaf_x, leaf_y))
     
+    def _create_branches(self, height):
+        """Create many green branches from the trunk."""
+        center_x = config.TOTAL_WIDTH // 2
+        
+        # Create branches at multiple heights
+        for branch_y in range(2, height, 3):  # Every 3 pixels
+            if branch_y < height - 2:  # Don't create branches too close to the top
+                # Left branches
+                if random.random() < 0.6:  # 60% chance for left branch
+                    branch_length = random.randint(2, 4)
+                    for i in range(branch_length):
+                        x = center_x - 1 - i
+                        y = branch_y
+                        if 0 <= x < config.TOTAL_WIDTH and 0 <= y < config.TOTAL_HEIGHT:
+                            self._draw_pixel(x, y, self.leaf_color)
+                            self.leaves.add((x, y))
+                
+                # Right branches
+                if random.random() < 0.6:  # 60% chance for right branch
+                    branch_length = random.randint(2, 4)
+                    for i in range(branch_length):
+                        x = center_x + 1 + i
+                        y = branch_y
+                        if 0 <= x < config.TOTAL_WIDTH and 0 <= y < config.TOTAL_HEIGHT:
+                            self._draw_pixel(x, y, self.leaf_color)
+                            self.leaves.add((x, y))
+                
+                # Diagonal branches
+                if random.random() < 0.4:  # 40% chance for diagonal branches
+                    # Left diagonal
+                    for i in range(2):
+                        x = center_x - 1 - i
+                        y = branch_y + i
+                        if 0 <= x < config.TOTAL_WIDTH and 0 <= y < config.TOTAL_HEIGHT:
+                            self._draw_pixel(x, y, self.leaf_color)
+                            self.leaves.add((x, y))
+                    
+                    # Right diagonal
+                    for i in range(2):
+                        x = center_x + 1 + i
+                        y = branch_y + i
+                        if 0 <= x < config.TOTAL_WIDTH and 0 <= y < config.TOTAL_HEIGHT:
+                            self._draw_pixel(x, y, self.leaf_color)
+                            self.leaves.add((x, y))
+    
     def _add_random_leaves(self):
         """Add random leaves to the tree."""
         if len(self.tree_pixels) > 0:
@@ -147,7 +193,7 @@ class PortraitTreeAnimation:
         self.led.show()
         time.sleep(0.5)
         
-        # Grow the tree step by step
+        # Grow the tree step by step (from top to bottom)
         for height in range(1, self.max_height + 1):
             if not self.running:
                 break
@@ -156,13 +202,16 @@ class PortraitTreeAnimation:
             self.led.clear()
             self._draw_ground()
             
-            # Grow trunk to current height
+            # Grow trunk to current height (from top to bottom)
             self._grow_trunk(height)
+            
+            # Create many green branches
+            self._create_branches(height)
             
             # Add leaves at the top
             if height > 3:
                 center_x = config.TOTAL_WIDTH // 2
-                top_y = config.TOTAL_HEIGHT - 1 - height
+                top_y = height - 1  # Top of the growing tree
                 self._create_leaves(center_x, top_y, size=2)
             
             # Add random leaves
@@ -172,14 +221,17 @@ class PortraitTreeAnimation:
             self.led.show()
             time.sleep(self.growth_speed)
         
-        # Final flourish - add more leaves
-        print("🌳 Tree growth complete! Adding final leaves...")
-        for _ in range(10):
+        # Final flourish - add more branches and leaves
+        print("🌳 Tree growth complete! Adding final branches and leaves...")
+        for _ in range(15):  # More iterations for more branches
             if not self.running:
                 break
+            # Add more branches
+            self._create_branches(self.max_height)
+            # Add random leaves
             self._add_random_leaves()
             self.led.show()
-            time.sleep(0.2)
+            time.sleep(0.15)
         
         # Keep the final tree displayed for a moment
         if self.running:
@@ -189,6 +241,7 @@ class PortraitTreeAnimation:
     def run_animation(self, duration=None):
         """Run the tree growing animation."""
         print("🌱 Starting Portrait Tree Animation...")
+        print("🌳 Tree grows from TOP to BOTTOM with many green branches!")
         print(f"📏 Display size: {config.TOTAL_WIDTH}x{config.TOTAL_HEIGHT}")
         print(f"🌳 Max tree height: {self.max_height}")
         
