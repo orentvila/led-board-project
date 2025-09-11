@@ -11,6 +11,7 @@ import threading
 from led_controller import LEDController
 from display_patterns import DisplayPatterns
 from button_controller import ButtonController
+from squares_animation import SquaresAnimation
 import config
 
 class LEDDisplayApp:
@@ -18,6 +19,7 @@ class LEDDisplayApp:
         """Initialize the LED display application."""
         self.led = LEDController()
         self.patterns = DisplayPatterns(self.led)
+        self.squares_animation = SquaresAnimation(self.led)
         self.button_controller = ButtonController()
         self.current_pattern = None
         self.running = True
@@ -34,7 +36,7 @@ class LEDDisplayApp:
         self.button_controller.register_callback(0, self.start_rainbow_pattern)
         self.button_controller.register_callback(1, self.start_wave_pattern)
         self.button_controller.register_callback(2, self.start_text_scroll)
-        self.button_controller.register_callback(3, self.start_fire_effect)
+        self.button_controller.register_callback(3, self.start_squares_animation)
     
     def signal_handler(self, signum, frame):
         """Handle shutdown signals."""
@@ -72,11 +74,11 @@ class LEDDisplayApp:
         self.current_pattern.daemon = True
         self.current_pattern.start()
     
-    def start_fire_effect(self):
-        """Start fire effect pattern."""
-        print("Starting fire effect")
+    def start_squares_animation(self):
+        """Start squares animation pattern."""
+        print("Starting squares animation")
         self.stop_current_pattern()
-        self.current_pattern = threading.Thread(target=self.patterns.fire_effect)
+        self.current_pattern = threading.Thread(target=self.squares_animation.run_animation)
         self.current_pattern.daemon = True
         self.current_pattern.start()
     
@@ -84,6 +86,7 @@ class LEDDisplayApp:
         """Stop the currently running pattern."""
         if self.current_pattern and self.current_pattern.is_alive():
             self.patterns.stop()
+            self.squares_animation.stop()
             self.current_pattern.join(timeout=1.0)
     
     def demo_sequence(self):
@@ -112,6 +115,10 @@ class LEDDisplayApp:
         print("Demo 4: Text scroll")
         self.patterns.scrolling_text("MUSHROOM LED DISPLAY", config.COLORS['WHITE'], duration=3)
         
+        # Demo 5: Squares animation
+        print("Demo 5: Squares animation")
+        self.squares_animation.run_animation()
+        
         print("Demo sequence completed!")
     
     def run(self):
@@ -137,7 +144,7 @@ class LEDDisplayApp:
         print("  Button 1: Rainbow pattern")
         print("  Button 2: Wave pattern")
         print("  Button 3: Text scroll")
-        print("  Button 4: Fire effect")
+        print("  Button 4: Squares animation")
         
         try:
             while self.running:
