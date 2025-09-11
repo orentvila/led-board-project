@@ -80,11 +80,17 @@ class MainAnimationController:
     def _run_animation(self, script_name):
         """Run a specific animation script."""
         try:
-            script_path = os.path.join(os.getcwd(), self.scripts_folder, script_name)
-            cmd = ['sudo', './venv/bin/python', script_path]
+            # Use the wrapper script to handle imports correctly
+            wrapper_path = os.path.join(os.getcwd(), 'run_animation_wrapper.py')
+            cmd = ['sudo', './venv/bin/python', wrapper_path, script_name]
             
             print(f"▶️  Running: {' '.join(cmd)}")
-            self.current_process = subprocess.Popen(cmd)
+            
+            # Run the wrapper script
+            self.current_process = subprocess.Popen(
+                cmd,
+                cwd=os.getcwd()  # Run from project root
+            )
             
             # Wait for the process to complete
             self.current_process.wait()
