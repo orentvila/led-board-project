@@ -20,38 +20,32 @@ class RandomAnimationController:
         self.running = True
         self.current_process = None
         
-        # List of available animation scripts
-        self.animation_scripts = [
-            'squares_animation.py',
-            'star_animation.py',
-            'shapes_animation.py',
-            'bubbles_animation.py',
-            'calming_ambient_animation.py',
-            'car_driving_animation.py',
-            'shark_animation.py',
-            'ship_sailing_animation.py',
-            'saturn_animation.py',
-            'music_instruments_animation.py',
-            'gravity_bend_animation.py',
-            'dudi_paddleboarding_animation.py',
-            'black_hole_animation.py',
-            'big_shapes_animation.py',
-            'animal_sequence_animation.py',
-            'tree_growing_animation.py',
-            'tree_growth_animation.py'
-        ]
+        # Get list of available animation scripts from scripts folder
+        self.scripts_folder = 'scripts'
+        self.animation_scripts = self._get_animation_scripts()
         
         # Setup signal handlers for graceful shutdown
         signal.signal(signal.SIGINT, self.signal_handler)
         signal.signal(signal.SIGTERM, self.signal_handler)
         
         # Register button callback for GPIO 18 (button 1)
+        # Note: Button 1 is on GPIO 18 according to config.BUTTON_PINS[1]
         self.button_controller.register_callback(1, self.start_random_animation)
         
         print("Random Animation Controller Started")
         print(f"Available animations: {len(self.animation_scripts)}")
         print("Press button on GPIO 18 to start random animation")
         print("Press Ctrl+C to exit")
+    
+    def _get_animation_scripts(self):
+        """Get list of animation scripts from the scripts folder."""
+        scripts = []
+        if os.path.exists(self.scripts_folder):
+            for file in os.listdir(self.scripts_folder):
+                if file.endswith('_animation.py'):
+                    scripts.append(file)
+        scripts.sort()  # Sort alphabetically for consistent ordering
+        return scripts
     
     def signal_handler(self, signum, frame):
         """Handle shutdown signals."""
@@ -70,7 +64,7 @@ class RandomAnimationController:
         
         # Run the animation script
         try:
-            script_path = os.path.join(os.getcwd(), selected_script)
+            script_path = os.path.join(os.getcwd(), self.scripts_folder, selected_script)
             cmd = ['sudo', './venv/bin/python', script_path]
             
             print(f"Running: {' '.join(cmd)}")
