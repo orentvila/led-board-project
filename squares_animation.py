@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Squares Animation for LED Display
-Splits the screen into 18 squares (6 rows × 3 columns) and shows each square
+Splits the screen into 24 squares (6 rows × 4 columns) and shows each square
 with a different soft color for 2 seconds, appearing randomly.
 """
 
@@ -18,19 +18,19 @@ class SquaresAnimation:
         self.running = False
         
         # Calculate square dimensions
-        self.squares_per_row = 3
+        self.squares_per_row = 4
         self.squares_per_col = 6
-        self.total_squares = self.squares_per_row * self.squares_per_col  # 18 squares
+        self.total_squares = self.squares_per_row * self.squares_per_col  # 24 squares
         
         # Calculate pixel dimensions for each square
-        self.square_width = config.TOTAL_WIDTH // self.squares_per_row  # 32 // 3 = 10 pixels
+        self.square_width = config.TOTAL_WIDTH // self.squares_per_row  # 32 // 4 = 8 pixels
         self.square_height = config.TOTAL_HEIGHT // self.squares_per_col  # 48 // 6 = 8 pixels
         
-        # Generate 18 soft colors
+        # Generate 24 soft colors
         self.soft_colors = self._generate_soft_colors()
         
     def _generate_soft_colors(self):
-        """Generate 18 different soft colors."""
+        """Generate 24 different soft colors."""
         colors = []
         
         # Base colors for soft variations
@@ -53,6 +53,12 @@ class SquaresAnimation:
             (255, 180, 200),  # Soft rose
             (200, 255, 180),  # Soft spring green
             (180, 200, 255),  # Soft periwinkle
+            (240, 200, 200),  # Soft coral
+            (200, 240, 200),  # Soft sage
+            (200, 200, 240),  # Soft powder blue
+            (240, 240, 200),  # Soft cream
+            (240, 200, 240),  # Soft orchid
+            (200, 240, 240),  # Soft aqua
         ]
         
         return base_colors
