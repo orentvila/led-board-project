@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Portrait Tree Animation for LED Display
-Simple tree growing animation in portrait orientation (32x48)
+Tree growing animation in portrait orientation (32x48) for real LED display
 """
 
 import time
@@ -13,96 +13,215 @@ import os
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, project_root)
 
-def main():
-    """Run the portrait tree animation."""
-    print("🌱 Starting Portrait Tree Animation...")
-    print("📏 Display size: 32x48 pixels")
-    print("🌳 Tree growing from bottom to top...")
+# Try to import LED controller
+try:
+    from led_controller import LEDController
+    import config
+    LED_AVAILABLE = True
+    print("✅ LED controller available")
+except ImportError:
+    print("⚠️  LED controller not available - using mock display")
+    LED_AVAILABLE = False
     
-    # Animation settings
-    max_height = 46  # Leave space for ground
-    growth_speed = 0.2
+    # Mock configuration
+    class MockConfig:
+        TOTAL_WIDTH = 32
+        TOTAL_HEIGHT = 48
     
-    # Colors (RGB)
-    trunk_color = (139, 69, 19)  # Brown
-    leaf_color = (34, 139, 34)   # Green
-    ground_color = (34, 139, 34) # Green
+    config = MockConfig()
     
-    # Simulate the animation
-    for height in range(1, max_height + 1):
-        print(f"\n🌳 Growing tree... Height: {height}/{max_height}")
+    # Mock LED controller
+    class MockLEDController:
+        def __init__(self):
+            self.pixels = [[(0, 0, 0) for _ in range(config.TOTAL_WIDTH)] for _ in range(config.TOTAL_HEIGHT)]
         
-        # Simulate tree growth
-        center_x = 16  # Center of 32-pixel width
+        def set_pixel(self, x, y, color):
+            if 0 <= x < config.TOTAL_WIDTH and 0 <= y < config.TOTAL_HEIGHT:
+                self.pixels[y][x] = color
         
-        # Draw trunk (3 pixels wide)
-        trunk_width = 3
-        if height > 20:
-            trunk_width = 5  # Wider at base
+        def clear(self):
+            for y in range(config.TOTAL_HEIGHT):
+                for x in range(config.TOTAL_WIDTH):
+                    self.pixels[y][x] = (0, 0, 0)
+        
+        def show(self):
+            # Print a simple ASCII representation
+            print("\n" + "="*50)
+            for y in range(config.TOTAL_HEIGHT):
+                line = ""
+                for x in range(config.TOTAL_WIDTH):
+                    pixel = self.pixels[y][x]
+                    if pixel == (0, 0, 0):  # Black
+                        line += " "
+                    elif pixel == (139, 69, 19):  # Brown (trunk)
+                        line += "█"
+                    elif pixel == (34, 139, 34):  # Green (leaves/ground)
+                        line += "●"
+                    else:
+                        line += "·"
+                print(line)
+            print("="*50)
+        
+        def cleanup(self):
+            pass
+
+class PortraitTreeAnimation:
+    def __init__(self):
+        """Initialize the portrait tree animation."""
+        if LED_AVAILABLE:
+            self.led = LEDController()
+        else:
+            self.led = MockLEDController()
+        self.running = False
+        
+        # Animation settings
+        self.max_height = config.TOTAL_HEIGHT - 2  # Leave space for ground
+        self.growth_speed = 0.3  # seconds between growth steps
+        
+        # Colors (RGB)
+        self.trunk_color = (139, 69, 19)  # Brown
+        self.leaf_color = (34, 139, 34)   # Green
+        self.ground_color = (34, 139, 34) # Green
+        self.black_color = (0, 0, 0)      # Black
+        
+        # Tree structure
+        self.tree_pixels = set()  # Set of (x, y) coordinates for tree
+        self.leaves = set()  # Set of (x, y) coordinates for leaves
+        
+    def _draw_pixel(self, x, y, color):
+        """Draw a pixel if it's within bounds."""
+        if 0 <= x < config.TOTAL_WIDTH and 0 <= y < config.TOTAL_HEIGHT:
+            self.led.set_pixel(x, y, color)
+    
+    def _draw_ground(self):
+        """Draw the ground at the bottom."""
+        for x in range(config.TOTAL_WIDTH):
+            self._draw_pixel(x, config.TOTAL_HEIGHT - 1, self.ground_color)
+    
+    def _grow_trunk(self, height):
+        """Grow the main trunk to the specified height."""
+        center_x = config.TOTAL_WIDTH // 2
+        
+        for y in range(config.TOTAL_HEIGHT - 1, config.TOTAL_HEIGHT - 1 - height, -1):
+            # Draw trunk with varying width
+            trunk_width = 3
+            if height > 20:  # Make trunk wider at the base
+                trunk_width = 5
+            
+            for dx in range(-trunk_width//2, trunk_width//2 + 1):
+                x = center_x + dx
+                if 0 <= x < config.TOTAL_WIDTH:
+                    self._draw_pixel(x, y, self.trunk_color)
+                    self.tree_pixels.add((x, y))
+    
+    def _create_leaves(self, x, y, size=2):
+        """Create leaves around a position."""
+        for dx in range(-size, size + 1):
+            for dy in range(-size, size + 1):
+                if abs(dx) + abs(dy) <= size:  # Diamond shape
+                    leaf_x = x + dx
+                    leaf_y = y + dy
+                    if (0 <= leaf_x < config.TOTAL_WIDTH and 
+                        0 <= leaf_y < config.TOTAL_HEIGHT and
+                        (leaf_x, leaf_y) not in self.tree_pixels):
+                        self._draw_pixel(leaf_x, leaf_y, self.leaf_color)
+                        self.leaves.add((leaf_x, leaf_y))
+    
+    def _add_random_leaves(self):
+        """Add random leaves to the tree."""
+        if len(self.tree_pixels) > 0:
+            # Pick a random tree pixel and add leaves nearby
+            tree_pixel = random.choice(list(self.tree_pixels))
+            if random.random() < 0.3:  # 30% chance
+                self._create_leaves(tree_pixel[0], tree_pixel[1], size=1)
+    
+    def _animate_growth(self):
+        """Animate the tree growing."""
+        self.running = True
+        
+        # Clear display
+        self.led.clear()
         
         # Draw ground
-        print("Ground: " + "█" * 32)
+        self._draw_ground()
+        self.led.show()
+        time.sleep(0.5)
         
-        # Draw tree
-        for y in range(max_height - height, max_height):
-            line = " " * 32
-            if y == max_height - 1:  # Ground
-                line = "█" * 32
-            else:
-                # Trunk
-                start_x = center_x - trunk_width // 2
-                end_x = center_x + trunk_width // 2
-                for x in range(start_x, end_x + 1):
-                    if 0 <= x < 32:
-                        line = line[:x] + "█" + line[x+1:]
-                
-                # Add leaves at the top
-                if y == max_height - height and height > 3:
-                    # Add leaves around the trunk
-                    for dx in range(-2, 3):
-                        for dy in range(-2, 3):
-                            if abs(dx) + abs(dy) <= 2:  # Diamond shape
-                                leaf_x = center_x + dx
-                                if 0 <= leaf_x < 32:
-                                    line = line[:leaf_x] + "●" + line[leaf_x+1:]
+        # Grow the tree step by step
+        for height in range(1, self.max_height + 1):
+            if not self.running:
+                break
             
-            print(f"Row {y:2d}: {line}")
-        
-        time.sleep(growth_speed)
-    
-    # Final tree
-    print("\n🌳 Final Tree Display:")
-    print("=" * 50)
-    
-    # Draw the complete tree
-    for y in range(max_height):
-        line = " " * 32
-        if y == max_height - 1:  # Ground
-            line = "█" * 32
-        else:
-            # Trunk
-            center_x = 16
-            trunk_width = 5
-            start_x = center_x - trunk_width // 2
-            end_x = center_x + trunk_width // 2
-            for x in range(start_x, end_x + 1):
-                if 0 <= x < 32:
-                    line = line[:x] + "█" + line[x+1:]
+            # Clear previous frame
+            self.led.clear()
+            self._draw_ground()
             
-            # Add leaves
-            if y < max_height - 10:  # Add leaves to upper part
-                for dx in range(-3, 4):
-                    for dy in range(-3, 4):
-                        if abs(dx) + abs(dy) <= 3:
-                            leaf_x = center_x + dx
-                            if 0 <= leaf_x < 32 and random.random() < 0.3:
-                                line = line[:leaf_x] + "●" + line[leaf_x+1:]
+            # Grow trunk to current height
+            self._grow_trunk(height)
+            
+            # Add leaves at the top
+            if height > 3:
+                center_x = config.TOTAL_WIDTH // 2
+                top_y = config.TOTAL_HEIGHT - 1 - height
+                self._create_leaves(center_x, top_y, size=2)
+            
+            # Add random leaves
+            self._add_random_leaves()
+            
+            # Show the current state
+            self.led.show()
+            time.sleep(self.growth_speed)
         
-        print(f"Row {y:2d}: {line}")
+        # Final flourish - add more leaves
+        print("🌳 Tree growth complete! Adding final leaves...")
+        for _ in range(10):
+            if not self.running:
+                break
+            self._add_random_leaves()
+            self.led.show()
+            time.sleep(0.2)
+        
+        # Keep the final tree displayed for a moment
+        if self.running:
+            print("🌳 Final tree display...")
+            time.sleep(3)
     
-    print("=" * 50)
-    print("🌳 Tree growth animation completed!")
-    print("✨ Portrait tree animation finished!")
+    def run_animation(self, duration=None):
+        """Run the tree growing animation."""
+        print("🌱 Starting Portrait Tree Animation...")
+        print(f"📏 Display size: {config.TOTAL_WIDTH}x{config.TOTAL_HEIGHT}")
+        print(f"🌳 Max tree height: {self.max_height}")
+        
+        try:
+            self._animate_growth()
+        except KeyboardInterrupt:
+            print("\n🛑 Animation stopped by user")
+        except Exception as e:
+            print(f"❌ Animation error: {e}")
+        finally:
+            self.running = False
+            print("🌳 Tree growth animation completed!")
+    
+    def stop(self):
+        """Stop the animation."""
+        self.running = False
+    
+    def cleanup(self):
+        """Clean up resources."""
+        self.led.cleanup()
+
+def main():
+    """Run the portrait tree animation."""
+    try:
+        # Create and run the animation
+        animation = PortraitTreeAnimation()
+        animation.run_animation()
+        animation.cleanup()
+        
+    except KeyboardInterrupt:
+        print("\nAnimation stopped by user")
+    except Exception as e:
+        print(f"Error: {e}")
 
 if __name__ == "__main__":
     main()
