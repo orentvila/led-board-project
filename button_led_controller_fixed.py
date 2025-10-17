@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Main program for 4-button LED controller
+Fixed main program for 4-button LED controller
 Handles random plan changes when any button is clicked
 """
 
@@ -91,7 +91,7 @@ class ButtonLEDController:
     def start_wave_pattern(self):
         """Start color wave pattern."""
         print("🌊 Running wave pattern...")
-        colors = [config.COLORS['BLUE'], [config.COLORS['GREEN']], [config.COLORS['RED']]]
+        colors = [config.COLORS['BLUE'], config.COLORS['GREEN'], config.COLORS['RED']]
         color = random.choice(colors)
         self.patterns.color_wave(color)
     
@@ -112,9 +112,13 @@ class ButtonLEDController:
     def start_squares_animation(self):
         """Start squares animation pattern."""
         print("⬜ Running squares animation...")
-        from scripts.squares_animation import SquaresAnimation
-        squares = SquaresAnimation(self.led)
-        squares.run_animation()
+        try:
+            from scripts.squares_animation import SquaresAnimation
+            squares = SquaresAnimation(self.led)
+            squares.run_animation()
+        except ImportError:
+            print("⚠️ Squares animation not available, using color cycle instead")
+            self.start_color_cycle()
     
     def start_panel_sequence(self):
         """Start panel sequence animation."""
@@ -198,6 +202,8 @@ def main():
         app.run()
     except Exception as e:
         print(f"❌ Error: {e}")
+        import traceback
+        traceback.print_exc()
         sys.exit(1)
 
 if __name__ == "__main__":
