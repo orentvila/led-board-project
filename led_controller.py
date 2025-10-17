@@ -74,7 +74,12 @@ class LEDController:
     
     def fill_display(self, color):
         """Fill the entire display with a color."""
-        self.display_matrix.fill(color)
+        # Fill the display matrix with the color
+        for y in range(config.TOTAL_HEIGHT):
+            for x in range(config.TOTAL_WIDTH):
+                self.display_matrix[y, x] = color
+        
+        # Update the physical LEDs
         for i in range(config.TOTAL_LEDS):
             # Use setPixelColorRGB method which is more reliable
             r, g, b = int(color[0]), int(color[1]), int(color[2])
