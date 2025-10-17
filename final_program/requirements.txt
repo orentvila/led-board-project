@@ -1,0 +1,4 @@
+# Requirements for Final LED Program
+pygame>=2.0.0
+numpy>=1.20.0
+rpi_ws281x>=4.0.0
