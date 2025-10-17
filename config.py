@@ -24,7 +24,7 @@ DEFAULT_FPS = 30  # Default frames per second
 ANIMATION_SPEED = 0.1  # Animation speed multiplier
 
 # Button Configuration (Future Implementation)
-BUTTON_PINS = [17, 18, 27, 22]  # GPIO pins for 4 buttons
+BUTTON_PINS = [18, 17, 27, 22]  # GPIO pins for 4 buttons
 BUTTON_DEBOUNCE_TIME = 0.2  # Button debounce time in seconds
 
 # Color Definitions
