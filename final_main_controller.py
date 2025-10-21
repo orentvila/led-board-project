@@ -132,8 +132,22 @@ class FinalMainController:
         animation_class = animation_info['class']
         animation = animation_class()  # SaturnAnimation doesn't take LED controller parameter
         
+        # Get the correct method name for each animation
+        if animation_class.__name__ == 'SaturnAnimation':
+            method_name = 'display_saturn_animation'
+        elif animation_class.__name__ == 'SharkAnimation':
+            method_name = 'display_shark_animation'
+        elif animation_class.__name__ == 'StarAnimation':
+            method_name = 'display_star_animation'
+        elif animation_class.__name__ == 'BubblesAnimation':
+            method_name = 'run_animation'
+        else:
+            method_name = 'run_animation'  # fallback
+        
+        animation_method = getattr(animation, method_name)
+        
         self.current_animation = threading.Thread(
-            target=animation.run,
+            target=animation_method,
             args=(30,)  # 30 seconds duration
         )
         self.current_animation.daemon = True
