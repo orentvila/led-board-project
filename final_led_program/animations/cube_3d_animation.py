@@ -161,7 +161,7 @@ class Cube3DAnimation(BaseAnimation):
         xs = [v[0] for v in face_vertices]
         ys = [v[1] for v in face_vertices]
         
-        min_x, max_x = int(min(xs), int(max(xs))
+        min_x, max_x = int(min(xs)), int(max(xs))
         min_y, max_y = int(min(ys)), int(max(ys))
         
         # Fill the polygon
