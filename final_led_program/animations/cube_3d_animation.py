@@ -128,7 +128,32 @@ class Cube3DAnimation(BaseAnimation):
         x1, y1 = p1
         x2, y2 = p2
         
-        # Simple line drawing algorithm
+        # Handle edge cases
+        if x1 == x2 and y1 == y2:
+            # Single point
+            if 0 <= x1 < self.width and 0 <= y1 < self.height:
+                frame[y1, x1] = color
+            return
+        
+        if x1 == x2:
+            # Vertical line
+            if y1 > y2:
+                y1, y2 = y2, y1
+            for y in range(y1, y2 + 1):
+                if 0 <= x1 < self.width and 0 <= y < self.height:
+                    frame[y, x1] = color
+            return
+        
+        if y1 == y2:
+            # Horizontal line
+            if x1 > x2:
+                x1, x2 = x2, x1
+            for x in range(x1, x2 + 1):
+                if 0 <= x < self.width and 0 <= y1 < self.height:
+                    frame[y1, x] = color
+            return
+        
+        # General line drawing algorithm
         dx = abs(x2 - x1)
         dy = abs(y2 - y1)
         
