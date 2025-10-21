@@ -20,6 +20,9 @@ import config
 
 # Import theme animations from scripts directory
 from scripts.saturn_animation import SaturnAnimation
+from scripts.shark_animation import SharkAnimation
+from scripts.star_animation import StarAnimation
+from scripts.bubbles_animation import BubblesAnimation
 
 class FinalMainController:
     def __init__(self):
@@ -44,22 +47,28 @@ class FinalMainController:
             0: {  # Pin 18 - Shapes
                 'name': 'Shapes',
                 'animations': [
-                    {'name': 'Saturn', 'class': SaturnAnimation, 'audio': 'saturn_theme.wav'}
+                    {'name': 'Saturn', 'class': SaturnAnimation, 'audio': 'saturn_theme.wav'},
+                    {'name': 'Stars', 'class': StarAnimation, 'audio': 'star_theme.wav'}
                 ]
             },
             1: {  # Pin 17 - Animals
                 'name': 'Animals',
                 'animations': [
-                    # Will add animal animations here
+                    {'name': 'Shark', 'class': SharkAnimation, 'audio': 'shark_theme.wav'}
                 ]
             },
-            2: {  # Pin 27 - Future theme
-                'name': 'Theme 3',
-                'animations': []
+            2: {  # Pin 27 - Nature
+                'name': 'Nature',
+                'animations': [
+                    {'name': 'Bubbles', 'class': BubblesAnimation, 'audio': 'bubbles_theme.wav'}
+                ]
             },
-            3: {  # Pin 22 - Future theme
-                'name': 'Theme 4',
-                'animations': []
+            3: {  # Pin 22 - Space
+                'name': 'Space',
+                'animations': [
+                    {'name': 'Saturn', 'class': SaturnAnimation, 'audio': 'saturn_theme.wav'},
+                    {'name': 'Stars', 'class': StarAnimation, 'audio': 'star_theme.wav'}
+                ]
             }
         }
         
@@ -121,7 +130,7 @@ class FinalMainController:
         
         # Start animation in separate thread
         animation_class = animation_info['class']
-        animation = animation_class(self.led)
+        animation = animation_class()  # SaturnAnimation doesn't take LED controller parameter
         
         self.current_animation = threading.Thread(
             target=animation.run,
