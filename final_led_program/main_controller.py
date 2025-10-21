@@ -23,6 +23,7 @@ import config
 from animations.saturn_animation import SaturnAnimation
 from animations.star_animation import StarAnimation
 from animations.bubbles_animation import BubblesAnimation
+from animations.cube_3d_animation import Cube3DAnimation
 
 class FinalLEDController:
     def __init__(self):
@@ -44,11 +45,11 @@ class FinalLEDController:
         
         # Theme configurations
         self.themes = {
-            0: {  # Pin 18 - Space
-                'name': 'Space',
+            0: {  # Pin 18 - Shapes
+                'name': 'Shapes',
                 'animations': [
-                    {'name': 'Saturn', 'class': SaturnAnimation, 'audio': 'saturn_theme.wav'},
-                    {'name': 'Stars', 'class': StarAnimation, 'audio': 'star_theme.wav'}
+                    {'name': '3D Cube', 'class': Cube3DAnimation, 'audio': 'cube_theme.wav'},
+                    {'name': 'Saturn', 'class': SaturnAnimation, 'audio': 'saturn_theme.wav'}
                 ]
             },
             1: {  # Pin 17 - Nature
@@ -57,9 +58,11 @@ class FinalLEDController:
                     {'name': 'Bubbles', 'class': BubblesAnimation, 'audio': 'bubbles_theme.wav'}
                 ]
             },
-            2: {  # Pin 27 - Future theme
-                'name': 'Theme 3',
-                'animations': []
+            2: {  # Pin 27 - Space
+                'name': 'Space',
+                'animations': [
+                    {'name': 'Stars', 'class': StarAnimation, 'audio': 'star_theme.wav'}
+                ]
             },
             3: {  # Pin 22 - Future theme
                 'name': 'Theme 4',
