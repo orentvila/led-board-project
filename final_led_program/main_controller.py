@@ -20,10 +20,10 @@ from led_controller import LEDController
 import config
 
 # Import animations
-from animations.saturn_animation import SaturnAnimation
-from animations.star_animation import StarAnimation
+from animations.rainbow_animation import RainbowAnimation
+from animations.fire_animation import FireAnimation
+from animations.spiral_animation import SpiralAnimation
 from animations.bubbles_animation import BubblesAnimation
-from animations.waves_animation import WavesAnimation
 
 class FinalLEDController:
     def __init__(self):
@@ -45,11 +45,11 @@ class FinalLEDController:
         
         # Theme configurations
         self.themes = {
-            0: {  # Pin 18 - Shapes
-                'name': 'Shapes',
+            0: {  # Pin 18 - Colors
+                'name': 'Colors',
                 'animations': [
-                    {'name': 'Waves', 'class': WavesAnimation, 'audio': 'waves_theme.wav'},
-                    {'name': 'Saturn', 'class': SaturnAnimation, 'audio': 'saturn_theme.wav'}
+                    {'name': 'Rainbow', 'class': RainbowAnimation, 'audio': 'rainbow_theme.wav'},
+                    {'name': 'Fire', 'class': FireAnimation, 'audio': 'fire_theme.wav'}
                 ]
             },
             1: {  # Pin 17 - Nature
@@ -58,10 +58,10 @@ class FinalLEDController:
                     {'name': 'Bubbles', 'class': BubblesAnimation, 'audio': 'bubbles_theme.wav'}
                 ]
             },
-            2: {  # Pin 27 - Space
-                'name': 'Space',
+            2: {  # Pin 27 - Shapes
+                'name': 'Shapes',
                 'animations': [
-                    {'name': 'Stars', 'class': StarAnimation, 'audio': 'star_theme.wav'}
+                    {'name': 'Spiral', 'class': SpiralAnimation, 'audio': 'spiral_theme.wav'}
                 ]
             },
             3: {  # Pin 22 - Future theme
