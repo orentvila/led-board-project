@@ -17,14 +17,14 @@ class LEDControllerExact:
         """Initialize the LED controller with exact mapping."""
         self.led = LEDControllerFixed()
         self.width = config.TOTAL_WIDTH  # 32
-        self.height = config.TOTAL_HEIGHT  # 40
+        self.height = 48  # 6 panels × 8 rows = 48
         
         # Build coordinate mapping dictionaries
         self.led_to_coord_map = {}
         self.coord_to_led_map = {}
         
-        # Create mapping for all 1280 LEDs
-        for led_num in range(1, 1281):
+        # Create mapping for all 1536 LEDs
+        for led_num in range(1, 1537):
             x, y = self.led_to_coordinate(led_num)
             if x is not None and y is not None:
                 # Convert to our coordinate system (0-based, positive coordinates)
@@ -39,7 +39,7 @@ class LEDControllerExact:
     
     def led_to_coordinate(self, led_num):
         """
-        Convert LED number to X,Y coordinates for 5 stacked 32x8 matrices.
+        Convert LED number to X,Y coordinates for 6 stacked 32x8 matrices.
         
         Matrix layout (each 32x8 = 256 LEDs):
         Matrix 1: Y 0-7   (LEDs 1-256)   - Left to right serpentine
@@ -47,14 +47,15 @@ class LEDControllerExact:
         Matrix 3: Y 16-23 (LEDs 513-768) - Left to right serpentine
         Matrix 4: Y 24-31 (LEDs 769-1024)- Right to left serpentine
         Matrix 5: Y 32-39 (LEDs 1025-1280)- Left to right serpentine
+        Matrix 6: Y 40-47 (LEDs 1281-1536)- Right to left serpentine
         """
         
-        if led_num < 1 or led_num > 1280:
+        if led_num < 1 or led_num > 1536:
             return None, None
         
         # Convert to 0-based and find matrix
         led_index = led_num - 1
-        matrix = led_index // 256  # Which matrix (0-4)
+        matrix = led_index // 256  # Which matrix (0-5)
         pos_in_matrix = led_index % 256  # Position within matrix (0-255)
         
         # Calculate column and row within matrix
@@ -66,7 +67,7 @@ class LEDControllerExact:
             else:  # Odd columns: top to bottom
                 row_in_matrix = 7 - (pos_in_matrix % 8)
             col = col_in_matrix
-        else:  # Matrices 2,4: Right-to-left serpentine
+        else:  # Matrices 2,4,6: Right-to-left serpentine
             col = 31 - int(pos_in_matrix/8)
             
             if (col%2 ==0):
@@ -98,7 +99,7 @@ class LEDControllerExact:
     def fill_display(self, color):
         """Fill the entire display with the specified color."""
         r, g, b = color
-        for led_num in range(1, 1281):
+        for led_num in range(1, 1537):
             self.led.strip.setPixelColorRGB(led_num - 1, r, g, b)  # Convert to 0-based LED index
     
     def clear(self):
@@ -118,7 +119,7 @@ class LEDControllerExact:
         print("Testing LED mapping...")
         
         # Test 1: Light up corners
-        corners = [(0, 0), (31, 0), (0, 39), (31, 39)]
+        corners = [(0, 0), (31, 0), (0, 47), (31, 47)]
         for x, y in corners:
             self.set_pixel(x, y, (255, 0, 0))  # Red corners
             print(f"Corner ({x}, {y}) -> LED {self.coord_to_led_map.get((x, y), 'Not found')}")
