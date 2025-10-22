@@ -59,9 +59,11 @@ class FinalLEDController:
                     {'name': 'Spiral', 'method': 'run_spiral_animation', 'audio': 'spiral_theme.wav'}
                 ]
             },
-            3: {  # Pin 22 - Future theme
-                'name': 'Theme 4',
-                'animations': []
+            3: {  # Pin 22 - Shooting Star
+                'name': 'Shooting Star',
+                'animations': [
+                    {'name': 'Shooting Star', 'method': 'run_shooting_star_animation', 'audio': 'star_theme.wav'}
+                ]
             }
         }
         
@@ -365,6 +367,75 @@ class FinalLEDController:
             time.sleep(0.1)  # 10 FPS
         
         print(f"🫧 Bubbles animation completed")
+    
+    def run_shooting_star_animation(self, duration=30):
+        """Run shooting star animation."""
+        print(f"⭐ Starting Shooting Star animation for {duration} seconds...")
+        
+        start_time = time.time()
+        cycle_time = 0
+        cycle_duration = 2.0  # 2 seconds per cycle
+        
+        while self.running and (time.time() - start_time) < duration:
+            current_time = time.time() - start_time
+            cycle_time = current_time % cycle_duration
+            
+            # Clear the display
+            self.led.clear()
+            
+            # Calculate star position (diagonal from top-left to bottom-right)
+            progress = cycle_time / cycle_duration
+            
+            # Start position (top-left)
+            start_x = 0
+            start_y = 0
+            
+            # End position (bottom-right)
+            end_x = config.TOTAL_WIDTH - 1
+            end_y = config.TOTAL_HEIGHT - 1
+            
+            # Current star position
+            star_x = int(start_x + (end_x - start_x) * progress)
+            star_y = int(start_y + (end_y - start_y) * progress)
+            
+            # Draw the star and trail
+            if 0 <= star_x < config.TOTAL_WIDTH and 0 <= star_y < config.TOTAL_HEIGHT:
+                # Draw bright white star
+                self.led.set_pixel(star_x, star_y, (255, 255, 255))
+                
+                # Draw blue trail behind the star
+                trail_length = 8
+                for i in range(1, trail_length + 1):
+                    # Calculate trail position (behind the star)
+                    trail_x = star_x - i
+                    trail_y = star_y - i
+                    
+                    if 0 <= trail_x < config.TOTAL_WIDTH and 0 <= trail_y < config.TOTAL_HEIGHT:
+                        # Fade the trail (brighter closer to star)
+                        fade = 1.0 - (i / trail_length)
+                        blue_intensity = int(255 * fade)
+                        
+                        # Blue trail with fade
+                        trail_color = (0, 0, blue_intensity)
+                        self.led.set_pixel(trail_x, trail_y, trail_color)
+                
+                # Add some sparkle effects around the star
+                for dx in range(-1, 2):
+                    for dy in range(-1, 2):
+                        if dx == 0 and dy == 0:
+                            continue  # Skip the star itself
+                        
+                        sparkle_x = star_x + dx
+                        sparkle_y = star_y + dy
+                        
+                        if 0 <= sparkle_x < config.TOTAL_WIDTH and 0 <= sparkle_y < config.TOTAL_HEIGHT:
+                            if random.random() < 0.3:  # 30% chance for sparkle
+                                self.led.set_pixel(sparkle_x, sparkle_y, (200, 200, 255))  # Light blue sparkle
+            
+            self.led.show()
+            time.sleep(0.05)  # 20 FPS for smooth motion
+        
+        print(f"⭐ Shooting Star animation completed")
     
     def run(self):
         """Main application loop."""
