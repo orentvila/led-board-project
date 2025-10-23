@@ -28,8 +28,8 @@ class LEDControllerExact:
             x, y = self.led_to_coordinate(led_num)
             if x is not None and y is not None:
                 # Convert to our coordinate system (0-based, positive coordinates)
-                coord_x = -x  # Convert negative X to positive
-                coord_y = y   # Y is already correct
+                coord_x = 31 + x  # Convert negative X to positive (invert X)
+                coord_y = 47 - y  # Invert Y (top becomes bottom)
                 
                 # Store mappings
                 self.led_to_coord_map[led_num] = (coord_x, coord_y)
