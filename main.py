@@ -8,10 +8,13 @@ import time
 import signal
 import sys
 import threading
+import subprocess
+import os
 from led_controller import LEDController
 from display_patterns import DisplayPatterns
 from button_controller import ButtonController
 from squares_animation import SquaresAnimation
+from led_controller_exact import LEDControllerExact
 import config
 
 class LEDDisplayApp:
@@ -24,6 +27,16 @@ class LEDDisplayApp:
         self.current_pattern = None
         self.running = True
         
+        # Shape animation system
+        self.shape_animations = [
+            "growing_circle_animation.py",
+            "rotating_square_animation.py", 
+            "bouncing_triangle_animation.py",
+            "pulsing_diamond_animation.py"
+        ]
+        self.current_shape_index = 0
+        self.current_shape_process = None
+        
         # Setup signal handlers for graceful shutdown
         signal.signal(signal.SIGINT, self.signal_handler)
         signal.signal(signal.SIGTERM, self.signal_handler)
@@ -33,9 +46,13 @@ class LEDDisplayApp:
     
     def setup_button_callbacks(self):
         """Setup button callbacks for the 4 buttons."""
-        self.button_controller.register_callback(0, self.start_rainbow_pattern)
+        # Button 18 (index 0) - Shapes
+        self.button_controller.register_callback(0, self.start_shapes_animation)
+        # Button 17 (index 1) - Wave pattern
         self.button_controller.register_callback(1, self.start_wave_pattern)
+        # Button 27 (index 2) - Text scroll
         self.button_controller.register_callback(2, self.start_text_scroll)
+        # Button 22 (index 3) - Squares animation
         self.button_controller.register_callback(3, self.start_squares_animation)
     
     def signal_handler(self, signum, frame):
@@ -44,10 +61,44 @@ class LEDDisplayApp:
         self.cleanup()
         sys.exit(0)
     
+    def stop_current_shape_animation(self):
+        """Stop the currently running shape animation."""
+        if self.current_shape_process and self.current_shape_process.poll() is None:
+            print("🛑 Stopping current shape animation...")
+            self.current_shape_process.terminate()
+            self.current_shape_process.wait()
+            self.current_shape_process = None
+            print("✅ Shape animation stopped")
+    
+    def start_shapes_animation(self):
+        """Start shapes animation - cycles through different shapes."""
+        print("🔷 Starting shapes animation...")
+        self.stop_current_pattern()
+        self.stop_current_shape_animation()
+        
+        # Cycle to next shape
+        self.current_shape_index = (self.current_shape_index + 1) % len(self.shape_animations)
+        shape_file = self.shape_animations[self.current_shape_index]
+        
+        print(f"🎬 Starting {shape_file}...")
+        
+        try:
+            # Run the shape animation script
+            self.current_shape_process = subprocess.Popen([
+                sys.executable, shape_file
+            ], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            
+            self.current_pattern = "shapes"
+            print(f"✅ Started {shape_file}")
+            
+        except Exception as e:
+            print(f"❌ Error starting {shape_file}: {e}")
+    
     def start_rainbow_pattern(self):
         """Start rainbow wave pattern."""
         print("Starting rainbow pattern")
         self.stop_current_pattern()
+        self.stop_current_shape_animation()
         self.current_pattern = threading.Thread(target=self.patterns.rainbow_wave)
         self.current_pattern.daemon = True
         self.current_pattern.start()
@@ -56,6 +107,7 @@ class LEDDisplayApp:
         """Start color wave pattern."""
         print("Starting wave pattern")
         self.stop_current_pattern()
+        self.stop_current_shape_animation()
         self.current_pattern = threading.Thread(
             target=self.patterns.color_wave, 
             args=(config.COLORS['BLUE'],)
@@ -67,6 +119,7 @@ class LEDDisplayApp:
         """Start text scrolling pattern."""
         print("Starting text scroll")
         self.stop_current_pattern()
+        self.stop_current_shape_animation()
         self.current_pattern = threading.Thread(
             target=self.patterns.scrolling_text,
             args=("HELLO RASPBERRY PI!", config.COLORS['GREEN'])
@@ -78,6 +131,7 @@ class LEDDisplayApp:
         """Start squares animation pattern."""
         print("Starting squares animation")
         self.stop_current_pattern()
+        self.stop_current_shape_animation()
         self.current_pattern = threading.Thread(target=self.squares_animation.run_animation)
         self.current_pattern.daemon = True
         self.current_pattern.start()
@@ -157,6 +211,7 @@ class LEDDisplayApp:
         """Clean up resources."""
         print("Cleaning up...")
         self.stop_current_pattern()
+        self.stop_current_shape_animation()
         self.button_controller.cleanup()
         self.led.cleanup()
         print("Cleanup completed.")
