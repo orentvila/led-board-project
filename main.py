@@ -74,7 +74,9 @@ class LEDDisplayApp:
         """Start shapes animation - cycles through different shapes."""
         print("🔷 Starting shapes animation...")
         self.stop_current_pattern()
-        self.stop_current_shape_animation()
+        
+        # Small delay to ensure everything is stopped
+        time.sleep(0.1)
         
         # Cycle to next shape
         self.current_shape_index = (self.current_shape_index + 1) % len(self.shape_animations)
@@ -230,7 +232,7 @@ class LEDDisplayApp:
         """Start rainbow wave pattern."""
         print("Starting rainbow pattern")
         self.stop_current_pattern()
-        self.stop_current_shape_animation()
+        time.sleep(0.1)  # Ensure everything is stopped
         self.current_pattern = threading.Thread(target=self.patterns.rainbow_wave)
         self.current_pattern.daemon = True
         self.current_pattern.start()
@@ -239,7 +241,7 @@ class LEDDisplayApp:
         """Start color wave pattern."""
         print("Starting wave pattern")
         self.stop_current_pattern()
-        self.stop_current_shape_animation()
+        time.sleep(0.1)  # Ensure everything is stopped
         self.current_pattern = threading.Thread(
             target=self.patterns.color_wave, 
             args=(config.COLORS['BLUE'],)
@@ -251,7 +253,7 @@ class LEDDisplayApp:
         """Start text scrolling pattern."""
         print("Starting text scroll")
         self.stop_current_pattern()
-        self.stop_current_shape_animation()
+        time.sleep(0.1)  # Ensure everything is stopped
         self.current_pattern = threading.Thread(
             target=self.patterns.scrolling_text,
             args=("HELLO RASPBERRY PI!", config.COLORS['GREEN'])
@@ -263,17 +265,35 @@ class LEDDisplayApp:
         """Start squares animation pattern."""
         print("Starting squares animation")
         self.stop_current_pattern()
-        self.stop_current_shape_animation()
+        time.sleep(0.1)  # Ensure everything is stopped
         self.current_pattern = threading.Thread(target=self.squares_animation.run_animation)
         self.current_pattern.daemon = True
         self.current_pattern.start()
     
     def stop_current_pattern(self):
         """Stop the currently running pattern."""
-        if self.current_pattern and hasattr(self.current_pattern, 'is_alive') and self.current_pattern.is_alive():
+        print("🛑 Stopping all animations...")
+        
+        # Stop pattern animations
+        if hasattr(self, 'patterns'):
             self.patterns.stop()
+        if hasattr(self, 'squares_animation'):
             self.squares_animation.stop()
-            self.current_pattern.join(timeout=1.0)
+        
+        # Stop thread patterns
+        if self.current_pattern and hasattr(self.current_pattern, 'is_alive') and self.current_pattern.is_alive():
+            print("Stopping thread pattern...")
+            self.current_pattern.join(timeout=0.5)
+        
+        # Stop shape animations
+        self.stop_current_shape_animation()
+        
+        # Clear the display
+        if hasattr(self, 'led'):
+            self.led.clear()
+            self.led.show()
+        
+        print("✅ All animations stopped")
     
     def demo_sequence(self):
         """Run a demo sequence of various patterns."""
