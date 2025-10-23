@@ -94,13 +94,13 @@ class LEDControllerExact:
         
         # Set the LED color directly on the strip
         r, g, b = color
-        self.led.strip.setPixelColorRGB(led_num - 1, r, g, b)  # Convert to 0-based LED index
+        self.led.strip.setPixelColorRGB(led_num - 1, int(r), int(g), int(b))  # Convert to 0-based LED index
     
     def fill_display(self, color):
         """Fill the entire display with the specified color."""
         r, g, b = color
         for led_num in range(1, 1537):
-            self.led.strip.setPixelColorRGB(led_num - 1, r, g, b)  # Convert to 0-based LED index
+            self.led.strip.setPixelColorRGB(led_num - 1, int(r), int(g), int(b))  # Convert to 0-based LED index
     
     def clear(self):
         """Clear the display (turn off all LEDs)."""
