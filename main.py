@@ -138,7 +138,7 @@ class LEDDisplayApp:
     
     def stop_current_pattern(self):
         """Stop the currently running pattern."""
-        if self.current_pattern and self.current_pattern.is_alive():
+        if self.current_pattern and hasattr(self.current_pattern, 'is_alive') and self.current_pattern.is_alive():
             self.patterns.stop()
             self.squares_animation.stop()
             self.current_pattern.join(timeout=1.0)
@@ -292,6 +292,7 @@ def main():
         app.run()
     except Exception as e:
         print(f"Error: {e}")
+        import sys
         sys.exit(1)
 
 if __name__ == "__main__":
