@@ -84,8 +84,8 @@ class StarAnimationFixed:
         # Add new shooting stars occasionally
         if random.random() < 0.02:  # 2% chance per frame
             shooting_star = {
-                'x': random.randint(0, self.width - 1),
-                'y': 0,  # Start from top
+                'x': float(random.randint(0, self.width - 1)),
+                'y': 0.0,  # Start from top
                 'trail_length': random.randint(3, 8),
                 'speed': random.uniform(0.5, 1.5),
                 'life': 1.0
@@ -107,15 +107,18 @@ class StarAnimationFixed:
             trail_length = int(shooting_star['trail_length'] * shooting_star['life'])
             for i in range(trail_length):
                 trail_y = int(shooting_star['y'] - i)
-                if 0 <= trail_y < self.height:
+                trail_x = int(shooting_star['x'])
+                if 0 <= trail_y < self.height and 0 <= trail_x < self.width:
                     # Trail gets dimmer towards the end
                     trail_brightness = (trail_length - i) / trail_length
                     trail_color = tuple(int(c * trail_brightness) for c in self.colors['shooting_trail'])
-                    frame[trail_y, shooting_star['x']] = trail_color
+                    frame[trail_y, trail_x] = trail_color
             
             # Draw head
-            if 0 <= shooting_star['y'] < self.height:
-                frame[shooting_star['y'], shooting_star['x']] = self.colors['shooting_head']
+            head_x = int(shooting_star['x'])
+            head_y = int(shooting_star['y'])
+            if 0 <= head_y < self.height and 0 <= head_x < self.width:
+                frame[head_y, head_x] = self.colors['shooting_head']
     
     def create_constellations(self, frame):
         """Create constellation patterns."""
