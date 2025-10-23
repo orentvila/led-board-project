@@ -20,7 +20,7 @@ import config
 class LEDDisplayApp:
     def __init__(self):
         """Initialize the LED display application."""
-        self.led = LEDController()
+        self.led = LEDControllerExact()
         self.patterns = DisplayPatterns(self.led)
         self.squares_animation = SquaresAnimation(self.led)
         self.button_controller = ButtonController()
