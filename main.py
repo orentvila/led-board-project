@@ -13,7 +13,7 @@ import os
 from led_controller import LEDController
 from display_patterns import DisplayPatterns
 from button_controller import ButtonController
-from squares_animation import SquaresAnimation
+from animation_tests.squares_animation import SquaresAnimation
 from led_controller_exact import LEDControllerExact
 import config
 
@@ -78,21 +78,153 @@ class LEDDisplayApp:
         
         # Cycle to next shape
         self.current_shape_index = (self.current_shape_index + 1) % len(self.shape_animations)
-        shape_file = self.shape_animations[self.current_shape_index]
+        shape_names = ["Growing Circle", "Rotating Square", "Bouncing Triangle", "Pulsing Diamond"]
+        shape_name = shape_names[self.current_shape_index]
         
-        print(f"🎬 Starting {shape_file}...")
+        print(f"🎬 Starting {shape_name}...")
         
-        try:
-            # Run the shape animation script
-            self.current_shape_process = subprocess.Popen([
-                sys.executable, shape_file
-            ], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        # Start the shape animation as a thread
+        self.current_pattern = threading.Thread(target=self.run_shape_animation)
+        self.current_pattern.daemon = True
+        self.current_pattern.start()
+        
+        print(f"✅ Started {shape_name}")
+    
+    def run_shape_animation(self):
+        """Run the current shape animation."""
+        if self.current_shape_index == 0:
+            self.run_growing_circle()
+        elif self.current_shape_index == 1:
+            self.run_rotating_square()
+        elif self.current_shape_index == 2:
+            self.run_bouncing_triangle()
+        elif self.current_shape_index == 3:
+            self.run_pulsing_diamond()
+    
+    def run_growing_circle(self):
+        """Run growing circle animation."""
+        import math
+        duration = 15
+        start_time = time.time()
+        
+        while time.time() - start_time < duration:
+            center_x, center_y = 16, 24
+            progress = (time.time() - start_time) / duration
+            max_radius = min(16, 24) - 2
+            current_radius = int(progress * max_radius)
             
-            self.current_pattern = "shapes"
-            print(f"✅ Started {shape_file}")
+            # Clear display
+            self.led.clear()
             
-        except Exception as e:
-            print(f"❌ Error starting {shape_file}: {e}")
+            # Draw circle
+            for y in range(48):
+                for x in range(32):
+                    distance = math.sqrt((x - center_x)**2 + (y - center_y)**2)
+                    if distance <= current_radius:
+                        self.led.set_pixel(x, y, (255, 0, 0))  # Red
+            
+            self.led.show()
+            time.sleep(0.05)
+    
+    def run_rotating_square(self):
+        """Run rotating square animation."""
+        import math
+        duration = 15
+        start_time = time.time()
+        
+        while time.time() - start_time < duration:
+            center_x, center_y = 16, 24
+            size = 12
+            rotation_angle = (time.time() - start_time) * 0.5
+            
+            # Clear display
+            self.led.clear()
+            
+            # Draw rotated square
+            for y in range(48):
+                for x in range(32):
+                    # Rotate point around center
+                    dx = x - center_x
+                    dy = y - center_y
+                    cos_a = math.cos(rotation_angle)
+                    sin_a = math.sin(rotation_angle)
+                    rx = dx * cos_a - dy * sin_a
+                    ry = dx * sin_a + dy * cos_a
+                    
+                    # Check if point is inside square
+                    if abs(rx) <= size//2 and abs(ry) <= size//2:
+                        self.led.set_pixel(x, y, (0, 0, 255))  # Blue
+            
+            self.led.show()
+            time.sleep(0.05)
+    
+    def run_bouncing_triangle(self):
+        """Run bouncing triangle animation."""
+        duration = 15
+        start_time = time.time()
+        
+        # Triangle position and movement
+        triangle_x = 16
+        triangle_y = 24
+        triangle_dx = 2
+        triangle_dy = 1
+        
+        while time.time() - start_time < duration:
+            # Update position
+            triangle_x += triangle_dx
+            triangle_y += triangle_dy
+            
+            # Bounce off edges
+            if triangle_x <= 5 or triangle_x >= 27:
+                triangle_dx = -triangle_dx
+            if triangle_y <= 5 or triangle_y >= 43:
+                triangle_dy = -triangle_dy
+            
+            # Keep in bounds
+            triangle_x = max(5, min(27, triangle_x))
+            triangle_y = max(5, min(43, triangle_y))
+            
+            # Clear display
+            self.led.clear()
+            
+            # Draw triangle
+            triangle_size = 8
+            for y in range(48):
+                for x in range(32):
+                    # Check if point is inside triangle
+                    if (y <= triangle_y - triangle_size and 
+                        x >= triangle_x - triangle_size and 
+                        x <= triangle_x + triangle_size and
+                        y >= triangle_y - triangle_size + (abs(x - triangle_x) * 2)):
+                        self.led.set_pixel(x, y, (0, 255, 0))  # Green
+            
+            self.led.show()
+            time.sleep(0.05)
+    
+    def run_pulsing_diamond(self):
+        """Run pulsing diamond animation."""
+        import math
+        duration = 15
+        start_time = time.time()
+        
+        while time.time() - start_time < duration:
+            center_x, center_y = 16, 24
+            pulse_phase = (time.time() - start_time) * 2
+            pulse_size = int(8 + 4 * math.sin(pulse_phase))
+            
+            # Clear display
+            self.led.clear()
+            
+            # Draw diamond
+            for y in range(48):
+                for x in range(32):
+                    dx = abs(x - center_x)
+                    dy = abs(y - center_y)
+                    if dx + dy <= pulse_size:
+                        self.led.set_pixel(x, y, (255, 255, 0))  # Yellow
+            
+            self.led.show()
+            time.sleep(0.05)
     
     def start_rainbow_pattern(self):
         """Start rainbow wave pattern."""
