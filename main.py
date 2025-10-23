@@ -36,6 +36,7 @@ class LEDDisplayApp:
         ]
         self.current_shape_index = 0
         self.current_shape_process = None
+        self.shape_animation_running = False
         
         # Setup signal handlers for graceful shutdown
         signal.signal(signal.SIGINT, self.signal_handler)
@@ -87,21 +88,26 @@ class LEDDisplayApp:
         
         # Start the shape animation as a thread
         self.current_pattern = threading.Thread(target=self.run_shape_animation)
-        self.current_pattern.daemon = True
+        self.current_pattern.daemon = False  # Don't use daemon threads
         self.current_pattern.start()
         
         print(f"✅ Started {shape_name}")
     
     def run_shape_animation(self):
         """Run the current shape animation."""
-        if self.current_shape_index == 0:
-            self.run_growing_circle()
-        elif self.current_shape_index == 1:
-            self.run_rotating_square()
-        elif self.current_shape_index == 2:
-            self.run_bouncing_triangle()
-        elif self.current_shape_index == 3:
-            self.run_pulsing_diamond()
+        self.shape_animation_running = True
+        
+        try:
+            if self.current_shape_index == 0:
+                self.run_growing_circle()
+            elif self.current_shape_index == 1:
+                self.run_rotating_square()
+            elif self.current_shape_index == 2:
+                self.run_bouncing_triangle()
+            elif self.current_shape_index == 3:
+                self.run_pulsing_diamond()
+        finally:
+            self.shape_animation_running = False
     
     def run_growing_circle(self):
         """Run growing circle animation."""
@@ -109,7 +115,7 @@ class LEDDisplayApp:
         duration = 15
         start_time = time.time()
         
-        while time.time() - start_time < duration:
+        while time.time() - start_time < duration and self.shape_animation_running:
             center_x, center_y = 16, 24
             progress = (time.time() - start_time) / duration
             max_radius = min(16, 24) - 2
@@ -134,7 +140,7 @@ class LEDDisplayApp:
         duration = 15
         start_time = time.time()
         
-        while time.time() - start_time < duration:
+        while time.time() - start_time < duration and self.shape_animation_running:
             center_x, center_y = 16, 24
             size = 12
             rotation_angle = (time.time() - start_time) * 0.5
@@ -171,7 +177,7 @@ class LEDDisplayApp:
         triangle_dx = 2
         triangle_dy = 1
         
-        while time.time() - start_time < duration:
+        while time.time() - start_time < duration and self.shape_animation_running:
             # Update position
             triangle_x += triangle_dx
             triangle_y += triangle_dy
@@ -209,7 +215,7 @@ class LEDDisplayApp:
         duration = 15
         start_time = time.time()
         
-        while time.time() - start_time < duration:
+        while time.time() - start_time < duration and self.shape_animation_running:
             center_x, center_y = 16, 24
             pulse_phase = (time.time() - start_time) * 2
             pulse_size = int(8 + 4 * math.sin(pulse_phase))
@@ -234,7 +240,7 @@ class LEDDisplayApp:
         self.stop_current_pattern()
         time.sleep(0.1)  # Ensure everything is stopped
         self.current_pattern = threading.Thread(target=self.patterns.rainbow_wave)
-        self.current_pattern.daemon = True
+        self.current_pattern.daemon = False  # Don't use daemon threads
         self.current_pattern.start()
     
     def start_wave_pattern(self):
@@ -246,7 +252,7 @@ class LEDDisplayApp:
             target=self.patterns.color_wave, 
             args=(config.COLORS['BLUE'],)
         )
-        self.current_pattern.daemon = True
+        self.current_pattern.daemon = False  # Don't use daemon threads
         self.current_pattern.start()
     
     def start_text_scroll(self):
@@ -258,7 +264,7 @@ class LEDDisplayApp:
             target=self.patterns.scrolling_text,
             args=("HELLO RASPBERRY PI!", config.COLORS['GREEN'])
         )
-        self.current_pattern.daemon = True
+        self.current_pattern.daemon = False  # Don't use daemon threads
         self.current_pattern.start()
     
     def start_squares_animation(self):
@@ -267,7 +273,7 @@ class LEDDisplayApp:
         self.stop_current_pattern()
         time.sleep(0.1)  # Ensure everything is stopped
         self.current_pattern = threading.Thread(target=self.squares_animation.run_animation)
-        self.current_pattern.daemon = True
+        self.current_pattern.daemon = False  # Don't use daemon threads
         self.current_pattern.start()
     
     def stop_current_pattern(self):
@@ -287,6 +293,7 @@ class LEDDisplayApp:
         
         # Stop shape animations
         self.stop_current_shape_animation()
+        self.shape_animation_running = False
         
         # Clear the display
         if hasattr(self, 'led'):
@@ -341,8 +348,8 @@ class LEDDisplayApp:
         # Start button monitoring
         self.button_controller.start_monitoring()
         
-        # Run demo sequence
-        self.demo_sequence()
+        # Skip demo sequence - go straight to button monitoring
+        print("Skipping demo sequence - waiting for button presses...")
         
         # Keep the application running
         print("Application running. Press Ctrl+C to exit.")
