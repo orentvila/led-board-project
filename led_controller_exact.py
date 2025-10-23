@@ -138,8 +138,41 @@ class LEDControllerExact:
             self.set_pixel(0, y, (0, 0, 255))  # Blue left border
             self.set_pixel(self.width - 1, y, (0, 0, 255))  # Blue right border
         
+        # Test 4: 4-quadrant test
+        print("Testing 4-quadrant mapping...")
+        
+        # Upper right - Red
+        for y in range(0, self.height // 2):
+            for x in range(self.width // 2, self.width):
+                self.set_pixel(x, y, (255, 0, 0))  # Red
+        
+        # Upper left - Blue  
+        for y in range(0, self.height // 2):
+            for x in range(0, self.width // 2):
+                self.set_pixel(x, y, (0, 0, 255))  # Blue
+        
+        # Bottom right - Yellow
+        for y in range(self.height // 2, self.height):
+            for x in range(self.width // 2, self.width):
+                self.set_pixel(x, y, (255, 255, 0))  # Yellow
+        
+        # Bottom left - Green
+        for y in range(self.height // 2, self.height):
+            for x in range(0, self.width // 2):
+                self.set_pixel(x, y, (0, 255, 0))  # Green
+        
         self.show()
-        print("Mapping test completed!")
+        print("4-quadrant mapping test completed!")
+        print("Expected pattern:")
+        print("┌─────────┬─────────┐")
+        print("│  Blue   │   Red   │")
+        print("│ (upper  │ (upper  │")
+        print("│  left)  │ right)  │")
+        print("├─────────┼─────────┤")
+        print("│  Green  │ Yellow  │")
+        print("│(bottom  │(bottom  │")
+        print("│  left)  │ right)  │")
+        print("└─────────┴─────────┘")
 
 def git_pull_update():
     """Pull latest changes from git repository."""
