@@ -30,7 +30,7 @@ class BasicShapesAnimation:
         # Animation parameters
         self.animation_timer = 0
         self.current_shape = 0  # 0=circle, 1=square, 2=triangle, 3=diamond
-        self.shape_duration = 200  # frames per shape
+        self.shape_duration = 100  # frames per shape (5 seconds at 20 FPS)
         
         # Shape-specific parameters
         self.circle_radius = 0
@@ -176,6 +176,11 @@ class BasicShapesAnimation:
         
         # Determine current shape based on animation timer
         shape_index = (self.animation_timer // self.shape_duration) % 4
+        
+        # Debug output every 50 frames
+        if self.animation_timer % 50 == 0:
+            shape_names = ["Circle", "Square", "Triangle", "Diamond"]
+            print(f"Frame {self.animation_timer}: Showing {shape_names[shape_index]}")
         
         if shape_index == 0:
             self.create_growing_circle(frame)
