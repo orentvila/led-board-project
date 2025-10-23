@@ -2,7 +2,7 @@ import time
 import math
 import random
 import numpy as np
-from led_controller import LEDController
+from led_controller_exact import LEDControllerExact
 import config
 
 class DisplayPatterns:

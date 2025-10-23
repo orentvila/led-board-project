@@ -8,7 +8,7 @@ with a different soft color for 2 seconds, appearing randomly.
 import time
 import random
 import math
-from led_controller import LEDController
+from led_controller_exact import LEDControllerExact
 import config
 
 class SquaresAnimation:
