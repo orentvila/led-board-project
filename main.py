@@ -62,8 +62,8 @@ class LEDDisplayApp:
         self.button_controller.register_callback(0, self.start_shapes_animation)
         # Button 17 (index 1) - Nature animations
         self.button_controller.register_callback(1, self.start_nature_animation)
-        # Button 27 (index 2) - Text scroll
-        self.button_controller.register_callback(2, self.start_text_scroll)
+        # Button 27 (index 2) - Bird flying animation
+        self.button_controller.register_callback(2, self.start_bird_flying_animation)
         # Button 22 (index 3) - Squares animation
         self.button_controller.register_callback(3, self.start_squares_animation)
     
@@ -469,6 +469,122 @@ class LEDDisplayApp:
             self.led.show()
             time.sleep(0.1)  # 10 FPS for gentle movement
     
+    def start_bird_flying_animation(self):
+        """Start bird flying animation."""
+        print("🐦 Starting bird flying animation...")
+        self.stop_current_pattern()
+        time.sleep(0.2)  # Ensure everything is stopped
+        
+        # Start the bird flying animation as a thread
+        self.current_pattern = threading.Thread(target=self.run_bird_flying_animation)
+        self.current_pattern.daemon = False  # Don't use daemon threads
+        self.current_pattern.start()
+        
+        print("✅ Started bird flying animation")
+    
+    def run_bird_flying_animation(self):
+        """Run bird flying animation."""
+        import math
+        duration = 30
+        start_time = time.time()
+        
+        print(f"🐦 Bird flying animation started")
+        
+        # Get display dimensions
+        width = 32
+        height = 48
+        
+        # Initialize bird
+        bird = {
+            'x': -5,  # Start off screen
+            'y': height // 2,  # Middle height
+            'wing_phase': 0,  # Wing flapping phase
+            'speed': 0.8,  # Flying speed
+            'color': (255, 255, 255),  # White bird
+            'size': 3  # Bird size
+        }
+        
+        # Initialize clouds for background
+        clouds = []
+        for _ in range(3):
+            cloud = {
+                'x': random.randint(0, width),
+                'y': random.randint(5, height - 10),
+                'size': random.randint(4, 8),
+                'speed': random.uniform(0.1, 0.3)
+            }
+            clouds.append(cloud)
+        
+        while time.time() - start_time < duration:
+            # Clear display
+            self.led.clear()
+            
+            # Create sky background
+            for y in range(height):
+                sky_intensity = 1.0 - (y / height) * 0.2
+                sky_color = (int(135 * sky_intensity), int(206 * sky_intensity), int(235 * sky_intensity))
+                
+                for x in range(width):
+                    self.led.set_pixel(x, y, sky_color)
+            
+            # Draw clouds
+            for cloud in clouds:
+                center_x = int(cloud['x'])
+                center_y = int(cloud['y'])
+                size = cloud['size']
+                
+                # Draw cloud
+                for dy in range(-size, size + 1):
+                    for dx in range(-size, size + 1):
+                        distance = math.sqrt(dx*dx + dy*dy)
+                        if distance <= size * 0.8:
+                            x = center_x + dx
+                            y = center_y + dy
+                            if 0 <= x < width and 0 <= y < height:
+                                cloud_color = (255, 255, 255)  # White clouds
+                                self.led.set_pixel(x, y, cloud_color)
+                
+                # Update cloud position
+                cloud['x'] += cloud['speed']
+                if cloud['x'] > width + 10:
+                    cloud['x'] = -10
+                    cloud['y'] = random.randint(5, height - 10)
+            
+            # Draw bird
+            if 0 <= bird['x'] < width:
+                # Calculate wing flapping
+                wing_offset = math.sin(bird['wing_phase']) * 2
+                
+                # Draw bird body
+                for dy in range(-1, 2):
+                    for dx in range(-1, 2):
+                        x = int(bird['x']) + dx
+                        y = int(bird['y']) + dy
+                        if 0 <= x < width and 0 <= y < height:
+                            self.led.set_pixel(x, y, bird['color'])
+                
+                # Draw wings
+                wing_y = int(bird['y']) + int(wing_offset)
+                if 0 <= wing_y < height:
+                    # Left wing
+                    if bird['x'] - 2 >= 0:
+                        self.led.set_pixel(int(bird['x']) - 2, wing_y, bird['color'])
+                    # Right wing
+                    if bird['x'] + 2 < width:
+                        self.led.set_pixel(int(bird['x']) + 2, wing_y, bird['color'])
+            
+            # Update bird position
+            bird['x'] += bird['speed']
+            bird['wing_phase'] += 0.3  # Wing flapping speed
+            
+            # Reset bird when it goes off screen
+            if bird['x'] > width + 5:
+                bird['x'] = -5
+                bird['y'] = random.randint(height // 4, 3 * height // 4)  # Random height
+            
+            self.led.show()
+            time.sleep(0.1)  # 10 FPS for smooth animation
+    
     def run_shape_animation(self):
         """Run the current shape animation."""
         self.shape_animation_running = True
@@ -733,10 +849,10 @@ class LEDDisplayApp:
         # Keep the application running
         print("Application running. Press Ctrl+C to exit.")
         print("Button controls (when connected):")
-        print("  Button 1: Rainbow pattern")
-        print("  Button 2: Wave pattern")
-        print("  Button 3: Text scroll")
-        print("  Button 4: Squares animation")
+        print("  Button 18: Shapes animation")
+        print("  Button 17: Nature animations")
+        print("  Button 27: Bird flying animation")
+        print("  Button 22: Squares animation")
         
         try:
             while self.running:

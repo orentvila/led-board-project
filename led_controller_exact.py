@@ -110,6 +110,13 @@ class LEDControllerExact:
         """Update the display with the current pixel data."""
         self.led.show()
     
+    def draw_text(self, text, x, y, color):
+        """Simple text drawing - just draw a line for now."""
+        # Simple implementation - just draw a horizontal line
+        for i in range(len(text)):
+            if 0 <= x + i < self.width and 0 <= y < self.height:
+                self.set_pixel(x + i, y, color)
+    
     def cleanup(self):
         """Clean up resources."""
         self.led.cleanup()
