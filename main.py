@@ -42,7 +42,8 @@ class LEDDisplayApp:
         
         # Nature animation system
         self.nature_animations = [
-            "floating_clouds_animation.py"
+            "floating_clouds_animation.py",
+            "rain_animation.py"
         ]
         self.current_nature_index = 0
         self.nature_animation_running = False
@@ -108,6 +109,9 @@ class LEDDisplayApp:
         self.stop_current_pattern()
         time.sleep(0.1)  # Ensure everything is stopped
         
+        # Set the flag BEFORE starting the thread
+        self.nature_animation_running = True
+        
         # Cycle to next nature animation
         self.current_nature_index = (self.current_nature_index + 1) % len(self.nature_animations)
         nature_file = self.nature_animations[self.current_nature_index]
@@ -124,11 +128,11 @@ class LEDDisplayApp:
     
     def run_nature_animation(self):
         """Run the current nature animation."""
-        self.nature_animation_running = True
-        
         try:
             if self.current_nature_index == 0:
                 self.run_floating_clouds()
+            elif self.current_nature_index == 1:
+                self.run_rain_animation()
         finally:
             self.nature_animation_running = False
     
@@ -137,6 +141,8 @@ class LEDDisplayApp:
         import math
         duration = 30
         start_time = time.time()
+        
+        print(f"🌤️ Floating clouds animation started (flag: {self.nature_animation_running})")
         
         # Get display dimensions
         width = 32
@@ -227,8 +233,87 @@ class LEDDisplayApp:
                     cloud['x'] = -20
                     cloud['y'] = random.randint(10, height - 10)
             
+                self.led.show()
+                time.sleep(0.1)  # 10 FPS for gentle movement
+    
+    def run_rain_animation(self):
+        """Run rain animation with gentle drops and soft colors."""
+        import math
+        duration = 30
+        start_time = time.time()
+        
+        print(f"🌧️ Rain animation started (flag: {self.nature_animation_running})")
+        
+        # Get display dimensions
+        width = 32
+        height = 48
+        
+        # Initialize rain drops
+        rain_drops = []
+        for _ in range(25):  # 25 rain drops
+            drop = {
+                'x': random.randint(0, width - 1),
+                'y': random.randint(-10, height + 10),
+                'speed': random.uniform(1.5, 3.0),
+                'intensity': random.uniform(0.3, 1.0),
+                'length': random.randint(3, 8)
+            }
+            rain_drops.append(drop)
+        
+        while time.time() - start_time < duration and self.nature_animation_running:
+            # Clear display
+            self.led.clear()
+            
+            # Create soft gray sky background
+            for y in range(height):
+                # Gradient from light gray at top to darker gray at bottom
+                sky_intensity = 1.0 - (y / height) * 0.4
+                sky_color = (int(120 * sky_intensity), int(130 * sky_intensity), int(140 * sky_intensity))
+                
+                for x in range(width):
+                    self.led.set_pixel(x, y, sky_color)
+            
+            # Draw rain drops
+            for drop in rain_drops:
+                # Draw the rain drop as a vertical line
+                for i in range(drop['length']):
+                    y_pos = int(drop['y']) - i
+                    if 0 <= y_pos < height:
+                        # Rain drop color: soft blue-gray with varying intensity
+                        intensity = drop['intensity'] * (1.0 - (i / drop['length']) * 0.5)
+                        rain_color = (
+                            int(100 * intensity),
+                            int(150 * intensity), 
+                            int(200 * intensity)
+                        )
+                        self.led.set_pixel(int(drop['x']), y_pos, rain_color)
+            
+            # Update rain drop positions
+            for drop in rain_drops:
+                drop['y'] += drop['speed']
+                
+                # Reset drop when it goes off screen
+                if drop['y'] > height + 10:
+                    drop['y'] = random.randint(-10, -5)
+                    drop['x'] = random.randint(0, width - 1)
+                    drop['speed'] = random.uniform(1.5, 3.0)
+                    drop['intensity'] = random.uniform(0.3, 1.0)
+            
+            # Add occasional lightning flash (very subtle)
+            if random.random() < 0.02:  # 2% chance per frame
+                flash_intensity = random.uniform(0.1, 0.3)
+                for y in range(height):
+                    for x in range(width):
+                        current_color = self.led.get_pixel(x, y) if hasattr(self.led, 'get_pixel') else (120, 130, 140)
+                        flash_color = (
+                            min(255, int(current_color[0] + 50 * flash_intensity)),
+                            min(255, int(current_color[1] + 50 * flash_intensity)),
+                            min(255, int(current_color[2] + 50 * flash_intensity))
+                        )
+                        self.led.set_pixel(x, y, flash_color)
+            
             self.led.show()
-            time.sleep(0.1)  # 10 FPS for gentle movement
+            time.sleep(0.08)  # 12.5 FPS for smooth rain
     
     def run_shape_animation(self):
         """Run the current shape animation."""
