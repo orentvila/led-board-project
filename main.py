@@ -158,11 +158,12 @@ class LEDDisplayApp:
             # Clear display
             self.led.clear()
             
-            # Create sky background with proper blue tones
+            # Create sky background with gradient blue (like the image)
             for y in range(height):
-                sky_intensity = 1.0 - (y / height) * 0.2
-                # Use more blue-dominant colors to avoid yellow tint
-                sky_color = (int(100 * sky_intensity), int(150 * sky_intensity), int(200 * sky_intensity))
+                # Gradient from darker blue at top to lighter blue at bottom
+                sky_intensity = 1.0 - (y / height) * 0.3
+                # Sky blue gradient: darker at top, lighter at bottom
+                sky_color = (int(80 * sky_intensity), int(120 * sky_intensity), int(180 * sky_intensity))
                 
                 for x in range(width):
                     self.led.set_pixel(x, y, sky_color)
@@ -180,17 +181,41 @@ class LEDDisplayApp:
                 center_x += int(drift_x)
                 center_y += int(drift_y)
                 
-                # Draw cloud
+                # Draw cloud with image-style colors and shape
                 for y in range(max(0, center_y - size), min(height, center_y + size)):
                     for x in range(max(0, center_x - size), min(width, center_x + size)):
                         dx = x - center_x
                         dy = y - center_y
                         distance = math.sqrt(dx*dx + dy*dy)
                         
-                        if distance <= size * 0.8:
-                            opacity = 1.0 - (distance / (size * 0.8)) * 0.5
-                            # Use more balanced white colors to avoid yellow tint
-                            cloud_color = (int(200 * opacity), int(220 * opacity), int(255 * opacity))
+                        # Create organic cloud shape (not perfect circle)
+                        cloud_radius = size * (0.7 + math.sin(x * 0.3 + y * 0.2) * 0.3)
+                        
+                        if distance <= cloud_radius:
+                            # Calculate position within cloud for color variation
+                            cloud_progress = distance / cloud_radius
+                            
+                            # Main cloud body: creamy yellow/off-white (#FFFDD0)
+                            if dy < center_y - size * 0.2:  # Top part of cloud
+                                cloud_color = (255, 253, 208)  # Creamy yellow-white
+                            # Cloud underside: warm peach shadow (#E0B0A0)
+                            elif dy > center_y + size * 0.1:  # Bottom part of cloud
+                                cloud_color = (224, 176, 160)  # Warm peach
+                            # Middle transition area
+                            else:
+                                # Blend between creamy and peach
+                                blend = (dy - (center_y - size * 0.2)) / (size * 0.3)
+                                blend = max(0, min(1, blend))
+                                cloud_color = (
+                                    int(255 * (1 - blend) + 224 * blend),
+                                    int(253 * (1 - blend) + 176 * blend),
+                                    int(208 * (1 - blend) + 160 * blend)
+                                )
+                            
+                            # Add soft edge fade
+                            edge_fade = 1.0 - cloud_progress * 0.3
+                            cloud_color = tuple(int(c * edge_fade) for c in cloud_color)
+                            
                             self.led.set_pixel(x, y, cloud_color)
             
             # Update cloud positions
