@@ -208,7 +208,7 @@ class LEDDisplayApp:
             }
             clouds.append(cloud)
         
-        while time.time() - start_time < duration and self.nature_animation_running:
+        while time.time() - start_time < duration and self.nature_animation_running and not getattr(self, 'animation_stop_flag', False):
             # Clear display
             self.led.clear()
             
@@ -313,7 +313,7 @@ class LEDDisplayApp:
             }
             rain_drops.append(drop)
         
-        while time.time() - start_time < duration and self.nature_animation_running:
+        while time.time() - start_time < duration and self.nature_animation_running and not getattr(self, 'animation_stop_flag', False):
             # Clear display
             self.led.clear()
             
@@ -515,7 +515,7 @@ class LEDDisplayApp:
             }
             clouds.append(cloud)
         
-        while time.time() - start_time < duration:
+        while time.time() - start_time < duration and not getattr(self, 'animation_stop_flag', False):
             # Clear display
             self.led.clear()
             
@@ -781,7 +781,13 @@ class LEDDisplayApp:
         # Stop thread patterns
         if self.current_pattern and hasattr(self.current_pattern, 'is_alive') and self.current_pattern.is_alive():
             print("Stopping thread pattern...")
-            self.current_pattern.join(timeout=0.5)
+            self.current_pattern.join(timeout=1.0)  # Longer timeout
+            # Force kill if still alive
+            if self.current_pattern.is_alive():
+                print("⚠️ Force stopping thread...")
+                # Set a flag to stop the animation
+                if hasattr(self, 'animation_stop_flag'):
+                    self.animation_stop_flag = True
         
         # Stop shape animations
         self.stop_current_shape_animation()
@@ -790,10 +796,16 @@ class LEDDisplayApp:
         # Stop nature animations
         self.nature_animation_running = False
         
+        # Add animation stop flag
+        self.animation_stop_flag = True
+        
         # Clear the display
         if hasattr(self, 'led'):
             self.led.clear()
             self.led.show()
+        
+        # Reset the flag after clearing
+        self.animation_stop_flag = False
         
         print("✅ All animations stopped")
     
