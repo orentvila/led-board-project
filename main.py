@@ -158,10 +158,11 @@ class LEDDisplayApp:
             # Clear display
             self.led.clear()
             
-            # Create sky background
+            # Create sky background with proper blue tones
             for y in range(height):
                 sky_intensity = 1.0 - (y / height) * 0.2
-                sky_color = (int(135 * sky_intensity), int(206 * sky_intensity), int(235 * sky_intensity))
+                # Use more blue-dominant colors to avoid yellow tint
+                sky_color = (int(100 * sky_intensity), int(150 * sky_intensity), int(200 * sky_intensity))
                 
                 for x in range(width):
                     self.led.set_pixel(x, y, sky_color)
@@ -188,7 +189,8 @@ class LEDDisplayApp:
                         
                         if distance <= size * 0.8:
                             opacity = 1.0 - (distance / (size * 0.8)) * 0.5
-                            cloud_color = (int(248 * opacity), int(248 * opacity), int(255 * opacity))
+                            # Use more balanced white colors to avoid yellow tint
+                            cloud_color = (int(200 * opacity), int(220 * opacity), int(255 * opacity))
                             self.led.set_pixel(x, y, cloud_color)
             
             # Update cloud positions
