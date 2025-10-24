@@ -38,6 +38,13 @@ class LEDDisplayApp:
         self.current_shape_process = None
         self.shape_animation_running = False
         
+        # Nature animation system
+        self.nature_animations = [
+            "floating_clouds_animation.py"
+        ]
+        self.current_nature_index = 0
+        self.nature_animation_running = False
+        
         # Setup signal handlers for graceful shutdown
         signal.signal(signal.SIGINT, self.signal_handler)
         signal.signal(signal.SIGTERM, self.signal_handler)
@@ -49,8 +56,8 @@ class LEDDisplayApp:
         """Setup button callbacks for the 4 buttons."""
         # Button 18 (index 0) - Shapes
         self.button_controller.register_callback(0, self.start_shapes_animation)
-        # Button 17 (index 1) - Wave pattern
-        self.button_controller.register_callback(1, self.start_wave_pattern)
+        # Button 17 (index 1) - Nature animations
+        self.button_controller.register_callback(1, self.start_nature_animation)
         # Button 27 (index 2) - Text scroll
         self.button_controller.register_callback(2, self.start_text_scroll)
         # Button 22 (index 3) - Squares animation
@@ -92,6 +99,103 @@ class LEDDisplayApp:
         self.current_pattern.start()
         
         print(f"✅ Started {shape_name}")
+    
+    def start_nature_animation(self):
+        """Start nature animation - cycles through different nature scenes."""
+        print("🌿 Starting nature animation...")
+        self.stop_current_pattern()
+        time.sleep(0.1)  # Ensure everything is stopped
+        
+        # Cycle to next nature animation
+        self.current_nature_index = (self.current_nature_index + 1) % len(self.nature_animations)
+        nature_file = self.nature_animations[self.current_nature_index]
+        nature_name = nature_file.replace('_animation.py', '').replace('_', ' ').title()
+        
+        print(f"🌿 Starting {nature_name}...")
+        
+        # Start the nature animation as a thread
+        self.current_pattern = threading.Thread(target=self.run_nature_animation)
+        self.current_pattern.daemon = False  # Don't use daemon threads
+        self.current_pattern.start()
+        
+        print(f"✅ Started {nature_name}")
+    
+    def run_nature_animation(self):
+        """Run the current nature animation."""
+        self.nature_animation_running = True
+        
+        try:
+            if self.current_nature_index == 0:
+                self.run_floating_clouds()
+        finally:
+            self.nature_animation_running = False
+    
+    def run_floating_clouds(self):
+        """Run floating clouds animation."""
+        import math
+        duration = 30
+        start_time = time.time()
+        
+        # Initialize clouds
+        clouds = []
+        for _ in range(4):
+            cloud = {
+                'x': random.randint(-10, self.width + 10),
+                'y': random.randint(10, self.height - 10),
+                'size': random.randint(8, 15),
+                'speed': random.uniform(0.3, 0.8),
+                'drift_phase': random.uniform(0, 2 * math.pi)
+            }
+            clouds.append(cloud)
+        
+        while time.time() - start_time < duration and self.nature_animation_running:
+            # Clear display
+            self.led.clear()
+            
+            # Create sky background
+            for y in range(self.height):
+                sky_intensity = 1.0 - (y / self.height) * 0.2
+                sky_color = (int(135 * sky_intensity), int(206 * sky_intensity), int(235 * sky_intensity))
+                
+                for x in range(self.width):
+                    self.led.set_pixel(x, y, sky_color)
+            
+            # Draw clouds
+            for cloud in clouds:
+                center_x = int(cloud['x'])
+                center_y = int(cloud['y'])
+                size = cloud['size']
+                
+                # Add gentle drift
+                drift_x = math.sin(cloud['drift_phase'] + (time.time() - start_time) * 0.02) * 2
+                drift_y = math.cos(cloud['drift_phase'] + (time.time() - start_time) * 0.015) * 1
+                
+                center_x += int(drift_x)
+                center_y += int(drift_y)
+                
+                # Draw cloud
+                for y in range(max(0, center_y - size), min(self.height, center_y + size)):
+                    for x in range(max(0, center_x - size), min(self.width, center_x + size)):
+                        dx = x - center_x
+                        dy = y - center_y
+                        distance = math.sqrt(dx*dx + dy*dy)
+                        
+                        if distance <= size * 0.8:
+                            opacity = 1.0 - (distance / (size * 0.8)) * 0.5
+                            cloud_color = (int(248 * opacity), int(248 * opacity), int(255 * opacity))
+                            self.led.set_pixel(x, y, cloud_color)
+            
+            # Update cloud positions
+            for cloud in clouds:
+                cloud['x'] += cloud['speed']
+                cloud['y'] += math.sin((time.time() - start_time) * 0.01 + cloud['drift_phase']) * 0.2
+                
+                if cloud['x'] > self.width + 20:
+                    cloud['x'] = -20
+                    cloud['y'] = random.randint(10, self.height - 10)
+            
+            self.led.show()
+            time.sleep(0.1)  # 10 FPS for gentle movement
     
     def run_shape_animation(self):
         """Run the current shape animation."""
@@ -294,6 +398,9 @@ class LEDDisplayApp:
         # Stop shape animations
         self.stop_current_shape_animation()
         self.shape_animation_running = False
+        
+        # Stop nature animations
+        self.nature_animation_running = False
         
         # Clear the display
         if hasattr(self, 'led'):
