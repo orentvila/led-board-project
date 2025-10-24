@@ -49,8 +49,8 @@ class LEDDisplayApp:
         self.current_nature_index = 0
         self.nature_animation_running = False
         
-        # Rainbow animation system
-        self.rainbow_animation_running = False
+        # Lion animation system
+        self.lion_animation_running = False
         
         # Setup signal handlers for graceful shutdown
         signal.signal(signal.SIGINT, self.signal_handler)
@@ -65,8 +65,8 @@ class LEDDisplayApp:
         self.button_controller.register_callback(0, self.start_shapes_animation)
         # Button 17 (index 1) - Nature animations
         self.button_controller.register_callback(1, self.start_nature_animation)
-        # Button 27 (index 2) - Rainbow animation
-        self.button_controller.register_callback(2, self.start_rainbow_animation)
+        # Button 27 (index 2) - Lion animation
+        self.button_controller.register_callback(2, self.start_lion_animation)
         # Button 22 (index 3) - Squares animation
         self.button_controller.register_callback(3, self.start_squares_animation)
     
@@ -472,140 +472,157 @@ class LEDDisplayApp:
             self.led.show()
             time.sleep(0.1)  # 10 FPS for gentle movement
     
-    def start_rainbow_animation(self):
-        """Start rainbow animation."""
-        print("🌈 Starting rainbow animation...")
+    def start_lion_animation(self):
+        """Start lion animation."""
+        print("🦁 Starting lion animation...")
         self.stop_current_pattern()
         time.sleep(0.3)  # Longer wait to ensure everything is stopped
         
         # Set flags
         self.animation_stop_flag = False
-        self.rainbow_animation_running = True
+        self.lion_animation_running = True
         
-        # Start the rainbow animation as a thread
-        self.current_pattern = threading.Thread(target=self.run_rainbow_animation)
+        # Start the lion animation as a thread
+        self.current_pattern = threading.Thread(target=self.run_lion_animation)
         self.current_pattern.daemon = False  # Don't use daemon threads
         self.current_pattern.start()
         
-        print("✅ Started rainbow animation")
+        print("✅ Started lion animation")
     
-    def run_rainbow_animation(self):
-        """Run rainbow animation with minimal movement."""
+    def run_lion_animation(self):
+        """Run lion animation with gentle movement."""
         import math
         duration = 30
         start_time = time.time()
         
-        print(f"🌈 Rainbow animation started")
+        print(f"🦁 Lion animation started")
         
         # Get display dimensions
         width = 32
         height = 48
         
-        # Rainbow colors (matching image - ROYGBIV)
-        rainbow_colors = [
-            (255, 0, 0),      # Red (outermost)
-            (255, 127, 0),    # Orange
-            (255, 255, 0),    # Yellow
-            (0, 255, 0),      # Green
-            (0, 255, 255),    # Light Blue/Cyan
-            (75, 0, 130),     # Indigo
-            (148, 0, 211)     # Violet (innermost)
-        ]
+        # Lion colors (matching image)
+        lion_colors = {
+            'body': (255, 200, 0),      # Golden yellow body
+            'mane': (139, 69, 19),      # Brown mane
+            'mane_outline': (101, 50, 14),  # Darker brown outline
+            'face': (255, 255, 0),      # Yellow face
+            'eyes': (0, 0, 0),          # Black eyes
+            'nose': (0, 0, 0),          # Black nose
+            'whiskers': (0, 0, 0),      # Black whiskers
+            'mouth': (0, 0, 0),         # Black mouth
+            'blush': (255, 182, 193),   # Pink blush
+            'tail_tuft': (101, 50, 14),  # Dark brown tail tuft
+            'background': (245, 245, 220)  # Light cream background
+        }
         
-        while time.time() - start_time < duration and self.rainbow_animation_running and not getattr(self, 'animation_stop_flag', False):
+        while time.time() - start_time < duration and self.lion_animation_running and not getattr(self, 'animation_stop_flag', False):
             # Clear display
             self.led.clear()
             
-            # Create clear blue sky background (matching image)
+            # Create light cream background
             for y in range(height):
-                # Gradient from darker blue at top to lighter blue at bottom
-                sky_intensity = 1.0 - (y / height) * 0.4
-                sky_color = (int(100 * sky_intensity), int(150 * sky_intensity), int(220 * sky_intensity))
-                
                 for x in range(width):
-                    self.led.set_pixel(x, y, sky_color)
+                    self.led.set_pixel(x, y, lion_colors['background'])
             
-            # Draw clouds (white, puffy, cartoon style)
-            clouds = [
-                {'x': 5, 'y': 8, 'size': 4},   # Upper left cloud
-                {'x': 8, 'y': 15, 'size': 3}   # Mid-left cloud
-            ]
+            # Calculate gentle movement
+            sway_offset = math.sin((time.time() - start_time) * 0.5) * 1  # Gentle swaying
             
-            for cloud in clouds:
-                center_x = cloud['x']
-                center_y = cloud['y']
-                size = cloud['size']
-                
-                # Draw puffy cloud
-                for dy in range(-size, size + 1):
-                    for dx in range(-size, size + 1):
-                        distance = math.sqrt(dx*dx + dy*dy)
-                        if distance <= size * 0.8:
-                            x = center_x + dx
-                            y = center_y + dy
-                            if 0 <= x < width and 0 <= y < height:
-                                cloud_color = (255, 255, 255)  # White cloud
-                                self.led.set_pixel(x, y, cloud_color)
+            # Lion center position
+            center_x = width // 2 + int(sway_offset)
+            center_y = height // 2
             
-            # Draw stars (white, 5-pointed)
-            stars = [
-                {'x': 28, 'y': 6},   # Upper right star
-                {'x': 12, 'y': 12}    # Mid-left star
-            ]
+            # Draw lion mane (brown, wavy edge)
+            for dy in range(-8, 9):
+                for dx in range(-8, 9):
+                    distance = math.sqrt(dx*dx + dy*dy)
+                    if 6 <= distance <= 8:  # Mane ring
+                        x = center_x + dx
+                        y = center_y + dy
+                        if 0 <= x < width and 0 <= y < height:
+                            self.led.set_pixel(x, y, lion_colors['mane'])
             
-            for star in stars:
-                star_x = star['x']
-                star_y = star['y']
-                star_color = (255, 255, 255)  # White star
-                
-                # Draw 5-pointed star (simple cross pattern)
-                if 0 <= star_x < width and 0 <= star_y < height:
-                    self.led.set_pixel(star_x, star_y, star_color)
-                if 0 <= star_x - 1 < width and 0 <= star_y < height:
-                    self.led.set_pixel(star_x - 1, star_y, star_color)
-                if 0 <= star_x + 1 < width and 0 <= star_y < height:
-                    self.led.set_pixel(star_x + 1, star_y, star_color)
-                if 0 <= star_x < width and 0 <= star_y - 1 < height:
-                    self.led.set_pixel(star_x, star_y - 1, star_color)
-                if 0 <= star_x < width and 0 <= star_y + 1 < height:
-                    self.led.set_pixel(star_x, star_y + 1, star_color)
+            # Draw mane outline
+            for dy in range(-9, 10):
+                for dx in range(-9, 10):
+                    distance = math.sqrt(dx*dx + dy*dy)
+                    if 8 < distance <= 9:  # Mane outline
+                        x = center_x + dx
+                        y = center_y + dy
+                        if 0 <= x < width and 0 <= y < height:
+                            self.led.set_pixel(x, y, lion_colors['mane_outline'])
             
-            # Draw rainbow arc (matching image - wide arc from bottom left to top right)
-            center_x = width // 2 - 5  # Offset to match image
-            center_y = height - 2  # Bottom of display
-            radius = 18  # Rainbow radius
+            # Draw lion body (golden yellow)
+            for dy in range(-4, 5):
+                for dx in range(-3, 4):
+                    distance = math.sqrt(dx*dx + dy*dy)
+                    if distance <= 4:  # Body
+                        x = center_x + dx
+                        y = center_y + dy
+                        if 0 <= x < width and 0 <= y < height:
+                            self.led.set_pixel(x, y, lion_colors['body'])
             
-            # Calculate gentle rainbow movement
-            rainbow_offset = math.sin((time.time() - start_time) * 0.3) * 0.5  # Very gentle movement
+            # Draw lion face (yellow)
+            for dy in range(-3, 4):
+                for dx in range(-2, 3):
+                    distance = math.sqrt(dx*dx + dy*dy)
+                    if distance <= 3:  # Face
+                        x = center_x + dx
+                        y = center_y + dy
+                        if 0 <= x < width and 0 <= y < height:
+                            self.led.set_pixel(x, y, lion_colors['face'])
             
-            for color_index, color in enumerate(rainbow_colors):
-                # Each color band has slightly different radius
-                band_radius = radius + color_index * 2
-                
-                # Draw rainbow arc with 2-pixel width per color
-                for angle in range(0, 180, 2):  # Half circle
-                    rad = math.radians(angle)
-                    
-                    # Draw inner edge of color band
-                    x1 = int(center_x + (band_radius + rainbow_offset) * math.cos(rad))
-                    y1 = int(center_y - (band_radius + rainbow_offset) * math.sin(rad))
-                    
-                    # Draw outer edge of color band (2 pixels wide)
-                    x2 = int(center_x + (band_radius + 1 + rainbow_offset) * math.cos(rad))
-                    y2 = int(center_y - (band_radius + 1 + rainbow_offset) * math.sin(rad))
-                    
-                    # Draw both pixels for thicker bands
-                    if 0 <= x1 < width and 0 <= y1 < height:
-                        self.led.set_pixel(x1, y1, color)
-                    if 0 <= x2 < width and 0 <= y2 < height:
-                        self.led.set_pixel(x2, y2, color)
+            # Draw eyes (black dots)
+            if 0 <= center_x - 1 < width and 0 <= center_y - 1 < height:
+                self.led.set_pixel(center_x - 1, center_y - 1, lion_colors['eyes'])
+            if 0 <= center_x + 1 < width and 0 <= center_y - 1 < height:
+                self.led.set_pixel(center_x + 1, center_y - 1, lion_colors['eyes'])
+            
+            # Draw nose (black triangle)
+            if 0 <= center_x < width and 0 <= center_y < height:
+                self.led.set_pixel(center_x, center_y, lion_colors['nose'])
+            
+            # Draw whiskers (black lines)
+            for i in range(-2, 3):
+                if 0 <= center_x - 3 < width and 0 <= center_y + i < height:
+                    self.led.set_pixel(center_x - 3, center_y + i, lion_colors['whiskers'])
+                if 0 <= center_x + 3 < width and 0 <= center_y + i < height:
+                    self.led.set_pixel(center_x + 3, center_y + i, lion_colors['whiskers'])
+            
+            # Draw mouth (curved line)
+            if 0 <= center_x - 1 < width and 0 <= center_y + 2 < height:
+                self.led.set_pixel(center_x - 1, center_y + 2, lion_colors['mouth'])
+            if 0 <= center_x < width and 0 <= center_y + 2 < height:
+                self.led.set_pixel(center_x, center_y + 2, lion_colors['mouth'])
+            if 0 <= center_x + 1 < width and 0 <= center_y + 2 < height:
+                self.led.set_pixel(center_x + 1, center_y + 2, lion_colors['mouth'])
+            
+            # Draw blush (pink cheeks)
+            if 0 <= center_x - 2 < width and 0 <= center_y + 1 < height:
+                self.led.set_pixel(center_x - 2, center_y + 1, lion_colors['blush'])
+            if 0 <= center_x + 2 < width and 0 <= center_y + 1 < height:
+                self.led.set_pixel(center_x + 2, center_y + 1, lion_colors['blush'])
+            
+            # Draw tail (curved)
+            tail_x = center_x + 4
+            tail_y = center_y + 2
+            if 0 <= tail_x < width and 0 <= tail_y < height:
+                self.led.set_pixel(tail_x, tail_y, lion_colors['body'])
+            if 0 <= tail_x + 1 < width and 0 <= tail_y + 1 < height:
+                self.led.set_pixel(tail_x + 1, tail_y + 1, lion_colors['body'])
+            if 0 <= tail_x + 2 < width and 0 <= tail_y < height:
+                self.led.set_pixel(tail_x + 2, tail_y, lion_colors['body'])
+            
+            # Draw tail tuft
+            if 0 <= tail_x + 2 < width and 0 <= tail_y - 1 < height:
+                self.led.set_pixel(tail_x + 2, tail_y - 1, lion_colors['tail_tuft'])
             
             self.led.show()
-            time.sleep(0.15)  # Slower, more gentle animation
+            time.sleep(0.2)  # Gentle animation speed
         
         # Cleanup when animation ends
-        self.rainbow_animation_running = False
-        print("🌈 Rainbow animation finished")
+        self.lion_animation_running = False
+        print("🦁 Lion animation finished")
     
     def run_shape_animation(self):
         """Run the current shape animation."""
@@ -818,8 +835,8 @@ class LEDDisplayApp:
         # Stop nature animations
         self.nature_animation_running = False
         
-        # Stop rainbow animations
-        self.rainbow_animation_running = False
+        # Stop lion animations
+        self.lion_animation_running = False
         
         # Add animation stop flag
         self.animation_stop_flag = True
@@ -888,7 +905,7 @@ class LEDDisplayApp:
         print("Button controls (when connected):")
         print("  Button 18: Shapes animation")
         print("  Button 17: Nature animations")
-        print("  Button 27: Rainbow animation")
+        print("  Button 27: Lion animation")
         print("  Button 22: Squares animation")
         
         try:
