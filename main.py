@@ -49,8 +49,8 @@ class LEDDisplayApp:
         self.current_nature_index = 0
         self.nature_animation_running = False
         
-        # Bird animation system
-        self.bird_animation_running = False
+        # Rainbow animation system
+        self.rainbow_animation_running = False
         
         # Setup signal handlers for graceful shutdown
         signal.signal(signal.SIGINT, self.signal_handler)
@@ -65,8 +65,8 @@ class LEDDisplayApp:
         self.button_controller.register_callback(0, self.start_shapes_animation)
         # Button 17 (index 1) - Nature animations
         self.button_controller.register_callback(1, self.start_nature_animation)
-        # Button 27 (index 2) - Bird flying animation
-        self.button_controller.register_callback(2, self.start_bird_flying_animation)
+        # Button 27 (index 2) - Rainbow animation
+        self.button_controller.register_callback(2, self.start_rainbow_animation)
         # Button 22 (index 3) - Squares animation
         self.button_controller.register_callback(3, self.start_squares_animation)
     
@@ -472,180 +472,92 @@ class LEDDisplayApp:
             self.led.show()
             time.sleep(0.1)  # 10 FPS for gentle movement
     
-    def start_bird_flying_animation(self):
-        """Start bird flying animation."""
-        print("🐦 Starting bird flying animation...")
+    def start_rainbow_animation(self):
+        """Start rainbow animation."""
+        print("🌈 Starting rainbow animation...")
         self.stop_current_pattern()
         time.sleep(0.3)  # Longer wait to ensure everything is stopped
         
         # Set flags
         self.animation_stop_flag = False
-        self.bird_animation_running = True
+        self.rainbow_animation_running = True
         
-        # Start the bird flying animation as a thread
-        self.current_pattern = threading.Thread(target=self.run_bird_flying_animation)
+        # Start the rainbow animation as a thread
+        self.current_pattern = threading.Thread(target=self.run_rainbow_animation)
         self.current_pattern.daemon = False  # Don't use daemon threads
         self.current_pattern.start()
         
-        print("✅ Started bird flying animation")
+        print("✅ Started rainbow animation")
     
-    def run_bird_flying_animation(self):
-        """Run bird flying animation."""
+    def run_rainbow_animation(self):
+        """Run rainbow animation with minimal movement."""
         import math
         duration = 30
         start_time = time.time()
         
-        print(f"🐦 Bird flying animation started")
+        print(f"🌈 Rainbow animation started")
         
         # Get display dimensions
         width = 32
         height = 48
         
-        # Initialize bird (based on image reference)
-        bird = {
-            'x': -5,  # Start off screen
-            'y': height // 2,  # Middle height
-            'wing_phase': 0,  # Wing flapping phase
-            'speed': 0.8,  # Flying speed
-            'body_color': (0, 255, 0),  # Vibrant green body
-            'beak_color': (255, 255, 0),  # Yellow beak
-            'wing_color': (0, 200, 0),  # Dark green wings
-            'outline_color': (0, 0, 0),  # Black outline
-            'eye_color': (0, 0, 0),  # Black eyes
-            'size': 4  # Bird size
-        }
+        # Rainbow colors (ROYGBIV)
+        rainbow_colors = [
+            (255, 0, 0),      # Red
+            (255, 127, 0),    # Orange
+            (255, 255, 0),    # Yellow
+            (0, 255, 0),      # Green
+            (0, 0, 255),      # Blue
+            (75, 0, 130),     # Indigo
+            (148, 0, 211)     # Violet
+        ]
         
-        # Initialize clouds for background
-        clouds = []
-        for _ in range(3):
-            cloud = {
-                'x': random.randint(0, width),
-                'y': random.randint(5, height - 10),
-                'size': random.randint(4, 8),
-                'speed': random.uniform(0.1, 0.3)
-            }
-            clouds.append(cloud)
-        
-        while time.time() - start_time < duration and self.bird_animation_running and not getattr(self, 'animation_stop_flag', False):
+        while time.time() - start_time < duration and self.rainbow_animation_running and not getattr(self, 'animation_stop_flag', False):
             # Clear display
             self.led.clear()
             
-            # Create sky background
+            # Create soft sky background
             for y in range(height):
-                sky_intensity = 1.0 - (y / height) * 0.2
+                sky_intensity = 1.0 - (y / height) * 0.3
                 sky_color = (int(135 * sky_intensity), int(206 * sky_intensity), int(235 * sky_intensity))
                 
                 for x in range(width):
                     self.led.set_pixel(x, y, sky_color)
             
-            # Draw clouds
-            for cloud in clouds:
-                center_x = int(cloud['x'])
-                center_y = int(cloud['y'])
-                size = cloud['size']
-                
-                # Draw cloud
-                for dy in range(-size, size + 1):
-                    for dx in range(-size, size + 1):
-                        distance = math.sqrt(dx*dx + dy*dy)
-                        if distance <= size * 0.8:
-                            x = center_x + dx
-                            y = center_y + dy
-                            if 0 <= x < width and 0 <= y < height:
-                                cloud_color = (255, 255, 255)  # White clouds
-                                self.led.set_pixel(x, y, cloud_color)
-                
-                # Update cloud position
-                cloud['x'] += cloud['speed']
-                if cloud['x'] > width + 10:
-                    cloud['x'] = -10
-                    cloud['y'] = random.randint(5, height - 10)
+            # Draw rainbow arc
+            center_x = width // 2
+            center_y = height - 5  # Bottom of display
+            radius = 20  # Rainbow radius
             
-                # Draw bird flying towards screen
-            if 0 <= bird['x'] < width:
-                # Calculate wing flapping
-                wing_offset = math.sin(bird['wing_phase']) * 2
+            # Calculate gentle rainbow movement
+            rainbow_offset = math.sin((time.time() - start_time) * 0.5) * 1  # Very gentle movement
+            
+            for color_index, color in enumerate(rainbow_colors):
+                # Each color band has slightly different radius
+                band_radius = radius + color_index * 2
                 
-                center_x = int(bird['x'])
-                center_y = int(bird['y'])
-                
-                # Draw bird body (green, oval shape for front view)
-                for dy in range(-2, 3):
-                    for dx in range(-1, 2):
-                        x = center_x + dx
-                        y = center_y + dy
-                        if 0 <= x < width and 0 <= y < height:
-                            # Oval body for front view
-                            if abs(dx) <= 1 and abs(dy) <= 2:
-                                self.led.set_pixel(x, y, bird['body_color'])
-                
-                # Draw black outline around body
-                for dy in range(-3, 4):
-                    for dx in range(-2, 3):
-                        x = center_x + dx
-                        y = center_y + dy
-                        if 0 <= x < width and 0 <= y < height:
-                            # Outline for oval body
-                            if (abs(dx) == 2 and abs(dy) <= 2) or (abs(dx) <= 1 and abs(dy) == 3):
-                                self.led.set_pixel(x, y, bird['outline_color'])
-                
-                # Draw yellow beak (pointing towards screen)
-                beak_x = center_x
-                beak_y = center_y - 2
-                if 0 <= beak_x < width and 0 <= beak_y < height:
-                    self.led.set_pixel(beak_x, beak_y, bird['beak_color'])
-                
-                # Draw black eyes (two dots, front view)
-                eye1_x = center_x - 1
-                eye2_x = center_x + 1
-                eye_y = center_y - 1
-                if 0 <= eye1_x < width and 0 <= eye_y < height:
-                    self.led.set_pixel(eye1_x, eye_y, bird['eye_color'])
-                if 0 <= eye2_x < width and 0 <= eye_y < height:
-                    self.led.set_pixel(eye2_x, eye_y, bird['eye_color'])
-                
-                # Draw wings (spread wide, showing from front)
-                wing_y = center_y + int(wing_offset)
-                if 0 <= wing_y < height:
-                    # Left wing (spread wide)
-                    for wing_dx in range(-4, -1):
-                        wing_x = center_x + wing_dx
-                        if 0 <= wing_x < width:
-                            self.led.set_pixel(wing_x, wing_y, bird['wing_color'])
-                            # Wing outline
-                            if wing_dx == -4 and 0 <= wing_x - 1 < width:
-                                self.led.set_pixel(wing_x - 1, wing_y, bird['outline_color'])
+                # Draw rainbow arc
+                for angle in range(0, 180, 2):  # Half circle
+                    rad = math.radians(angle)
+                    x = int(center_x + (band_radius + rainbow_offset) * math.cos(rad))
+                    y = int(center_y - (band_radius + rainbow_offset) * math.sin(rad))
                     
-                    # Right wing (spread wide)
-                    for wing_dx in range(1, 4):
-                        wing_x = center_x + wing_dx
-                        if 0 <= wing_x < width:
-                            self.led.set_pixel(wing_x, wing_y, bird['wing_color'])
-                            # Wing outline
-                            if wing_dx == 3 and wing_x + 1 < width:
-                                self.led.set_pixel(wing_x + 1, wing_y, bird['outline_color'])
-                    
-                    # Wing tips (showing wing span)
-                    if center_x - 5 >= 0:
-                        self.led.set_pixel(center_x - 5, wing_y, bird['wing_color'])
-                    if center_x + 5 < width:
-                        self.led.set_pixel(center_x + 5, wing_y, bird['wing_color'])
+                    if 0 <= x < width and 0 <= y < height:
+                        self.led.set_pixel(x, y, color)
             
-            # Update bird position
-            bird['x'] += bird['speed']
-            bird['wing_phase'] += 0.3  # Wing flapping speed
-            
-            # Reset bird when it goes off screen
-            if bird['x'] > width + 5:
-                bird['x'] = -5
-                bird['y'] = random.randint(height // 4, 3 * height // 4)  # Random height
+            # Add gentle sparkles
+            if random.random() < 0.1:  # 10% chance per frame
+                sparkle_x = random.randint(0, width - 1)
+                sparkle_y = random.randint(0, height - 1)
+                sparkle_color = (255, 255, 255)  # White sparkle
+                self.led.set_pixel(sparkle_x, sparkle_y, sparkle_color)
             
             self.led.show()
-            time.sleep(0.1)  # 10 FPS for smooth animation
+            time.sleep(0.15)  # Slower, more gentle animation
         
         # Cleanup when animation ends
-        self.bird_animation_running = False
-        print("🐦 Bird flying animation finished")
+        self.rainbow_animation_running = False
+        print("🌈 Rainbow animation finished")
     
     def run_shape_animation(self):
         """Run the current shape animation."""
@@ -858,8 +770,8 @@ class LEDDisplayApp:
         # Stop nature animations
         self.nature_animation_running = False
         
-        # Stop bird animations
-        self.bird_animation_running = False
+        # Stop rainbow animations
+        self.rainbow_animation_running = False
         
         # Add animation stop flag
         self.animation_stop_flag = True
@@ -928,7 +840,7 @@ class LEDDisplayApp:
         print("Button controls (when connected):")
         print("  Button 18: Shapes animation")
         print("  Button 17: Nature animations")
-        print("  Button 27: Bird flying animation")
+        print("  Button 27: Rainbow animation")
         print("  Button 22: Squares animation")
         
         try:
