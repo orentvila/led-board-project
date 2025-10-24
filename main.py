@@ -138,12 +138,16 @@ class LEDDisplayApp:
         duration = 30
         start_time = time.time()
         
+        # Get display dimensions
+        width = 32
+        height = 48
+        
         # Initialize clouds
         clouds = []
         for _ in range(4):
             cloud = {
-                'x': random.randint(-10, self.width + 10),
-                'y': random.randint(10, self.height - 10),
+                'x': random.randint(-10, width + 10),
+                'y': random.randint(10, height - 10),
                 'size': random.randint(8, 15),
                 'speed': random.uniform(0.3, 0.8),
                 'drift_phase': random.uniform(0, 2 * math.pi)
@@ -155,11 +159,11 @@ class LEDDisplayApp:
             self.led.clear()
             
             # Create sky background
-            for y in range(self.height):
-                sky_intensity = 1.0 - (y / self.height) * 0.2
+            for y in range(height):
+                sky_intensity = 1.0 - (y / height) * 0.2
                 sky_color = (int(135 * sky_intensity), int(206 * sky_intensity), int(235 * sky_intensity))
                 
-                for x in range(self.width):
+                for x in range(width):
                     self.led.set_pixel(x, y, sky_color)
             
             # Draw clouds
@@ -176,8 +180,8 @@ class LEDDisplayApp:
                 center_y += int(drift_y)
                 
                 # Draw cloud
-                for y in range(max(0, center_y - size), min(self.height, center_y + size)):
-                    for x in range(max(0, center_x - size), min(self.width, center_x + size)):
+                for y in range(max(0, center_y - size), min(height, center_y + size)):
+                    for x in range(max(0, center_x - size), min(width, center_x + size)):
                         dx = x - center_x
                         dy = y - center_y
                         distance = math.sqrt(dx*dx + dy*dy)
@@ -192,9 +196,9 @@ class LEDDisplayApp:
                 cloud['x'] += cloud['speed']
                 cloud['y'] += math.sin((time.time() - start_time) * 0.01 + cloud['drift_phase']) * 0.2
                 
-                if cloud['x'] > self.width + 20:
+                if cloud['x'] > width + 20:
                     cloud['x'] = -20
-                    cloud['y'] = random.randint(10, self.height - 10)
+                    cloud['y'] = random.randint(10, height - 10)
             
             self.led.show()
             time.sleep(0.1)  # 10 FPS for gentle movement
