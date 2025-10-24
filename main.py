@@ -106,11 +106,14 @@ class LEDDisplayApp:
     def start_nature_animation(self):
         """Start nature animation - cycles through different nature scenes."""
         print("🌿 Starting nature animation...")
-        self.stop_current_pattern()
-        time.sleep(0.1)  # Ensure everything is stopped
         
-        # Set the flag BEFORE starting the thread
-        self.nature_animation_running = True
+        # Stop any current animation and wait for it to fully stop
+        self.stop_current_pattern()
+        time.sleep(0.2)  # Longer wait to ensure everything is stopped
+        
+        # Ensure the flag is False before starting new animation
+        self.nature_animation_running = False
+        time.sleep(0.1)  # Brief pause
         
         # Cycle to next nature animation
         self.current_nature_index = (self.current_nature_index + 1) % len(self.nature_animations)
@@ -118,6 +121,10 @@ class LEDDisplayApp:
         nature_name = nature_file.replace('_animation.py', '').replace('_', ' ').title()
         
         print(f"🌿 Starting {nature_name}...")
+        
+        # Set the flag BEFORE starting the thread
+        self.nature_animation_running = True
+        print(f"🔧 Flag set to: {self.nature_animation_running}")
         
         # Start the nature animation as a thread
         self.current_pattern = threading.Thread(target=self.run_nature_animation)
@@ -128,6 +135,7 @@ class LEDDisplayApp:
     
     def run_nature_animation(self):
         """Run the current nature animation."""
+        print(f"🔧 run_nature_animation called, flag: {self.nature_animation_running}, index: {self.current_nature_index}")
         try:
             if self.current_nature_index == 0:
                 self.run_floating_clouds()
@@ -135,6 +143,7 @@ class LEDDisplayApp:
                 self.run_rain_animation()
         finally:
             self.nature_animation_running = False
+            print(f"🔧 Animation finished, flag set to: {self.nature_animation_running}")
     
     def run_floating_clouds(self):
         """Run floating clouds animation."""
@@ -143,6 +152,11 @@ class LEDDisplayApp:
         start_time = time.time()
         
         print(f"🌤️ Floating clouds animation started (flag: {self.nature_animation_running})")
+        
+        # Double-check the flag is still True
+        if not self.nature_animation_running:
+            print("❌ Animation flag is False, stopping clouds")
+            return
         
         # Get display dimensions
         width = 32
@@ -243,6 +257,11 @@ class LEDDisplayApp:
         start_time = time.time()
         
         print(f"🌧️ Rain animation started (flag: {self.nature_animation_running})")
+        
+        # Double-check the flag is still True
+        if not self.nature_animation_running:
+            print("❌ Animation flag is False, stopping rain")
+            return
         
         # Get display dimensions
         width = 32
