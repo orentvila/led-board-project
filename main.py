@@ -264,14 +264,10 @@ class LEDDisplayApp:
             # Clear display
             self.led.clear()
             
-            # Create soft gray sky background
+            # Create black background
             for y in range(height):
-                # Gradient from light gray at top to darker gray at bottom
-                sky_intensity = 1.0 - (y / height) * 0.4
-                sky_color = (int(120 * sky_intensity), int(130 * sky_intensity), int(140 * sky_intensity))
-                
                 for x in range(width):
-                    self.led.set_pixel(x, y, sky_color)
+                    self.led.set_pixel(x, y, (0, 0, 0))  # Pure black background
             
             # Draw rain drops
             for drop in rain_drops:
@@ -279,12 +275,17 @@ class LEDDisplayApp:
                 for i in range(drop['length']):
                     y_pos = int(drop['y']) - i
                     if 0 <= y_pos < height:
-                        # Rain drop color: soft blue-gray with varying intensity
-                        intensity = drop['intensity'] * (1.0 - (i / drop['length']) * 0.5)
+                        # Rain drop color: white to yellow gradient
+                        intensity = drop['intensity'] * (1.0 - (i / drop['length']) * 0.3)
+                        
+                        # Mix white and yellow based on drop position
+                        white_amount = random.uniform(0.3, 0.8)  # Vary between drops
+                        yellow_amount = 1.0 - white_amount
+                        
                         rain_color = (
-                            int(100 * intensity),
-                            int(150 * intensity), 
-                            int(200 * intensity)
+                            int(255 * intensity * white_amount + 255 * intensity * yellow_amount),
+                            int(255 * intensity * white_amount + 200 * intensity * yellow_amount),
+                            int(255 * intensity * white_amount + 0 * intensity * yellow_amount)
                         )
                         self.led.set_pixel(int(drop['x']), y_pos, rain_color)
             
@@ -299,16 +300,16 @@ class LEDDisplayApp:
                     drop['speed'] = random.uniform(1.5, 3.0)
                     drop['intensity'] = random.uniform(0.3, 1.0)
             
-            # Add occasional lightning flash (very subtle)
+            # Add occasional lightning flash (white flash on black background)
             if random.random() < 0.02:  # 2% chance per frame
-                flash_intensity = random.uniform(0.1, 0.3)
+                flash_intensity = random.uniform(0.2, 0.6)
                 for y in range(height):
                     for x in range(width):
-                        current_color = self.led.get_pixel(x, y) if hasattr(self.led, 'get_pixel') else (120, 130, 140)
+                        # White lightning flash
                         flash_color = (
-                            min(255, int(current_color[0] + 50 * flash_intensity)),
-                            min(255, int(current_color[1] + 50 * flash_intensity)),
-                            min(255, int(current_color[2] + 50 * flash_intensity))
+                            int(255 * flash_intensity),
+                            int(255 * flash_intensity),
+                            int(255 * flash_intensity)
                         )
                         self.led.set_pixel(x, y, flash_color)
             
