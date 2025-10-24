@@ -106,14 +106,15 @@ class LEDDisplayApp:
     def start_nature_animation(self):
         """Start nature animation - cycles through different nature scenes."""
         print("🌿 Starting nature animation...")
+        print(f"🔧 Current state - flag: {self.nature_animation_running}, index: {self.current_nature_index}")
         
         # Stop any current animation and wait for it to fully stop
         self.stop_current_pattern()
-        time.sleep(0.2)  # Longer wait to ensure everything is stopped
+        time.sleep(0.3)  # Even longer wait to ensure everything is stopped
         
         # Ensure the flag is False before starting new animation
         self.nature_animation_running = False
-        time.sleep(0.1)  # Brief pause
+        time.sleep(0.2)  # Longer pause
         
         # Cycle to next nature animation
         self.current_nature_index = (self.current_nature_index + 1) % len(self.nature_animations)
@@ -121,10 +122,16 @@ class LEDDisplayApp:
         nature_name = nature_file.replace('_animation.py', '').replace('_', ' ').title()
         
         print(f"🌿 Starting {nature_name}...")
+        print(f"🔧 About to set flag to True")
         
         # Set the flag BEFORE starting the thread
         self.nature_animation_running = True
         print(f"🔧 Flag set to: {self.nature_animation_running}")
+        
+        # Additional verification
+        if not self.nature_animation_running:
+            print("❌ CRITICAL ERROR: Flag is still False after setting!")
+            return
         
         # Start the nature animation as a thread
         self.current_pattern = threading.Thread(target=self.run_nature_animation)
@@ -132,6 +139,13 @@ class LEDDisplayApp:
         self.current_pattern.start()
         
         print(f"✅ Started {nature_name}")
+        print(f"🔧 Thread started, flag should be: {self.nature_animation_running}")
+        
+        # FALLBACK: If thread doesn't work, try direct call
+        time.sleep(0.1)  # Brief wait to see if thread starts
+        if not self.current_pattern.is_alive():
+            print("⚠️ Thread not alive, trying direct call...")
+            self.run_nature_animation()
     
     def run_nature_animation(self):
         """Run the current nature animation."""
@@ -157,6 +171,23 @@ class LEDDisplayApp:
         if not self.nature_animation_running:
             print("❌ Animation flag is False, stopping clouds")
             return
+        
+        # TEST: Clear display and show a simple pattern first
+        print("🧪 Testing LED display...")
+        self.led.clear()
+        for x in range(32):
+            for y in range(48):
+                if x < 16 and y < 24:
+                    self.led.set_pixel(x, y, (255, 0, 0))  # Red quadrant
+                elif x >= 16 and y < 24:
+                    self.led.set_pixel(x, y, (0, 255, 0))  # Green quadrant
+                elif x < 16 and y >= 24:
+                    self.led.set_pixel(x, y, (0, 0, 255))  # Blue quadrant
+                else:
+                    self.led.set_pixel(x, y, (255, 255, 0))  # Yellow quadrant
+        self.led.show()
+        time.sleep(2)  # Show test pattern for 2 seconds
+        print("🧪 Test pattern shown, starting clouds...")
         
         # Get display dimensions
         width = 32
