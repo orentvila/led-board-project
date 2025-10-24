@@ -350,18 +350,7 @@ class LEDDisplayApp:
                     drop['speed'] = random.uniform(1.5, 3.0)
                     drop['intensity'] = random.uniform(0.3, 1.0)
             
-            # Add occasional lightning flash (white flash on black background)
-            if random.random() < 0.02:  # 2% chance per frame
-                flash_intensity = random.uniform(0.2, 0.6)
-                for y in range(height):
-                    for x in range(width):
-                        # White lightning flash
-                        flash_color = (
-                            int(255 * flash_intensity),
-                            int(255 * flash_intensity),
-                            int(255 * flash_intensity)
-                        )
-                        self.led.set_pixel(x, y, flash_color)
+            # Lightning flash removed to prevent flickering
             
             self.led.show()
             time.sleep(0.08)  # 12.5 FPS for smooth rain
