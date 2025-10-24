@@ -49,6 +49,9 @@ class LEDDisplayApp:
         self.current_nature_index = 0
         self.nature_animation_running = False
         
+        # Bird animation system
+        self.bird_animation_running = False
+        
         # Setup signal handlers for graceful shutdown
         signal.signal(signal.SIGINT, self.signal_handler)
         signal.signal(signal.SIGTERM, self.signal_handler)
@@ -400,7 +403,7 @@ class LEDDisplayApp:
             'sway_amount': 1.0  # Gentle sway
         }
         
-        while time.time() - start_time < duration and self.nature_animation_running:
+        while time.time() - start_time < duration and self.nature_animation_running and not getattr(self, 'animation_stop_flag', False):
             # Clear display
             self.led.clear()
             
@@ -473,7 +476,11 @@ class LEDDisplayApp:
         """Start bird flying animation."""
         print("🐦 Starting bird flying animation...")
         self.stop_current_pattern()
-        time.sleep(0.2)  # Ensure everything is stopped
+        time.sleep(0.3)  # Longer wait to ensure everything is stopped
+        
+        # Set flags
+        self.animation_stop_flag = False
+        self.bird_animation_running = True
         
         # Start the bird flying animation as a thread
         self.current_pattern = threading.Thread(target=self.run_bird_flying_animation)
@@ -515,7 +522,7 @@ class LEDDisplayApp:
             }
             clouds.append(cloud)
         
-        while time.time() - start_time < duration and not getattr(self, 'animation_stop_flag', False):
+        while time.time() - start_time < duration and self.bird_animation_running and not getattr(self, 'animation_stop_flag', False):
             # Clear display
             self.led.clear()
             
@@ -584,6 +591,10 @@ class LEDDisplayApp:
             
             self.led.show()
             time.sleep(0.1)  # 10 FPS for smooth animation
+        
+        # Cleanup when animation ends
+        self.bird_animation_running = False
+        print("🐦 Bird flying animation finished")
     
     def run_shape_animation(self):
         """Run the current shape animation."""
@@ -795,6 +806,9 @@ class LEDDisplayApp:
         
         # Stop nature animations
         self.nature_animation_running = False
+        
+        # Stop bird animations
+        self.bird_animation_running = False
         
         # Add animation stop flag
         self.animation_stop_flag = True
