@@ -536,14 +536,23 @@ class LEDDisplayApp:
                 # Each color band has slightly different radius
                 band_radius = radius + color_index * 2
                 
-                # Draw rainbow arc
+                # Draw rainbow arc with 2-pixel width per color
                 for angle in range(0, 180, 2):  # Half circle
                     rad = math.radians(angle)
-                    x = int(center_x + (band_radius + rainbow_offset) * math.cos(rad))
-                    y = int(center_y - (band_radius + rainbow_offset) * math.sin(rad))
                     
-                    if 0 <= x < width and 0 <= y < height:
-                        self.led.set_pixel(x, y, color)
+                    # Draw inner edge of color band
+                    x1 = int(center_x + (band_radius + rainbow_offset) * math.cos(rad))
+                    y1 = int(center_y - (band_radius + rainbow_offset) * math.sin(rad))
+                    
+                    # Draw outer edge of color band (2 pixels wide)
+                    x2 = int(center_x + (band_radius + 1 + rainbow_offset) * math.cos(rad))
+                    y2 = int(center_y - (band_radius + 1 + rainbow_offset) * math.sin(rad))
+                    
+                    # Draw both pixels for thicker bands
+                    if 0 <= x1 < width and 0 <= y1 < height:
+                        self.led.set_pixel(x1, y1, color)
+                    if 0 <= x2 < width and 0 <= y2 < height:
+                        self.led.set_pixel(x2, y2, color)
             
             # Add gentle sparkles
             if random.random() < 0.1:  # 10% chance per frame
