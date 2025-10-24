@@ -439,22 +439,24 @@ class LEDDisplayApp:
                     petal_size = int(flower['petal_size'] * flower['bloom_progress'])
                     flower_y = height - 1 - int(flower['stem_height'])
                     
-                    # Draw petals in a circle
-                    for dy in range(-petal_size, petal_size + 1):
-                        for dx in range(-petal_size, petal_size + 1):
-                            distance = math.sqrt(dx*dx + dy*dy)
-                            if distance <= petal_size:
-                                x = current_x + dx
-                                y = flower_y + dy
-                                if 0 <= x < width and 0 <= y < height:
-                                    # Add some petal variation
-                                    petal_intensity = 1.0 - (distance / petal_size) * 0.3
-                                    petal_color = (
-                                        int(flower['color'][0] * petal_intensity),
-                                        int(flower['color'][1] * petal_intensity),
-                                        int(flower['color'][2] * petal_intensity)
-                                    )
-                                    self.led.set_pixel(x, y, petal_color)
+                    # Safety check for petal_size
+                    if petal_size > 0:
+                        # Draw petals in a circle
+                        for dy in range(-petal_size, petal_size + 1):
+                            for dx in range(-petal_size, petal_size + 1):
+                                distance = math.sqrt(dx*dx + dy*dy)
+                                if distance <= petal_size:
+                                    x = current_x + dx
+                                    y = flower_y + dy
+                                    if 0 <= x < width and 0 <= y < height:
+                                        # Add some petal variation
+                                        petal_intensity = 1.0 - (distance / petal_size) * 0.3
+                                        petal_color = (
+                                            int(flower['color'][0] * petal_intensity),
+                                            int(flower['color'][1] * petal_intensity),
+                                            int(flower['color'][2] * petal_intensity)
+                                        )
+                                        self.led.set_pixel(x, y, petal_color)
             
             # Update flower growth
             for flower in flowers:
