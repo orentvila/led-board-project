@@ -10,6 +10,8 @@ import sys
 import threading
 import subprocess
 import os
+import random
+import math
 # from led_controller import LEDController  # Using LEDControllerExact instead
 from display_patterns import DisplayPatterns
 from button_controller import ButtonController
