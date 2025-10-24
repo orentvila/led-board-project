@@ -375,8 +375,7 @@ class LEDDisplayApp:
         width = 32
         height = 48
         
-        # Initialize flowers
-        flowers = []
+        # Initialize single flower
         flower_colors = [
             (255, 182, 193),  # Pink
             (255, 192, 203),  # Light pink
@@ -387,21 +386,19 @@ class LEDDisplayApp:
             (255, 239, 213)   # Papaya whip
         ]
         
-        # Create 8 flowers at different positions
-        for i in range(8):
-            flower = {
-                'x': random.randint(4, width - 5),
-                'y': height - 8,  # Start from ground
-                'stem_height': 0,  # Will grow
-                'max_stem_height': random.randint(8, 15),
-                'petal_size': 0,  # Will grow
-                'max_petal_size': random.randint(3, 6),
-                'color': random.choice(flower_colors),
-                'bloom_progress': 0,  # 0 to 1
-                'sway_phase': random.uniform(0, 2 * math.pi),
-                'sway_amount': random.uniform(0.5, 1.5)
-            }
-            flowers.append(flower)
+        # Create single flower in the center
+        flower = {
+            'x': width // 2,  # Center of display
+            'y': height - 8,  # Start from ground
+            'stem_height': 0,  # Will grow
+            'max_stem_height': 12,  # Fixed height
+            'petal_size': 0,  # Will grow
+            'max_petal_size': 5,  # Fixed size
+            'color': random.choice(flower_colors),
+            'bloom_progress': 0,  # 0 to 1
+            'sway_phase': 0,  # Start phase
+            'sway_amount': 1.0  # Gentle sway
+        }
         
         while time.time() - start_time < duration and self.nature_animation_running:
             # Clear display
@@ -421,56 +418,53 @@ class LEDDisplayApp:
                     ground_color = (139, 69, 19)  # Brown ground
                     self.led.set_pixel(x, y, ground_color)
             
-            # Draw flowers
-            for flower in flowers:
-                # Calculate sway
-                sway_x = math.sin(flower['sway_phase'] + (time.time() - start_time) * 0.5) * flower['sway_amount']
-                current_x = int(flower['x'] + sway_x)
-                
-                # Draw stem
-                stem_color = (34, 139, 34)  # Forest green
-                for i in range(int(flower['stem_height'])):
-                    y_pos = height - 1 - i
-                    if 0 <= y_pos < height and 0 <= current_x < width:
-                        self.led.set_pixel(current_x, y_pos, stem_color)
-                
-                # Draw flower petals if bloomed
-                if flower['bloom_progress'] > 0.3:
-                    petal_size = int(flower['petal_size'] * flower['bloom_progress'])
-                    flower_y = height - 1 - int(flower['stem_height'])
-                    
-                    # Safety check for petal_size
-                    if petal_size > 0:
-                        # Draw petals in a circle
-                        for dy in range(-petal_size, petal_size + 1):
-                            for dx in range(-petal_size, petal_size + 1):
-                                distance = math.sqrt(dx*dx + dy*dy)
-                                if distance <= petal_size:
-                                    x = current_x + dx
-                                    y = flower_y + dy
-                                    if 0 <= x < width and 0 <= y < height:
-                                        # Add some petal variation
-                                        petal_intensity = 1.0 - (distance / petal_size) * 0.3
-                                        petal_color = (
-                                            int(flower['color'][0] * petal_intensity),
-                                            int(flower['color'][1] * petal_intensity),
-                                            int(flower['color'][2] * petal_intensity)
-                                        )
-                                        self.led.set_pixel(x, y, petal_color)
+            # Draw single flower
+            # Draw stem (static position)
+            stem_color = (34, 139, 34)  # Forest green
+            for i in range(int(flower['stem_height'])):
+                y_pos = height - 1 - i
+                if 0 <= y_pos < height and 0 <= flower['x'] < width:
+                    self.led.set_pixel(flower['x'], y_pos, stem_color)
             
-            # Update flower growth
-            for flower in flowers:
-                # Grow stem
-                if flower['stem_height'] < flower['max_stem_height']:
-                    flower['stem_height'] += 0.1
+            # Draw flower petals if bloomed (with gentle sway)
+            if flower['bloom_progress'] > 0.3:
+                # Calculate gentle sway for petals only
+                sway_x = math.sin(flower['sway_phase'] + (time.time() - start_time) * 0.3) * flower['sway_amount']
+                petal_x = int(flower['x'] + sway_x)
+                petal_size = int(flower['petal_size'] * flower['bloom_progress'])
+                flower_y = height - 1 - int(flower['stem_height'])
                 
-                # Start blooming when stem is ready
-                if flower['stem_height'] >= flower['max_stem_height'] * 0.8:
-                    flower['bloom_progress'] = min(1.0, flower['bloom_progress'] + 0.02)
-                    flower['petal_size'] = flower['max_petal_size'] * flower['bloom_progress']
-                
-                # Update sway phase
-                flower['sway_phase'] += 0.05
+                # Safety check for petal_size
+                if petal_size > 0:
+                    # Draw petals in a circle
+                    for dy in range(-petal_size, petal_size + 1):
+                        for dx in range(-petal_size, petal_size + 1):
+                            distance = math.sqrt(dx*dx + dy*dy)
+                            if distance <= petal_size:
+                                x = petal_x + dx
+                                y = flower_y + dy
+                                if 0 <= x < width and 0 <= y < height:
+                                    # Add some petal variation
+                                    petal_intensity = 1.0 - (distance / petal_size) * 0.3
+                                    petal_color = (
+                                        int(flower['color'][0] * petal_intensity),
+                                        int(flower['color'][1] * petal_intensity),
+                                        int(flower['color'][2] * petal_intensity)
+                                    )
+                                    self.led.set_pixel(x, y, petal_color)
+            
+            # Update single flower growth
+            # Grow stem
+            if flower['stem_height'] < flower['max_stem_height']:
+                flower['stem_height'] += 0.1
+            
+            # Start blooming when stem is ready
+            if flower['stem_height'] >= flower['max_stem_height'] * 0.8:
+                flower['bloom_progress'] = min(1.0, flower['bloom_progress'] + 0.02)
+                flower['petal_size'] = flower['max_petal_size'] * flower['bloom_progress']
+            
+            # Update sway phase for petals only
+            flower['sway_phase'] += 0.05
             
             self.led.show()
             time.sleep(0.1)  # 10 FPS for gentle movement
