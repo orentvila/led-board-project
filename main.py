@@ -44,7 +44,7 @@ class LEDDisplayApp:
         self.nature_animations = [
             "floating_clouds_animation.py",
             "rain_animation.py",
-            "colorful_rain_animation.py"
+            "growing_flowers_animation.py"
         ]
         self.current_nature_index = 0
         self.nature_animation_running = False
@@ -157,7 +157,7 @@ class LEDDisplayApp:
             elif self.current_nature_index == 1:
                 self.run_rain_animation()
             elif self.current_nature_index == 2:
-                self.run_colorful_rain_animation()
+                self.run_growing_flowers_animation()
         finally:
             self.nature_animation_running = False
             print(f"🔧 Animation finished, flag set to: {self.nature_animation_running}")
@@ -358,131 +358,120 @@ class LEDDisplayApp:
             self.led.show()
             time.sleep(0.08)  # 12.5 FPS for smooth rain
     
-    def run_colorful_rain_animation(self):
-        """Run colorful rain animation with rainbow drops and puddle splashes."""
+    def run_growing_flowers_animation(self):
+        """Run growing flowers animation with gentle swaying and blooming."""
         import math
         duration = 30
         start_time = time.time()
         
-        print(f"🌈 Colorful rain animation started (flag: {self.nature_animation_running})")
+        print(f"🌸 Growing flowers animation started (flag: {self.nature_animation_running})")
         
         # Double-check the flag is still True
         if not self.nature_animation_running:
-            print("❌ Animation flag is False, stopping colorful rain")
+            print("❌ Animation flag is False, stopping flowers")
             return
         
         # Get display dimensions
         width = 32
         height = 48
         
-        # Initialize colorful rain drops
-        rain_drops = []
-        colors = [
-            (255, 0, 0),    # Red
-            (255, 127, 0),  # Orange
-            (255, 255, 0),  # Yellow
-            (0, 255, 0),    # Green
-            (0, 0, 255),    # Blue
-            (75, 0, 130),   # Indigo
-            (148, 0, 211)   # Violet
+        # Initialize flowers
+        flowers = []
+        flower_colors = [
+            (255, 182, 193),  # Pink
+            (255, 192, 203),  # Light pink
+            (255, 255, 224),  # Light yellow
+            (255, 218, 185),  # Peach
+            (221, 160, 221),  # Plum
+            (255, 228, 196),   # Bisque
+            (255, 239, 213)   # Papaya whip
         ]
         
-        for _ in range(30):  # 30 colorful rain drops
-            drop = {
-                'x': random.randint(0, width - 1),
-                'y': random.randint(-10, height + 10),
-                'speed': random.uniform(1.0, 2.5),
-                'color': random.choice(colors),
-                'length': random.randint(4, 10),
-                'brightness': random.uniform(0.6, 1.0)
+        # Create 8 flowers at different positions
+        for i in range(8):
+            flower = {
+                'x': random.randint(4, width - 5),
+                'y': height - 8,  # Start from ground
+                'stem_height': 0,  # Will grow
+                'max_stem_height': random.randint(8, 15),
+                'petal_size': 0,  # Will grow
+                'max_petal_size': random.randint(3, 6),
+                'color': random.choice(flower_colors),
+                'bloom_progress': 0,  # 0 to 1
+                'sway_phase': random.uniform(0, 2 * math.pi),
+                'sway_amount': random.uniform(0.5, 1.5)
             }
-            rain_drops.append(drop)
-        
-        # Initialize puddle splashes at bottom
-        puddle_splashes = []
+            flowers.append(flower)
         
         while time.time() - start_time < duration and self.nature_animation_running:
             # Clear display
             self.led.clear()
             
-            # Create dark blue sky background
+            # Create soft sky background
             for y in range(height):
-                sky_intensity = 1.0 - (y / height) * 0.3
-                sky_color = (int(20 * sky_intensity), int(40 * sky_intensity), int(80 * sky_intensity))
+                sky_intensity = 1.0 - (y / height) * 0.2
+                sky_color = (int(135 * sky_intensity), int(206 * sky_intensity), int(235 * sky_intensity))
                 
                 for x in range(width):
                     self.led.set_pixel(x, y, sky_color)
             
-            # Draw colorful rain drops
-            for drop in rain_drops:
-                # Draw the rain drop as a vertical line
-                for i in range(drop['length']):
-                    y_pos = int(drop['y']) - i
-                    if 0 <= y_pos < height:
-                        # Rain drop color with brightness variation
-                        intensity = drop['brightness'] * (1.0 - (i / drop['length']) * 0.4)
-                        rain_color = (
-                            int(drop['color'][0] * intensity),
-                            int(drop['color'][1] * intensity),
-                            int(drop['color'][2] * intensity)
-                        )
-                        self.led.set_pixel(int(drop['x']), y_pos, rain_color)
+            # Draw ground
+            for x in range(width):
+                for y in range(height - 3, height):
+                    ground_color = (139, 69, 19)  # Brown ground
+                    self.led.set_pixel(x, y, ground_color)
             
-            # Draw puddle splashes at bottom
-            for splash in puddle_splashes:
-                center_x, center_y = splash['x'], splash['y']
-                radius = splash['radius']
-                color = splash['color']
-                intensity = splash['intensity']
+            # Draw flowers
+            for flower in flowers:
+                # Calculate sway
+                sway_x = math.sin(flower['sway_phase'] + (time.time() - start_time) * 0.5) * flower['sway_amount']
+                current_x = int(flower['x'] + sway_x)
                 
-                # Draw circular splash
-                for dy in range(-radius, radius + 1):
-                    for dx in range(-radius, radius + 1):
-                        distance = math.sqrt(dx*dx + dy*dy)
-                        if distance <= radius:
-                            x = center_x + dx
-                            y = center_y + dy
-                            if 0 <= x < width and 0 <= y < height:
-                                splash_color = (
-                                    int(color[0] * intensity),
-                                    int(color[1] * intensity),
-                                    int(color[2] * intensity)
-                                )
-                                self.led.set_pixel(x, y, splash_color)
+                # Draw stem
+                stem_color = (34, 139, 34)  # Forest green
+                for i in range(int(flower['stem_height'])):
+                    y_pos = height - 1 - i
+                    if 0 <= y_pos < height and 0 <= current_x < width:
+                        self.led.set_pixel(current_x, y_pos, stem_color)
+                
+                # Draw flower petals if bloomed
+                if flower['bloom_progress'] > 0.3:
+                    petal_size = int(flower['petal_size'] * flower['bloom_progress'])
+                    flower_y = height - 1 - int(flower['stem_height'])
+                    
+                    # Draw petals in a circle
+                    for dy in range(-petal_size, petal_size + 1):
+                        for dx in range(-petal_size, petal_size + 1):
+                            distance = math.sqrt(dx*dx + dy*dy)
+                            if distance <= petal_size:
+                                x = current_x + dx
+                                y = flower_y + dy
+                                if 0 <= x < width and 0 <= y < height:
+                                    # Add some petal variation
+                                    petal_intensity = 1.0 - (distance / petal_size) * 0.3
+                                    petal_color = (
+                                        int(flower['color'][0] * petal_intensity),
+                                        int(flower['color'][1] * petal_intensity),
+                                        int(flower['color'][2] * petal_intensity)
+                                    )
+                                    self.led.set_pixel(x, y, petal_color)
             
-            # Update rain drop positions
-            for drop in rain_drops:
-                drop['y'] += drop['speed']
+            # Update flower growth
+            for flower in flowers:
+                # Grow stem
+                if flower['stem_height'] < flower['max_stem_height']:
+                    flower['stem_height'] += 0.1
                 
-                # Create splash when drop hits bottom
-                if drop['y'] > height - 5 and random.random() < 0.3:  # 30% chance for splash
-                    splash = {
-                        'x': int(drop['x']),
-                        'y': height - 1,
-                        'radius': random.randint(2, 5),
-                        'color': drop['color'],
-                        'intensity': drop['brightness'] * 0.8,
-                        'life': 20  # Frames to live
-                    }
-                    puddle_splashes.append(splash)
+                # Start blooming when stem is ready
+                if flower['stem_height'] >= flower['max_stem_height'] * 0.8:
+                    flower['bloom_progress'] = min(1.0, flower['bloom_progress'] + 0.02)
+                    flower['petal_size'] = flower['max_petal_size'] * flower['bloom_progress']
                 
-                # Reset drop when it goes off screen
-                if drop['y'] > height + 10:
-                    drop['y'] = random.randint(-10, -5)
-                    drop['x'] = random.randint(0, width - 1)
-                    drop['speed'] = random.uniform(1.0, 2.5)
-                    drop['color'] = random.choice(colors)
-                    drop['brightness'] = random.uniform(0.6, 1.0)
-            
-            # Update and remove old splashes
-            puddle_splashes = [splash for splash in puddle_splashes if splash['life'] > 0]
-            for splash in puddle_splashes:
-                splash['life'] -= 1
-                splash['intensity'] *= 0.95  # Fade out
-                splash['radius'] = max(1, splash['radius'] - 0.1)  # Shrink
+                # Update sway phase
+                flower['sway_phase'] += 0.05
             
             self.led.show()
-            time.sleep(0.08)  # 12.5 FPS for smooth animation
+            time.sleep(0.1)  # 10 FPS for gentle movement
     
     def run_shape_animation(self):
         """Run the current shape animation."""
