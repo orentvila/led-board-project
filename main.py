@@ -561,70 +561,75 @@ class LEDDisplayApp:
                     cloud['x'] = -10
                     cloud['y'] = random.randint(5, height - 10)
             
-            # Draw bird (based on image reference)
+                # Draw bird flying towards screen
             if 0 <= bird['x'] < width:
                 # Calculate wing flapping
-                wing_offset = math.sin(bird['wing_phase']) * 1.5
+                wing_offset = math.sin(bird['wing_phase']) * 2
                 
                 center_x = int(bird['x'])
                 center_y = int(bird['y'])
                 
-                # Draw bird body (green, rounded)
+                # Draw bird body (green, oval shape for front view)
                 for dy in range(-2, 3):
-                    for dx in range(-2, 3):
+                    for dx in range(-1, 2):
                         x = center_x + dx
                         y = center_y + dy
                         if 0 <= x < width and 0 <= y < height:
-                            distance = math.sqrt(dx*dx + dy*dy)
-                            if distance <= 2.5:  # Rounded body
+                            # Oval body for front view
+                            if abs(dx) <= 1 and abs(dy) <= 2:
                                 self.led.set_pixel(x, y, bird['body_color'])
                 
                 # Draw black outline around body
                 for dy in range(-3, 4):
-                    for dx in range(-3, 4):
+                    for dx in range(-2, 3):
                         x = center_x + dx
                         y = center_y + dy
                         if 0 <= x < width and 0 <= y < height:
-                            distance = math.sqrt(dx*dx + dy*dy)
-                            if 2.5 < distance <= 3.2:  # Outline
+                            # Outline for oval body
+                            if (abs(dx) == 2 and abs(dy) <= 2) or (abs(dx) <= 1 and abs(dy) == 3):
                                 self.led.set_pixel(x, y, bird['outline_color'])
                 
-                # Draw yellow beak (triangle pointing right)
-                beak_x = center_x + 2
-                beak_y = center_y
+                # Draw yellow beak (pointing towards screen)
+                beak_x = center_x
+                beak_y = center_y - 2
                 if 0 <= beak_x < width and 0 <= beak_y < height:
                     self.led.set_pixel(beak_x, beak_y, bird['beak_color'])
-                if 0 <= beak_x < width and 0 <= beak_y - 1 < height:
-                    self.led.set_pixel(beak_x, beak_y - 1, bird['beak_color'])
-                if 0 <= beak_x < width and 0 <= beak_y + 1 < height:
-                    self.led.set_pixel(beak_x, beak_y + 1, bird['beak_color'])
                 
-                # Draw black eyes (two dots)
+                # Draw black eyes (two dots, front view)
                 eye1_x = center_x - 1
-                eye2_x = center_x
+                eye2_x = center_x + 1
                 eye_y = center_y - 1
                 if 0 <= eye1_x < width and 0 <= eye_y < height:
                     self.led.set_pixel(eye1_x, eye_y, bird['eye_color'])
                 if 0 <= eye2_x < width and 0 <= eye_y < height:
                     self.led.set_pixel(eye2_x, eye_y, bird['eye_color'])
                 
-                # Draw wings (dark green, angled up)
+                # Draw wings (spread wide, showing from front)
                 wing_y = center_y + int(wing_offset)
                 if 0 <= wing_y < height:
-                    # Left wing
-                    if center_x - 2 >= 0:
-                        self.led.set_pixel(center_x - 2, wing_y, bird['wing_color'])
-                        self.led.set_pixel(center_x - 2, wing_y - 1, bird['wing_color'])
-                    # Right wing
-                    if center_x + 2 < width:
-                        self.led.set_pixel(center_x + 2, wing_y, bird['wing_color'])
-                        self.led.set_pixel(center_x + 2, wing_y - 1, bird['wing_color'])
+                    # Left wing (spread wide)
+                    for wing_dx in range(-4, -1):
+                        wing_x = center_x + wing_dx
+                        if 0 <= wing_x < width:
+                            self.led.set_pixel(wing_x, wing_y, bird['wing_color'])
+                            # Wing outline
+                            if wing_dx == -4 and 0 <= wing_x - 1 < width:
+                                self.led.set_pixel(wing_x - 1, wing_y, bird['outline_color'])
                     
-                    # Wing outlines
-                    if center_x - 3 >= 0:
-                        self.led.set_pixel(center_x - 3, wing_y, bird['outline_color'])
-                    if center_x + 3 < width:
-                        self.led.set_pixel(center_x + 3, wing_y, bird['outline_color'])
+                    # Right wing (spread wide)
+                    for wing_dx in range(1, 4):
+                        wing_x = center_x + wing_dx
+                        if 0 <= wing_x < width:
+                            self.led.set_pixel(wing_x, wing_y, bird['wing_color'])
+                            # Wing outline
+                            if wing_dx == 3 and wing_x + 1 < width:
+                                self.led.set_pixel(wing_x + 1, wing_y, bird['outline_color'])
+                    
+                    # Wing tips (showing wing span)
+                    if center_x - 5 >= 0:
+                        self.led.set_pixel(center_x - 5, wing_y, bird['wing_color'])
+                    if center_x + 5 < width:
+                        self.led.set_pixel(center_x + 5, wing_y, bird['wing_color'])
             
             # Update bird position
             bird['x'] += bird['speed']
