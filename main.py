@@ -501,36 +501,82 @@ class LEDDisplayApp:
         width = 32
         height = 48
         
-        # Rainbow colors (ROYGBIV)
+        # Rainbow colors (matching image - ROYGBIV)
         rainbow_colors = [
-            (255, 0, 0),      # Red
+            (255, 0, 0),      # Red (outermost)
             (255, 127, 0),    # Orange
             (255, 255, 0),    # Yellow
             (0, 255, 0),      # Green
-            (0, 0, 255),      # Blue
+            (0, 255, 255),    # Light Blue/Cyan
             (75, 0, 130),     # Indigo
-            (148, 0, 211)     # Violet
+            (148, 0, 211)     # Violet (innermost)
         ]
         
         while time.time() - start_time < duration and self.rainbow_animation_running and not getattr(self, 'animation_stop_flag', False):
             # Clear display
             self.led.clear()
             
-            # Create soft sky background
+            # Create clear blue sky background (matching image)
             for y in range(height):
-                sky_intensity = 1.0 - (y / height) * 0.3
-                sky_color = (int(135 * sky_intensity), int(206 * sky_intensity), int(235 * sky_intensity))
+                # Gradient from darker blue at top to lighter blue at bottom
+                sky_intensity = 1.0 - (y / height) * 0.4
+                sky_color = (int(100 * sky_intensity), int(150 * sky_intensity), int(220 * sky_intensity))
                 
                 for x in range(width):
                     self.led.set_pixel(x, y, sky_color)
             
-            # Draw rainbow arc
-            center_x = width // 2
-            center_y = height - 5  # Bottom of display
-            radius = 20  # Rainbow radius
+            # Draw clouds (white, puffy, cartoon style)
+            clouds = [
+                {'x': 5, 'y': 8, 'size': 4},   # Upper left cloud
+                {'x': 8, 'y': 15, 'size': 3}   # Mid-left cloud
+            ]
+            
+            for cloud in clouds:
+                center_x = cloud['x']
+                center_y = cloud['y']
+                size = cloud['size']
+                
+                # Draw puffy cloud
+                for dy in range(-size, size + 1):
+                    for dx in range(-size, size + 1):
+                        distance = math.sqrt(dx*dx + dy*dy)
+                        if distance <= size * 0.8:
+                            x = center_x + dx
+                            y = center_y + dy
+                            if 0 <= x < width and 0 <= y < height:
+                                cloud_color = (255, 255, 255)  # White cloud
+                                self.led.set_pixel(x, y, cloud_color)
+            
+            # Draw stars (white, 5-pointed)
+            stars = [
+                {'x': 28, 'y': 6},   # Upper right star
+                {'x': 12, 'y': 12}    # Mid-left star
+            ]
+            
+            for star in stars:
+                star_x = star['x']
+                star_y = star['y']
+                star_color = (255, 255, 255)  # White star
+                
+                # Draw 5-pointed star (simple cross pattern)
+                if 0 <= star_x < width and 0 <= star_y < height:
+                    self.led.set_pixel(star_x, star_y, star_color)
+                if 0 <= star_x - 1 < width and 0 <= star_y < height:
+                    self.led.set_pixel(star_x - 1, star_y, star_color)
+                if 0 <= star_x + 1 < width and 0 <= star_y < height:
+                    self.led.set_pixel(star_x + 1, star_y, star_color)
+                if 0 <= star_x < width and 0 <= star_y - 1 < height:
+                    self.led.set_pixel(star_x, star_y - 1, star_color)
+                if 0 <= star_x < width and 0 <= star_y + 1 < height:
+                    self.led.set_pixel(star_x, star_y + 1, star_color)
+            
+            # Draw rainbow arc (matching image - wide arc from bottom left to top right)
+            center_x = width // 2 - 5  # Offset to match image
+            center_y = height - 2  # Bottom of display
+            radius = 18  # Rainbow radius
             
             # Calculate gentle rainbow movement
-            rainbow_offset = math.sin((time.time() - start_time) * 0.5) * 1  # Very gentle movement
+            rainbow_offset = math.sin((time.time() - start_time) * 0.3) * 0.5  # Very gentle movement
             
             for color_index, color in enumerate(rainbow_colors):
                 # Each color band has slightly different radius
@@ -553,13 +599,6 @@ class LEDDisplayApp:
                         self.led.set_pixel(x1, y1, color)
                     if 0 <= x2 < width and 0 <= y2 < height:
                         self.led.set_pixel(x2, y2, color)
-            
-            # Add gentle sparkles
-            if random.random() < 0.1:  # 10% chance per frame
-                sparkle_x = random.randint(0, width - 1)
-                sparkle_y = random.randint(0, height - 1)
-                sparkle_color = (255, 255, 255)  # White sparkle
-                self.led.set_pixel(sparkle_x, sparkle_y, sparkle_color)
             
             self.led.show()
             time.sleep(0.15)  # Slower, more gentle animation
