@@ -475,6 +475,114 @@ class LEDDisplayApp:
             self.led.show()
             time.sleep(0.1)  # 10 FPS for gentle movement
     
+    def run_bubbles_animation(self):
+        """Run bubbles animation with colorful bubbles rising from bottom."""
+        import math
+        duration = 30
+        start_time = time.time()
+        
+        print(f"🫧 Bubbles animation started")
+        
+        # Get display dimensions
+        width = 32
+        height = 48
+        
+        # Bubble colors - soft, translucent colors
+        bubble_colors = [
+            (100, 200, 255),  # Light blue
+            (255, 150, 200),  # Pink
+            (200, 255, 150),  # Light green
+            (255, 200, 100),  # Orange
+            (200, 150, 255),  # Purple
+            (150, 255, 200),  # Mint green
+            (255, 100, 150),  # Rose
+            (100, 255, 255),  # Cyan
+        ]
+        
+        # Animation parameters
+        bubble_spawn_rate = 0.3  # New bubble every 0.3 seconds
+        max_bubbles = 15  # Maximum number of bubbles on screen
+        bubble_sizes = [2, 3, 4, 5]  # Different bubble sizes
+        rise_speeds = [0.5, 0.8, 1.2, 1.5]  # Different rise speeds
+        
+        # Bubble storage
+        bubbles = []
+        last_spawn_time = 0
+        
+        while time.time() - start_time < duration and self.nature_animation_running and not getattr(self, 'animation_stop_flag', False):
+            # Clear display with black background
+            self.led.clear()
+            
+            current_time = time.time() - start_time
+            
+            # Spawn new bubbles
+            if current_time - last_spawn_time >= bubble_spawn_rate and len(bubbles) < max_bubbles:
+                bubble = {
+                    'x': random.randint(2, width - 3),
+                    'y': height - 1,  # Start at bottom
+                    'size': random.choice(bubble_sizes),
+                    'speed': random.choice(rise_speeds),
+                    'color': random.choice(bubble_colors),
+                    'wobble_phase': random.uniform(0, 2 * math.pi),
+                    'wobble_amplitude': random.uniform(0.5, 1.5)
+                }
+                bubbles.append(bubble)
+                last_spawn_time = current_time
+            
+            # Update and draw bubbles
+            bubbles_to_remove = []
+            for i, bubble in enumerate(bubbles):
+                # Update bubble position
+                bubble['y'] -= bubble['speed']
+                
+                # Add gentle wobble
+                wobble_x = math.sin(bubble['wobble_phase'] + current_time * 2) * bubble['wobble_amplitude']
+                bubble_x = int(bubble['x'] + wobble_x)
+                bubble_y = int(bubble['y'])
+                
+                # Remove bubbles that have risen off screen
+                if bubble_y < -bubble['size']:
+                    bubbles_to_remove.append(i)
+                    continue
+                
+                # Draw bubble with soft, translucent effect
+                size = bubble['size']
+                color = bubble['color']
+                
+                # Draw bubble with soft edges
+                for dy in range(-size, size + 1):
+                    for dx in range(-size, size + 1):
+                        distance = math.sqrt(dx*dx + dy*dy)
+                        if distance <= size:
+                            x = bubble_x + dx
+                            y = bubble_y + dy
+                            
+                            if 0 <= x < width and 0 <= y < height:
+                                # Create translucent effect
+                                intensity = 1.0 - (distance / size) * 0.5
+                                r = int(color[0] * intensity)
+                                g = int(color[1] * intensity)
+                                b = int(color[2] * intensity)
+                                
+                                # Add some sparkle effect
+                                if random.random() < 0.1:
+                                    r = min(255, r + 50)
+                                    g = min(255, g + 50)
+                                    b = min(255, b + 50)
+                                
+                                self.led.set_pixel(x, y, (r, g, b))
+            
+            # Remove bubbles that are off screen
+            for i in reversed(bubbles_to_remove):
+                bubbles.pop(i)
+            
+            self.led.show()
+            time.sleep(0.05)  # 20 FPS for smooth bubble movement
+        
+        # Cleanup when animation ends
+        self.nature_animation_running = False
+        print("🫧 Bubbles animation finished")
+    
     def start_lion_animation(self):
         """Start lion animation."""
         print("🦁 Starting lion animation...")
