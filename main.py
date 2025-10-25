@@ -15,7 +15,7 @@ import math
 # from led_controller import LEDController  # Using LEDControllerExact instead
 from display_patterns import DisplayPatterns
 from button_controller import ButtonController
-from squares_animation import SquaresAnimation
+# from squares_animation import SquaresAnimation  # File not found
 from led_controller_exact import LEDControllerExact
 import config
 
@@ -24,7 +24,7 @@ class LEDDisplayApp:
         """Initialize the LED display application."""
         self.led = LEDControllerExact()
         self.patterns = DisplayPatterns(self.led)
-        self.squares_animation = SquaresAnimation(self.led)
+        # self.squares_animation = SquaresAnimation(self.led)  # File not found
         self.button_controller = ButtonController()
         self.current_pattern = None
         self.running = True
@@ -914,9 +914,10 @@ class LEDDisplayApp:
         print("Starting squares animation")
         self.stop_current_pattern()
         time.sleep(0.1)  # Ensure everything is stopped
-        self.current_pattern = threading.Thread(target=self.squares_animation.run_animation)
-        self.current_pattern.daemon = False  # Don't use daemon threads
-        self.current_pattern.start()
+        # self.current_pattern = threading.Thread(target=self.squares_animation.run_animation)  # File not found
+        # self.current_pattern.daemon = False  # Don't use daemon threads
+        # self.current_pattern.start()
+        print("⚠️ Squares animation not available - file not found")
     
     def stop_current_pattern(self):
         """Stop the currently running pattern."""
@@ -925,8 +926,8 @@ class LEDDisplayApp:
         # Stop pattern animations
         if hasattr(self, 'patterns'):
             self.patterns.stop()
-        if hasattr(self, 'squares_animation'):
-            self.squares_animation.stop()
+        # if hasattr(self, 'squares_animation'):
+        #     self.squares_animation.stop()  # File not found
         
         # Stop thread patterns
         if self.current_pattern and hasattr(self.current_pattern, 'is_alive') and self.current_pattern.is_alive():
@@ -990,7 +991,8 @@ class LEDDisplayApp:
         
         # Demo 5: Squares animation
         print("Demo 5: Squares animation")
-        self.squares_animation.run_animation()
+        # self.squares_animation.run_animation()  # File not found
+        print("⚠️ Squares animation not available - file not found")
         
         print("Demo sequence completed!")
     
