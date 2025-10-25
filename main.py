@@ -45,7 +45,8 @@ class LEDDisplayApp:
             "floating_clouds_animation.py",
             "rain_animation.py",
             "growing_flowers_animation.py",
-            "bubbles_animation.py"
+            "bubbles_animation.py",
+            "deer_animation.py"
         ]
         self.current_nature_index = 0
         self.nature_animation_running = False
@@ -164,6 +165,8 @@ class LEDDisplayApp:
                 self.run_growing_flowers_animation()
             elif self.current_nature_index == 3:
                 self.run_bubbles_animation()
+            elif self.current_nature_index == 4:
+                self.run_deer_animation()
         finally:
             self.nature_animation_running = False
             print(f"🔧 Animation finished, flag set to: {self.nature_animation_running}")
@@ -582,6 +585,184 @@ class LEDDisplayApp:
         # Cleanup when animation ends
         self.nature_animation_running = False
         print("🫧 Bubbles animation finished")
+    
+    def run_deer_animation(self):
+        """Run deer animation with pixel art style running deer."""
+        import math
+        duration = 30
+        start_time = time.time()
+        
+        print(f"🦌 Deer animation started")
+        
+        # Get display dimensions
+        width = 32
+        height = 48
+        
+        # Deer colors - brown tones with white accents
+        deer_colors = {
+            'body': (139, 69, 19),      # Saddle brown
+            'belly': (160, 82, 45),     # Saddle brown (lighter)
+            'antlers': (101, 67, 33),   # Dark brown
+            'nose': (0, 0, 0),          # Black
+            'eyes': (0, 0, 0),          # Black
+            'hooves': (0, 0, 0),        # Black
+            'white_patch': (255, 255, 255),  # White
+            'background': (34, 139, 34)  # Forest green
+        }
+        
+        # Animation parameters
+        deer_x = 16  # Center horizontally
+        deer_y = 35  # Start near bottom
+        running_phase = 0
+        leg_phase = 0
+        
+        def draw_deer(x, y, running_phase, leg_phase):
+            """Draw a pixel art deer at the given position."""
+            # Deer body (main oval shape)
+            for dy in range(-6, 7):
+                for dx in range(-4, 5):
+                    distance = math.sqrt((dx*dx) + (dy*dy*0.6))  # Oval shape
+                    if distance <= 4:
+                        if 0 <= x + dx < width and 0 <= y + dy < height:
+                            self.led.set_pixel(x + dx, y + dy, deer_colors['body'])
+            
+            # Deer belly (lighter oval)
+            for dy in range(-4, 5):
+                for dx in range(-3, 4):
+                    distance = math.sqrt((dx*dx) + (dy*dy*0.7))
+                    if distance <= 3:
+                        if 0 <= x + dx < width and 0 <= y + dy < height:
+                            self.led.set_pixel(x + dx, y + dy, deer_colors['belly'])
+            
+            # Deer head
+            head_x = x + 3
+            head_y = y - 2
+            for dy in range(-3, 4):
+                for dx in range(-2, 3):
+                    distance = math.sqrt(dx*dx + dy*dy)
+                    if distance <= 2:
+                        if 0 <= head_x + dx < width and 0 <= head_y + dy < height:
+                            self.led.set_pixel(head_x + dx, head_y + dy, deer_colors['body'])
+            
+            # Antlers (branched)
+            antler_offset = math.sin(running_phase * 2) * 0.5  # Slight sway
+            # Left antler
+            for i in range(3):
+                if 0 <= head_x - 1 < width and 0 <= head_y - 3 - i < height:
+                    self.led.set_pixel(head_x - 1, head_y - 3 - i, deer_colors['antlers'])
+            if 0 <= head_x - 2 < width and 0 <= head_y - 4 < height:
+                self.led.set_pixel(head_x - 2, head_y - 4, deer_colors['antlers'])
+            
+            # Right antler
+            for i in range(3):
+                if 0 <= head_x + 1 < width and 0 <= head_y - 3 - i < height:
+                    self.led.set_pixel(head_x + 1, head_y - 3 - i, deer_colors['antlers'])
+            if 0 <= head_x + 2 < width and 0 <= head_y - 4 < height:
+                self.led.set_pixel(head_x + 2, head_y - 4, deer_colors['antlers'])
+            
+            # Eyes
+            if 0 <= head_x - 1 < width and 0 <= head_y - 1 < height:
+                self.led.set_pixel(head_x - 1, head_y - 1, deer_colors['eyes'])
+            if 0 <= head_x + 1 < width and 0 <= head_y - 1 < height:
+                self.led.set_pixel(head_x + 1, head_y - 1, deer_colors['eyes'])
+            
+            # Nose
+            if 0 <= head_x < width and 0 <= head_y + 1 < height:
+                self.led.set_pixel(head_x, head_y + 1, deer_colors['nose'])
+            
+            # White patch on chest
+            if 0 <= x - 2 < width and 0 <= y + 2 < height:
+                self.led.set_pixel(x - 2, y + 2, deer_colors['white_patch'])
+            if 0 <= x - 1 < width and 0 <= y + 2 < height:
+                self.led.set_pixel(x - 1, y + 2, deer_colors['white_patch'])
+            if 0 <= x - 2 < width and 0 <= y + 3 < height:
+                self.led.set_pixel(x - 2, y + 3, deer_colors['white_patch'])
+            
+            # Legs with running animation
+            leg_offset = math.sin(leg_phase * 4) * 1.5  # Running motion
+            
+            # Front legs
+            front_leg_x = x + 2
+            back_leg_x = x - 2
+            
+            # Front left leg
+            for i in range(4):
+                leg_y = y + 3 + i + int(leg_offset)
+                if 0 <= front_leg_x < width and 0 <= leg_y < height:
+                    self.led.set_pixel(front_leg_x, leg_y, deer_colors['body'])
+            if 0 <= front_leg_x < width and 0 <= y + 7 + int(leg_offset) < height:
+                self.led.set_pixel(front_leg_x, y + 7 + int(leg_offset), deer_colors['hooves'])
+            
+            # Front right leg
+            for i in range(4):
+                leg_y = y + 3 + i - int(leg_offset)
+                if 0 <= front_leg_x + 1 < width and 0 <= leg_y < height:
+                    self.led.set_pixel(front_leg_x + 1, leg_y, deer_colors['body'])
+            if 0 <= front_leg_x + 1 < width and 0 <= y + 7 - int(leg_offset) < height:
+                self.led.set_pixel(front_leg_x + 1, y + 7 - int(leg_offset), deer_colors['hooves'])
+            
+            # Back legs
+            for i in range(4):
+                leg_y = y + 3 + i + int(leg_offset * 0.5)
+                if 0 <= back_leg_x < width and 0 <= leg_y < height:
+                    self.led.set_pixel(back_leg_x, leg_y, deer_colors['body'])
+                if 0 <= back_leg_x + 1 < width and 0 <= leg_y < height:
+                    self.led.set_pixel(back_leg_x + 1, leg_y, deer_colors['body'])
+            if 0 <= back_leg_x < width and 0 <= y + 7 + int(leg_offset * 0.5) < height:
+                self.led.set_pixel(back_leg_x, y + 7 + int(leg_offset * 0.5), deer_colors['hooves'])
+            if 0 <= back_leg_x + 1 < width and 0 <= y + 7 + int(leg_offset * 0.5) < height:
+                self.led.set_pixel(back_leg_x + 1, y + 7 + int(leg_offset * 0.5), deer_colors['hooves'])
+            
+            # Tail
+            tail_x = x - 4
+            tail_y = y - 1
+            for i in range(3):
+                if 0 <= tail_x - i < width and 0 <= tail_y < height:
+                    self.led.set_pixel(tail_x - i, tail_y, deer_colors['body'])
+        
+        while time.time() - start_time < duration and self.nature_animation_running and not getattr(self, 'animation_stop_flag', False):
+            # Clear display
+            self.led.clear()
+            
+            # Create forest background
+            for y in range(height):
+                for x in range(width):
+                    # Base forest green with texture variation
+                    base_green = deer_colors['background']
+                    noise = random.randint(-10, 10)
+                    r = max(0, min(255, base_green[0] + noise))
+                    g = max(0, min(255, base_green[1] + noise))
+                    b = max(0, min(255, base_green[2] + noise))
+                    self.led.set_pixel(x, y, (r, g, b))
+            
+            # Update animation phases
+            running_phase += 0.3
+            leg_phase += 0.4
+            
+            # Move deer upward (running up the screen)
+            deer_y -= 0.3
+            if deer_y < -10:  # Reset when off screen
+                deer_y = height + 5
+            
+            # Add slight horizontal sway
+            sway_x = math.sin(running_phase * 0.5) * 1
+            current_deer_x = deer_x + int(sway_x)
+            
+            # Draw the deer
+            draw_deer(current_deer_x, int(deer_y), running_phase, leg_phase)
+            
+            # Add some sparkle effects (like Christmas magic)
+            if random.random() < 0.1:
+                sparkle_x = random.randint(0, width - 1)
+                sparkle_y = random.randint(0, height - 1)
+                self.led.set_pixel(sparkle_x, sparkle_y, (255, 255, 255))
+            
+            self.led.show()
+            time.sleep(0.1)  # 10 FPS for smooth animation
+        
+        # Cleanup when animation ends
+        self.nature_animation_running = False
+        print("🦌 Deer animation finished")
     
     def start_lion_animation(self):
         """Start lion animation."""
