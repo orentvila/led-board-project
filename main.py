@@ -95,9 +95,19 @@ class LEDDisplayApp:
         # Small delay to ensure everything is stopped
         time.sleep(0.1)
         
-        # Cycle to next shape
+        # Ensure we have animations available
+        if not self.shape_animations:
+            print("⚠️ No shape animations available")
+            return
+        
+        # Cycle to next shape with bounds checking
         self.current_shape_index = (self.current_shape_index + 1) % len(self.shape_animations)
-        shape_names = ["Growing Circle", "Rotating Square", "Bouncing Triangle", "Pulsing Diamond"]
+        shape_names = ["Growing Circle", "Rotating Square", "Bouncing Triangle", "Pulsing Diamond", "Beating Heart"]
+        
+        # Ensure index is within bounds
+        if self.current_shape_index >= len(shape_names):
+            self.current_shape_index = 0
+        
         shape_name = shape_names[self.current_shape_index]
         
         print(f"🎬 Starting {shape_name}...")
@@ -741,6 +751,11 @@ class LEDDisplayApp:
         self.shape_animation_running = True
         
         try:
+            # Ensure index is within bounds
+            if self.current_shape_index >= len(self.shape_animations):
+                self.current_shape_index = 0
+                print("⚠️ Shape index out of bounds, resetting to 0")
+            
             if self.current_shape_index == 0:
                 self.run_growing_circle()
             elif self.current_shape_index == 1:
@@ -751,6 +766,8 @@ class LEDDisplayApp:
                 self.run_pulsing_diamond()
             elif self.current_shape_index == 4:
                 self.run_beating_heart()
+            else:
+                print(f"⚠️ Unknown shape index: {self.current_shape_index}")
         finally:
             self.shape_animation_running = False
     
