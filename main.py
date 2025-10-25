@@ -15,7 +15,7 @@ import math
 # from led_controller import LEDController  # Using LEDControllerExact instead
 from display_patterns import DisplayPatterns
 from button_controller import ButtonController
-from animation_tests.squares_animation import SquaresAnimation
+from squares_animation import SquaresAnimation
 from led_controller_exact import LEDControllerExact
 import config
 
