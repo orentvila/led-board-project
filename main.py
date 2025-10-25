@@ -944,12 +944,12 @@ class LEDDisplayApp:
                         int(base_color[2] + (heart_colors['dim'][2] - base_color[2]) * (1 - factor))
                     )
             
-            # Draw heart shape using mathematical heart equation
+            # Draw heart shape using mathematical heart equation (flipped)
             for dy in range(-int(size * 1.2), int(size * 1.2) + 1):
                 for dx in range(-int(size * 1.2), int(size * 1.2) + 1):
-                    # Heart equation: (x² + y² - 1)³ - x²y³ ≤ 0
+                    # Heart equation: (x² + y² - 1)³ - x²y³ ≤ 0 (flipped vertically)
                     x_norm = dx / size
-                    y_norm = dy / size
+                    y_norm = -dy / size  # Flip the Y coordinate
                     
                     # Heart equation
                     heart_eq = (x_norm*x_norm + y_norm*y_norm - 1)**3 - x_norm*x_norm * y_norm*y_norm*y_norm
