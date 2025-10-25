@@ -7,13 +7,13 @@ Features large triangle, square, star, sun, and circle that fill the display
 import time
 import numpy as np
 import math
-from led_controller_fixed import LEDControllerFixed
+from led_controller_exact import LEDControllerExact
 import config
 
 class BigShapesAnimation:
     def __init__(self):
         """Initialize the big shapes animation."""
-        self.led = LEDControllerFixed()
+        self.led = LEDControllerExact()
         self.width = config.TOTAL_WIDTH  # 32
         self.height = config.TOTAL_HEIGHT  # 48
         

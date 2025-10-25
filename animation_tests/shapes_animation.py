@@ -6,13 +6,13 @@ Shows circle, square, and triangle appearing every 5 seconds in different colors
 
 import time
 import numpy as np
-from led_controller_fixed import LEDControllerFixed
+from led_controller_exact import LEDControllerExact
 import config
 
 class ShapesAnimation:
     def __init__(self):
         """Initialize the shapes animation."""
-        self.led = LEDControllerFixed()
+        self.led = LEDControllerExact()
         self.width = config.TOTAL_WIDTH  # 32
         self.height = config.TOTAL_HEIGHT  # 48
         

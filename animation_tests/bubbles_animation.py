@@ -7,13 +7,13 @@ Shows colorful bubbles of different sizes rising from the bottom
 import time
 import numpy as np
 import random
-from led_controller_fixed import LEDControllerFixed
+from led_controller_exact import LEDControllerExact
 import config
 
 class BubblesAnimation:
     def __init__(self):
         """Initialize the bubbles animation."""
-        self.led = LEDControllerFixed()
+        self.led = LEDControllerExact()
         self.width = config.TOTAL_WIDTH  # 32
         self.height = config.TOTAL_HEIGHT  # 48
         

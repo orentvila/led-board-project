@@ -7,13 +7,13 @@ Features a realistic shark swimming through underwater scenes
 import time
 import numpy as np
 import math
-from led_controller_fixed import LEDControllerFixed
+from led_controller_exact import LEDControllerExact
 import config
 
 class SharkAnimation:
     def __init__(self):
         """Initialize the shark animation."""
-        self.led = LEDControllerFixed()
+        self.led = LEDControllerExact()
         self.width = config.TOTAL_WIDTH  # 32
         self.height = config.TOTAL_HEIGHT  # 48
         

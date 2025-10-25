@@ -7,13 +7,16 @@ Creates a mesmerizing black hole with swirling particles and gravitational effec
 import time
 import numpy as np
 import math
-from led_controller_fixed import LEDControllerFixed
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from led_controller_exact import LEDControllerExact
 import config
 
 class BlackHoleAnimation:
     def __init__(self):
         """Initialize the black hole animation."""
-        self.led = LEDControllerFixed()
+        self.led = LEDControllerExact()
         self.width = config.TOTAL_WIDTH  # 32
         self.height = config.TOTAL_HEIGHT  # 48
         

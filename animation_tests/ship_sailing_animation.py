@@ -7,13 +7,13 @@ Creates a ship sailing across the sea with waves and water effects
 import time
 import numpy as np
 import math
-from led_controller_fixed import LEDControllerFixed
+from led_controller_exact import LEDControllerExact
 import config
 
 class ShipSailingAnimation:
     def __init__(self):
         """Initialize the ship sailing animation."""
-        self.led = LEDControllerFixed()
+        self.led = LEDControllerExact()
         self.width = config.TOTAL_WIDTH  # 32
         self.height = config.TOTAL_HEIGHT  # 48
         
