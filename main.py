@@ -44,7 +44,8 @@ class LEDDisplayApp:
         self.nature_animations = [
             "floating_clouds_animation.py",
             "rain_animation.py",
-            "growing_flowers_animation.py"
+            "growing_flowers_animation.py",
+            "bubbles_animation.py"
         ]
         self.current_nature_index = 0
         self.nature_animation_running = False
@@ -161,6 +162,8 @@ class LEDDisplayApp:
                 self.run_rain_animation()
             elif self.current_nature_index == 2:
                 self.run_growing_flowers_animation()
+            elif self.current_nature_index == 3:
+                self.run_bubbles_animation()
         finally:
             self.nature_animation_running = False
             print(f"🔧 Animation finished, flag set to: {self.nature_animation_running}")
