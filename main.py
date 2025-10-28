@@ -25,7 +25,7 @@ class LEDDisplayApp:
         print("🔧 Initializing LED controller...")
         self.led = LEDControllerExact()
         
-        # Test LED controller immediately
+        # Test LED controller immediately   
         print("🔧 Testing LED controller...")
         self.led.clear()
         self.led.show()
@@ -629,7 +629,7 @@ class LEDDisplayApp:
         trunk_width = 6
         trunk_height = 16
         trunk_x = 13  # Centered trunk
-        trunk_y = 40  # Bottom of trunk
+        trunk_y = 47  # Bottom of trunk (touching ground)
         
         # Apple positions (7 apples) - better distributed
         apple_positions = [
@@ -727,7 +727,8 @@ class LEDDisplayApp:
         def draw_falling_apple(progress):
             """Draw the falling apple with gravity effect."""
             # Calculate falling position with gravity
-            fall_distance = progress * 20  # Total fall distance
+            # Apple starts at y=6, ground is at y=44, so need to fall 38 pixels
+            fall_distance = progress * 38  # Total fall distance to ground
             gravity_effect = progress * progress * 0.5  # Gravity acceleration
             
             current_x = falling_apple_start_pos[0]
