@@ -983,10 +983,10 @@ class LEDDisplayApp:
             # House top is at: house_y - house_height
             # Roof base sits on house top
             roof_base_y = house_y - house_height
-            # Roof apex is above the base
+            # Roof apex is ABOVE the base (smaller Y value)
             roof_apex_y = roof_base_y - roof_height
             
-            # Draw triangle line by line from top to bottom
+            # Draw triangle line by line from apex (top) to base (bottom)
             for line in range(roof_height):
                 current_y = roof_apex_y + line
                 
