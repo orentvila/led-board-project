@@ -185,6 +185,8 @@ class LEDDisplayApp:
                 self.run_growing_flowers_animation()
             elif self.current_nature_index == 3:
                 self.run_bubbles_animation()
+            elif self.current_nature_index == 4:
+                self.run_apple_tree_animation()
         finally:
             self.nature_animation_running = False
             print(f"🔧 Animation finished, flag set to: {self.nature_animation_running}")
@@ -603,6 +605,195 @@ class LEDDisplayApp:
         # Cleanup when animation ends
         self.nature_animation_running = False
         print("🫧 Bubbles animation finished")
+    
+    def run_apple_tree_animation(self):
+        """Run apple tree animation with falling apple."""
+        import math
+        duration = 20
+        start_time = time.time()
+        
+        print(f"🌳 Apple Tree animation started")
+        
+        # Get display dimensions
+        width = 32
+        height = 48
+        
+        # Colors
+        brown_trunk = (139, 69, 19)  # Dark brown for trunk
+        brown_soil = (101, 67, 33)  # Brown soil color
+        green_leaves = (34, 139, 34)  # Forest green for leaves
+        red_apple = (255, 0, 0)  # Bright red for apples
+        apple_stem = (101, 67, 33)  # Brown for apple stems
+        
+        # Tree structure
+        trunk_width = 6
+        trunk_height = 16
+        trunk_x = 13  # Centered trunk
+        trunk_y = 40  # Bottom of trunk
+        
+        # Apple positions (7 apples) - better distributed
+        apple_positions = [
+            (16, 6),   # Top center
+            (9, 10),   # Upper left
+            (23, 10),  # Upper right
+            (6, 16),   # Mid left
+            (26, 16),  # Mid right
+            (11, 22),  # Lower left
+            (21, 22),  # Lower right
+        ]
+        
+        # Falling apple (starts at position 0 - top center)
+        falling_apple_start_pos = (16, 6)
+        falling_apple_start_time = 10  # Start falling after 10 seconds
+        falling_apple_fall_duration = 3  # Takes 3 seconds to fall
+        
+        # Ground level
+        ground_y = 44
+        
+        def draw_trunk():
+            """Draw the tree trunk."""
+            # Main trunk (wider and taller)
+            for y in range(trunk_height):
+                for x in range(trunk_width):
+                    pixel_x = trunk_x + x
+                    pixel_y = trunk_y - y
+                    if 0 <= pixel_x < width and 0 <= pixel_y < height:
+                        self.led.set_pixel(pixel_x, pixel_y, brown_trunk)
+            
+            # Branches (more realistic)
+            # Left branch
+            for i in range(8):
+                pixel_x = trunk_x - 1 - i
+                pixel_y = trunk_y - 10 - i
+                if 0 <= pixel_x < width and 0 <= pixel_y < height:
+                    self.led.set_pixel(pixel_x, pixel_y, brown_trunk)
+            
+            # Right branch
+            for i in range(8):
+                pixel_x = trunk_x + trunk_width + i
+                pixel_y = trunk_y - 10 - i
+                if 0 <= pixel_x < width and 0 <= pixel_y < height:
+                    self.led.set_pixel(pixel_x, pixel_y, brown_trunk)
+            
+            # Additional smaller branches
+            # Left small branch
+            for i in range(4):
+                pixel_x = trunk_x - 3 - i
+                pixel_y = trunk_y - 15 - i
+                if 0 <= pixel_x < width and 0 <= pixel_y < height:
+                    self.led.set_pixel(pixel_x, pixel_y, brown_trunk)
+            
+            # Right small branch
+            for i in range(4):
+                pixel_x = trunk_x + trunk_width + 2 + i
+                pixel_y = trunk_y - 15 - i
+                if 0 <= pixel_x < width and 0 <= pixel_y < height:
+                    self.led.set_pixel(pixel_x, pixel_y, brown_trunk)
+        
+        def draw_leaves():
+            """Draw the tree canopy/leaves."""
+            # Main canopy area - larger and more realistic
+            center_x = 16
+            center_y = 18
+            radius = 14
+            
+            for y in range(height):
+                for x in range(width):
+                    # Calculate distance from center
+                    dx = x - center_x
+                    dy = y - center_y
+                    distance = math.sqrt(dx*dx + dy*dy)
+                    
+                    # Draw leaves in circular area with some variation
+                    if distance <= radius and y >= 4 and y <= 30:
+                        # Add some texture variation
+                        if (x + y) % 3 == 0:  # Skip some pixels for texture
+                            continue
+                        self.led.set_pixel(x, y, green_leaves)
+        
+        def draw_apples(exclude_falling=False):
+            """Draw all apples except the falling one if specified."""
+            for i, (apple_x, apple_y) in enumerate(apple_positions):
+                # Skip the falling apple (first apple) if exclude_falling is True
+                if exclude_falling and i == 0:
+                    continue
+                    
+                # Draw apple
+                self.led.set_pixel(apple_x, apple_y, red_apple)
+                # Draw stem
+                if apple_y > 0:
+                    self.led.set_pixel(apple_x, apple_y - 1, apple_stem)
+        
+        def draw_falling_apple(progress):
+            """Draw the falling apple with gravity effect."""
+            # Calculate falling position with gravity
+            fall_distance = progress * 20  # Total fall distance
+            gravity_effect = progress * progress * 0.5  # Gravity acceleration
+            
+            current_x = falling_apple_start_pos[0]
+            current_y = falling_apple_start_pos[1] + fall_distance + gravity_effect
+            
+            # Keep apple within bounds
+            current_x = max(0, min(width - 1, int(current_x)))
+            current_y = max(0, min(height - 1, int(current_y)))
+            
+            # Draw falling apple
+            if 0 <= current_x < width and 0 <= current_y < height:
+                self.led.set_pixel(current_x, current_y, red_apple)
+                # Draw stem
+                if current_y > 0:
+                    self.led.set_pixel(current_x, current_y - 1, apple_stem)
+        
+        def draw_ground():
+            """Draw brown soil ground."""
+            for x in range(width):
+                for y in range(ground_y, height):
+                    self.led.set_pixel(x, y, brown_soil)
+        
+        while time.time() - start_time < duration and self.nature_animation_running and not getattr(self, 'animation_stop_flag', False):
+            elapsed = time.time() - start_time
+            
+            # Clear display
+            self.led.clear()
+            
+            # Draw ground first (background)
+            draw_ground()
+            
+            # Draw tree trunk
+            draw_trunk()
+            
+            # Draw leaves
+            draw_leaves()
+            
+            # Handle falling apple
+            if elapsed >= falling_apple_start_time:
+                # Apple is falling
+                fall_progress = (elapsed - falling_apple_start_time) / falling_apple_fall_duration
+                fall_progress = min(1.0, fall_progress)  # Clamp to 1.0
+                
+                # Draw all apples except the falling one
+                draw_apples(exclude_falling=True)
+                
+                # Draw falling apple
+                draw_falling_apple(fall_progress)
+            else:
+                # All apples are on the tree
+                draw_apples(exclude_falling=False)
+            
+            # Show the frame
+            self.led.show()
+            
+            # Frame rate
+            time.sleep(0.05)  # 20 FPS
+        
+        # Keep final frame for a moment
+        print("🌳 Apple Tree Animation completed!")
+        time.sleep(2)
+        
+        # Clear display
+        self.led.clear()
+        self.led.show()
+        print("🌳 Animation finished")
     
     def start_lion_animation(self):
         """Start lion animation."""
