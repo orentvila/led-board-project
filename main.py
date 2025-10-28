@@ -983,26 +983,27 @@ class LEDDisplayApp:
             # House top is at: house_y - house_height
             # Roof base sits on house top
             roof_base_y = house_y - house_height
-            # Roof apex is ABOVE the base (smaller Y value)
-            roof_apex_y = roof_base_y - roof_height
             
-            # Draw triangle line by line from base (bottom) to apex (top)
-            for line in range(roof_height):
-                current_y = roof_base_y - line  # Start from base and go up
+            # Draw a simple triangle pointing UP
+            # Start from the base (house top) and go up to the apex
+            for row in range(roof_height):
+                y_pos = roof_base_y - row  # Go UP from base
                 
-                # Calculate width for this line (gets narrower as we go up)
-                line_width = roof_base_width - (line * 2)
+                # Calculate how many pixels to draw on this row
+                # Base row has full width, apex has 1 pixel
+                pixels_to_draw = roof_base_width - (row * 2)
                 
-                if line_width > 0:
-                    # Center the line over the house
-                    line_offset = (roof_base_width - house_width) // 2
-                    start_x = house_x - line_offset + line
-                    end_x = start_x + line_width
+                if pixels_to_draw > 0:
+                    # Center the pixels over the house
+                    # The roof base is wider than the house, so center it properly
+                    roof_offset = (roof_base_width - house_width) // 2
+                    start_x = house_x - roof_offset + row
                     
-                    # Draw the line
-                    for x in range(start_x, end_x):
-                        if 0 <= x < width and 0 <= current_y < height:
-                            self.led.set_pixel(x, current_y, red_roof)
+                    # Draw the pixels for this row
+                    for i in range(pixels_to_draw):
+                        x_pos = start_x + i
+                        if 0 <= x_pos < width and 0 <= y_pos < height:
+                            self.led.set_pixel(x_pos, y_pos, red_roof)
         
         def draw_chimney():
             """Draw the brown chimney sitting on top of roof."""
