@@ -64,6 +64,8 @@ class LEDDisplayApp:
         
         # House animation system
         self.house_animation_running = False
+        self.clock_animation_running = False
+        self.show_clock_first = True  # Flag to cycle between clock and house
         
         # Setup signal handlers for graceful shutdown
         signal.signal(signal.SIGINT, self.signal_handler)
@@ -78,8 +80,8 @@ class LEDDisplayApp:
         self.button_controller.register_callback(0, self.start_shapes_animation)
         # Button 17 (index 1) - Nature animations
         self.button_controller.register_callback(1, self.start_nature_animation)
-        # Button 27 (index 2) - House animation
-        self.button_controller.register_callback(2, self.start_house_animation)
+        # Button 27 (index 2) - Clock/House animation (cycle between them)
+        self.button_controller.register_callback(2, self.start_clock_or_house_animation)
         # Button 22 (index 3) - Squares animation
         self.button_controller.register_callback(3, self.start_squares_animation)
     
@@ -1132,6 +1134,137 @@ class LEDDisplayApp:
         self.led.clear()
         self.led.show()
         print("🏠 Animation finished")
+    
+    def start_clock_animation(self):
+        """Start clock animation."""
+        print("🕐 Starting clock animation...")
+        self.stop_current_pattern()
+        time.sleep(0.3)  # Longer wait to ensure everything is stopped
+        
+        # Set flags
+        self.animation_stop_flag = False
+        self.clock_animation_running = True
+        
+        # Start the clock animation as a thread
+        self.current_pattern = threading.Thread(target=self.run_clock_animation)
+        self.current_pattern.daemon = False  # Don't use daemon threads
+        self.current_pattern.start()
+        
+        print("✅ Started clock animation")
+    
+    def run_clock_animation(self):
+        """Run clock animation with static hand pointing upward."""
+        import math
+        duration = 20
+        start_time = time.time()
+        
+        print(f"🕐 Clock animation started")
+        
+        # Get display dimensions
+        width = 32
+        height = 48
+        
+        # Colors from the image
+        dark_teal = (0, 128, 128)  # Dark teal for ring and hand
+        white_face = (255, 255, 255)  # White clock face
+        yellow_markers = (255, 255, 0)  # Yellow hour markers
+        
+        # Clock dimensions and position
+        clock_center_x = width // 2  # Center horizontally
+        clock_center_y = height // 2  # Center vertically
+        clock_radius = 12  # Clock radius
+        
+        def draw_clock():
+            """Draw the complete clock."""
+            # Draw outer ring (bezel)
+            for angle in range(0, 360, 1):
+                rad = math.radians(angle)
+                x = int(clock_center_x + clock_radius * math.cos(rad))
+                y = int(clock_center_y + clock_radius * math.sin(rad))
+                if 0 <= x < width and 0 <= y < height:
+                    self.led.set_pixel(x, y, dark_teal)
+            
+            # Draw white clock face
+            for y in range(clock_center_y - clock_radius + 2, clock_center_y + clock_radius - 1):
+                for x in range(clock_center_x - clock_radius + 2, clock_center_x + clock_radius - 1):
+                    # Check if pixel is inside the circle
+                    dx = x - clock_center_x
+                    dy = y - clock_center_y
+                    distance = math.sqrt(dx*dx + dy*dy)
+                    if distance <= clock_radius - 2:
+                        self.led.set_pixel(x, y, white_face)
+            
+            # Draw hour markers
+            for hour in range(12):
+                angle = hour * 30  # 30 degrees per hour
+                rad = math.radians(angle)
+                
+                # Calculate marker position
+                marker_radius = clock_radius - 3
+                marker_x = int(clock_center_x + marker_radius * math.cos(rad))
+                marker_y = int(clock_center_y + marker_radius * math.sin(rad))
+                
+                # Draw marker (longer for 12 o'clock)
+                marker_length = 3 if hour == 0 else 2
+                
+                # Draw horizontal marker
+                for i in range(-marker_length//2, marker_length//2 + 1):
+                    marker_pixel_x = marker_x + i
+                    marker_pixel_y = marker_y
+                    if 0 <= marker_pixel_x < width and 0 <= marker_pixel_y < height:
+                        self.led.set_pixel(marker_pixel_x, marker_pixel_y, yellow_markers)
+            
+            # Draw clock hand pointing upward (12 o'clock)
+            hand_length = clock_radius - 4
+            hand_x = clock_center_x
+            hand_y = clock_center_y - hand_length
+            
+            # Draw hand base (small circle at center)
+            for dy in range(-1, 2):
+                for dx in range(-1, 2):
+                    base_x = clock_center_x + dx
+                    base_y = clock_center_y + dy
+                    if 0 <= base_x < width and 0 <= base_y < height:
+                        self.led.set_pixel(base_x, base_y, dark_teal)
+            
+            # Draw hand line pointing upward
+            for i in range(hand_length):
+                hand_pixel_y = clock_center_y - i
+                if 0 <= hand_x < width and 0 <= hand_pixel_y < height:
+                    self.led.set_pixel(hand_x, hand_pixel_y, dark_teal)
+        
+        while time.time() - start_time < duration and self.clock_animation_running and not getattr(self, 'animation_stop_flag', False):
+            elapsed = time.time() - start_time
+            
+            # Clear display
+            self.led.clear()
+            
+            # Draw clock
+            draw_clock()
+            
+            # Show the frame
+            self.led.show()
+            
+            # Frame rate
+            time.sleep(0.05)  # 20 FPS
+        
+        # Keep final frame for a moment
+        print("🕐 Clock Animation completed!")
+        time.sleep(2)
+        
+        # Clear display
+        self.led.clear()
+        self.led.show()
+        print("🕐 Animation finished")
+    
+    def start_clock_or_house_animation(self):
+        """Start clock or house animation based on cycling flag."""
+        if self.show_clock_first:
+            self.show_clock_first = False  # Next time show house
+            self.start_clock_animation()
+        else:
+            self.show_clock_first = True  # Next time show clock
+            self.start_house_animation()
     
     def start_lion_animation(self):
         """Start lion animation."""
