@@ -904,6 +904,224 @@ class LEDDisplayApp:
         self.led.show()
         print("🦋 Animation finished")
     
+    def start_house_animation(self):
+        """Start house animation."""
+        print("🏠 Starting house animation...")
+        self.stop_current_pattern()
+        time.sleep(0.3)  # Longer wait to ensure everything is stopped
+        
+        # Set flags
+        self.animation_stop_flag = False
+        self.house_animation_running = True
+        
+        # Start the house animation as a thread
+        self.current_pattern = threading.Thread(target=self.run_house_animation)
+        self.current_pattern.daemon = False  # Don't use daemon threads
+        self.current_pattern.start()
+        
+        print("✅ Started house animation")
+    
+    def run_house_animation(self):
+        """Run house animation with smoke rising from chimney."""
+        import math
+        import random
+        duration = 20
+        start_time = time.time()
+        
+        print(f"🏠 House animation started")
+        
+        # Get display dimensions
+        width = 32
+        height = 48
+        
+        # Colors from the image
+        gray_house = (200, 200, 200)  # Light gray house body
+        red_roof = (236, 99, 88)      # #EC6358 - red roof
+        brown_chimney = (139, 69, 19) # Brown chimney
+        light_gray_window_frame = (180, 180, 180)  # Light gray window frame
+        blue_window = (0, 100, 200)   # Bright blue window panes
+        white_smoke = (255, 255, 255) # White smoke
+        light_smoke = (240, 240, 240) # Light gray smoke
+        
+        # House dimensions and position
+        house_x = 8   # Left edge of house
+        house_y = 30  # Bottom of house
+        house_width = 16
+        house_height = 18
+        
+        # Roof dimensions
+        roof_height = 8
+        
+        # Chimney dimensions
+        chimney_x = 20
+        chimney_y = 26
+        chimney_width = 3
+        chimney_height = 6
+        
+        # Window dimensions
+        window_x = 12
+        window_y = 36
+        window_size = 4
+        
+        # Smoke particles
+        smoke_particles = []
+        smoke_start_time = 2  # Start smoke after 2 seconds
+        
+        def draw_house_body():
+            """Draw the main house body (gray rectangle)."""
+            for y in range(house_height):
+                for x in range(house_width):
+                    pixel_x = house_x + x
+                    pixel_y = house_y - y
+                    if 0 <= pixel_x < width and 0 <= pixel_y < height:
+                        self.led.set_pixel(pixel_x, pixel_y, gray_house)
+        
+        def draw_roof():
+            """Draw the triangular roof."""
+            roof_top_y = house_y - house_height
+            roof_bottom_y = roof_top_y + roof_height
+            
+            for y in range(roof_top_y, roof_bottom_y):
+                # Calculate roof width at this height
+                height_from_top = y - roof_top_y
+                roof_width_at_height = house_width - (height_from_top * 2)
+                
+                if roof_width_at_height > 0:
+                    roof_start_x = house_x + height_from_top
+                    roof_end_x = roof_start_x + roof_width_at_height
+                    
+                    for x in range(roof_start_x, roof_end_x):
+                        if 0 <= x < width and 0 <= y < height:
+                            self.led.set_pixel(x, y, red_roof)
+        
+        def draw_chimney():
+            """Draw the brown chimney."""
+            for y in range(chimney_height):
+                for x in range(chimney_width):
+                    pixel_x = chimney_x + x
+                    pixel_y = chimney_y - y
+                    if 0 <= pixel_x < width and 0 <= pixel_y < height:
+                        self.led.set_pixel(pixel_x, pixel_y, brown_chimney)
+        
+        def draw_window():
+            """Draw the window with frame and panes."""
+            # Draw window frame
+            for y in range(window_size + 2):
+                for x in range(window_size + 2):
+                    pixel_x = window_x - 1 + x
+                    pixel_y = window_y - 1 + y
+                    if 0 <= pixel_x < width and 0 <= pixel_y < height:
+                        # Frame
+                        if x == 0 or x == window_size + 1 or y == 0 or y == window_size + 1:
+                            self.led.set_pixel(pixel_x, pixel_y, light_gray_window_frame)
+                        # Window panes
+                        else:
+                            self.led.set_pixel(pixel_x, pixel_y, blue_window)
+            
+            # Draw cross frame
+            center_x = window_x + window_size // 2
+            center_y = window_y + window_size // 2
+            
+            # Vertical line
+            for y in range(window_y, window_y + window_size):
+                if 0 <= center_x < width and 0 <= y < height:
+                    self.led.set_pixel(center_x, y, light_gray_window_frame)
+            
+            # Horizontal line
+            for x in range(window_x, window_x + window_size):
+                if 0 <= x < width and 0 <= center_y < height:
+                    self.led.set_pixel(x, center_y, light_gray_window_frame)
+        
+        def add_smoke_particle():
+            """Add a new smoke particle at the chimney top."""
+            particle = {
+                'x': chimney_x + chimney_width // 2 + random.uniform(-0.5, 0.5),
+                'y': chimney_y - chimney_height,
+                'life': 1.0,
+                'speed': random.uniform(0.3, 0.6),
+                'drift': random.uniform(-0.2, 0.2)
+            }
+            smoke_particles.append(particle)
+        
+        def update_smoke(elapsed):
+            """Update smoke particles."""
+            # Add new smoke particles
+            if elapsed >= smoke_start_time:
+                if random.random() < 0.3:  # 30% chance each frame
+                    add_smoke_particle()
+            
+            # Update existing particles
+            particles_to_remove = []
+            for i, particle in enumerate(smoke_particles):
+                # Move particle up and drift sideways
+                particle['y'] -= particle['speed']
+                particle['x'] += particle['drift']
+                particle['life'] -= 0.02  # Fade out
+                
+                # Remove particles that are off-screen or faded
+                if (particle['y'] < 0 or particle['life'] <= 0 or 
+                    particle['x'] < 0 or particle['x'] >= width):
+                    particles_to_remove.append(i)
+            
+            # Remove dead particles (in reverse order to maintain indices)
+            for i in reversed(particles_to_remove):
+                smoke_particles.pop(i)
+        
+        def draw_smoke():
+            """Draw all smoke particles."""
+            for particle in smoke_particles:
+                x = int(particle['x'])
+                y = int(particle['y'])
+                
+                if 0 <= x < width and 0 <= y < height:
+                    # Fade smoke based on life
+                    if particle['life'] > 0.7:
+                        color = white_smoke
+                    else:
+                        color = light_smoke
+                    
+                    self.led.set_pixel(x, y, color)
+                    
+                    # Draw a small smoke puff (2x2 pixels)
+                    for dy in range(-1, 2):
+                        for dx in range(-1, 2):
+                            smoke_x = x + dx
+                            smoke_y = y + dy
+                            if (0 <= smoke_x < width and 0 <= smoke_y < height and
+                                random.random() < 0.6):  # Random smoke texture
+                                self.led.set_pixel(smoke_x, smoke_y, color)
+        
+        while time.time() - start_time < duration and self.house_animation_running and not getattr(self, 'animation_stop_flag', False):
+            elapsed = time.time() - start_time
+            
+            # Clear display
+            self.led.clear()
+            
+            # Draw house components
+            draw_house_body()
+            draw_roof()
+            draw_chimney()
+            draw_window()
+            
+            # Update and draw smoke
+            update_smoke(elapsed)
+            draw_smoke()
+            
+            # Show the frame
+            self.led.show()
+            
+            # Frame rate
+            time.sleep(0.05)  # 20 FPS
+        
+        # Keep final frame for a moment
+        print("🏠 House Animation completed!")
+        time.sleep(2)
+        
+        # Clear display
+        self.led.clear()
+        self.led.show()
+        print("🏠 Animation finished")
+    
     def start_lion_animation(self):
         """Start lion animation."""
         print("🦁 Starting lion animation...")
