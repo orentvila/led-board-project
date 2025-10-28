@@ -952,11 +952,11 @@ class LEDDisplayApp:
         # Roof dimensions - triangular roof with wider base
         roof_base_width = house_width + 4  # Roof base is wider than house
         roof_height = 12
-        roof_top_y = house_y - house_height  # Roof sits ON TOP of house
+        roof_top_y = house_y - house_height  # Roof bottom sits ON TOP of house
         
         # Chimney dimensions - sits on top of roof
         chimney_x = 20
-        chimney_y = roof_top_y - 2  # Chimney sits on top of roof
+        chimney_y = house_y - house_height - 2  # Chimney sits on top of roof
         chimney_width = 3
         chimney_height = 6
         
@@ -979,11 +979,13 @@ class LEDDisplayApp:
                         self.led.set_pixel(pixel_x, pixel_y, gray_house)
         
         def draw_roof():
-            """Draw the triangular roof with wider base sitting on top of house."""
-            roof_bottom_y = roof_top_y + roof_height
+            """Draw the triangular roof with bottom side touching the house top."""
+            # Roof bottom should touch the house top
+            roof_bottom_y = house_y - house_height  # This is where house top is
+            roof_top_y = roof_bottom_y - roof_height  # Triangle apex is above
             
             for y in range(roof_top_y, roof_bottom_y):
-                # Calculate roof width at this height (triangle gets narrower toward top)
+                # Calculate roof width at this height (triangle gets wider toward bottom)
                 height_from_top = y - roof_top_y
                 roof_width_at_height = roof_base_width - (height_from_top * 2)
                 
