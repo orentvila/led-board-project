@@ -55,7 +55,8 @@ class LEDDisplayApp:
             "floating_clouds_animation.py",
             "rain_animation.py",
             "growing_flowers_animation.py",
-            "bubbles_animation.py"
+            "bubbles_animation.py",
+            "apple_tree_animation.py"
         ]
         self.current_nature_index = 0
         self.nature_animation_running = False
