@@ -18,9 +18,21 @@ class ButtonController:
         self.running = False
         self.button_thread = None
         
-        # Setup GPIO
-        GPIO.setmode(GPIO.BCM)
-        GPIO.setwarnings(False)
+        # Setup GPIO with error handling
+        try:
+            GPIO.setmode(GPIO.BCM)
+            GPIO.setwarnings(False)
+        except Exception as e:
+            print(f"Error: 'GPIO busy' - {e}")
+            print("Attempting to cleanup and retry...")
+            try:
+                GPIO.cleanup()
+                GPIO.setmode(GPIO.BCM)
+                GPIO.setwarnings(False)
+                print("✅ GPIO successfully reinitialized")
+            except Exception as e2:
+                print(f"Failed to reinitialize GPIO: {e2}")
+                raise e2
         
         # Initialize buttons
         for i, pin in enumerate(config.BUTTON_PINS):

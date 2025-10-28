@@ -979,20 +979,21 @@ class LEDDisplayApp:
                         self.led.set_pixel(pixel_x, pixel_y, orange_house)
         
         def draw_roof():
-            """Draw the triangular roof with apex pointing upward."""
-            # Roof bottom should touch the house top
-            roof_bottom_y = house_y - house_height  # This is where house top is
-            roof_top_y = roof_bottom_y - roof_height  # Triangle apex is above
+            """Draw the triangular roof sitting properly on the house."""
+            # Roof base sits on top of house
+            roof_base_y = house_y - house_height  # This is where house top is
+            roof_apex_y = roof_base_y - roof_height  # Triangle apex is above
             
-            for y in range(roof_top_y, roof_bottom_y):
-                # Calculate roof width at this height (triangle gets wider toward bottom)
-                height_from_top = y - roof_top_y
-                roof_width_at_height = roof_base_width - (height_from_top * 2)
+            # Draw triangle from base to apex
+            for y in range(roof_apex_y, roof_base_y):
+                # Calculate roof width at this height (gets wider toward base)
+                height_from_apex = y - roof_apex_y
+                roof_width_at_height = roof_base_width - (height_from_apex * 2)
                 
                 if roof_width_at_height > 0:
-                    # Center the roof base over the house
+                    # Center the roof over the house
                     roof_offset = (roof_base_width - house_width) // 2
-                    roof_start_x = house_x - roof_offset + height_from_top
+                    roof_start_x = house_x - roof_offset + height_from_apex
                     roof_end_x = roof_start_x + roof_width_at_height
                     
                     for x in range(roof_start_x, roof_end_x):
@@ -1638,9 +1639,18 @@ def main():
         
         if updated:
             print("🔄 Restarting application with updated code...")
+            # Clean up GPIO and LED resources before restart
+            try:
+                # Force GPIO cleanup
+                import RPi.GPIO as GPIO
+                GPIO.cleanup()
+                print("✅ GPIO cleaned up before restart")
+            except Exception as e:
+                print(f"Warning: Error during GPIO cleanup: {e}")
+            
             # Add a longer delay to ensure proper cleanup and hardware reset
             import time
-            time.sleep(2)
+            time.sleep(3)  # Increased delay for better cleanup
             # Restart the application to load new code
             import os
             import sys
