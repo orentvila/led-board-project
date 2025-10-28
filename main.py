@@ -767,8 +767,9 @@ class LEDDisplayApp:
         
         print(f"🔷 Big Rectangle animation started")
         
-        # Soft blue color #34ABE4
-        soft_blue = (52, 171, 228)
+        # Starting color #73C0E0 and ending color #157BB8
+        start_color = (115, 192, 224)  # RGB values for #73C0E0
+        end_color = (21, 123, 184)    # RGB values for #157BB8
         
         # Calculate rectangle dimensions (big rectangle)
         margin_x = 2
@@ -788,17 +789,24 @@ class LEDDisplayApp:
             # Calculate fade intensity (slow fade in)
             fade_intensity = math.sin(progress * math.pi / 2)  # Smooth sine curve from 0 to 1
             
+            # Calculate color transition from start to end color
+            current_color = (
+                int(start_color[0] + (end_color[0] - start_color[0]) * progress),
+                int(start_color[1] + (end_color[1] - start_color[1]) * progress),
+                int(start_color[2] + (end_color[2] - start_color[2]) * progress)
+            )
+            
             # Clear display
             self.led.clear()
             
-            # Draw the rectangle with current fade intensity
+            # Draw the rectangle with current color and fade intensity
             for y in range(rect_height):
                 for x in range(rect_width):
                     # Calculate final color with fade intensity
                     final_color = (
-                        int(soft_blue[0] * fade_intensity),
-                        int(soft_blue[1] * fade_intensity),
-                        int(soft_blue[2] * fade_intensity)
+                        int(current_color[0] * fade_intensity),
+                        int(current_color[1] * fade_intensity),
+                        int(current_color[2] * fade_intensity)
                     )
                     
                     # Set pixel
@@ -830,6 +838,9 @@ class LEDDisplayApp:
             # Calculate fade out intensity (1 to 0)
             fade_out_intensity = 1.0 - fade_progress
             
+            # Use the final color for fade out
+            final_color_for_fade = end_color
+            
             # Clear display
             self.led.clear()
             
@@ -838,9 +849,9 @@ class LEDDisplayApp:
                 for x in range(rect_width):
                     # Calculate final color with fade out intensity
                     final_color = (
-                        int(soft_blue[0] * fade_out_intensity),
-                        int(soft_blue[1] * fade_out_intensity),
-                        int(soft_blue[2] * fade_out_intensity)
+                        int(final_color_for_fade[0] * fade_out_intensity),
+                        int(final_color_for_fade[1] * fade_out_intensity),
+                        int(final_color_for_fade[2] * fade_out_intensity)
                     )
                     
                     # Set pixel

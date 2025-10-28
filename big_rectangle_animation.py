@@ -23,8 +23,9 @@ class BigRectangleAnimation:
         self.width = 32
         self.height = 48
         
-        # Soft blue color #34ABE4
-        self.soft_blue = (52, 171, 228)  # RGB values for #34ABE4
+        # Starting color #73C0E0 and ending color #157BB8
+        self.start_color = (115, 192, 224)  # RGB values for #73C0E0
+        self.end_color = (21, 123, 184)     # RGB values for #157BB8
         
         # Animation parameters
         self.duration = 20  # 20 seconds
@@ -33,7 +34,8 @@ class BigRectangleAnimation:
     def run_animation(self):
         """Run the big rectangle animation."""
         print("🔷 Starting Big Rectangle Animation...")
-        print(f"Color: #{self.soft_blue[0]:02X}{self.soft_blue[1]:02X}{self.soft_blue[2]:02X}")
+        print(f"Starting Color: #{self.start_color[0]:02X}{self.start_color[1]:02X}{self.start_color[2]:02X}")
+        print(f"Ending Color: #{self.end_color[0]:02X}{self.end_color[1]:02X}{self.end_color[2]:02X}")
         print(f"Duration: {self.duration} seconds")
         
         start_time = time.time()
@@ -61,17 +63,24 @@ class BigRectangleAnimation:
             # Use a smooth curve for gradual fade-in
             fade_intensity = math.sin(progress * math.pi / 2)  # Smooth sine curve from 0 to 1
             
+            # Calculate color transition from start to end color
+            current_color = (
+                int(self.start_color[0] + (self.end_color[0] - self.start_color[0]) * progress),
+                int(self.start_color[1] + (self.end_color[1] - self.start_color[1]) * progress),
+                int(self.start_color[2] + (self.end_color[2] - self.start_color[2]) * progress)
+            )
+            
             # Clear display
             self.led.clear()
             
-            # Draw the rectangle with current fade intensity
+            # Draw the rectangle with current color and fade intensity
             for y in range(rect_height):
                 for x in range(rect_width):
                     # Calculate final color with fade intensity
                     final_color = (
-                        int(self.soft_blue[0] * fade_intensity),
-                        int(self.soft_blue[1] * fade_intensity),
-                        int(self.soft_blue[2] * fade_intensity)
+                        int(current_color[0] * fade_intensity),
+                        int(current_color[1] * fade_intensity),
+                        int(current_color[2] * fade_intensity)
                     )
                     
                     # Set pixel
@@ -103,6 +112,9 @@ class BigRectangleAnimation:
             # Calculate fade out intensity (1 to 0)
             fade_out_intensity = 1.0 - fade_progress
             
+            # Use the final color for fade out
+            final_color_for_fade = self.end_color
+            
             # Clear display
             self.led.clear()
             
@@ -111,9 +123,9 @@ class BigRectangleAnimation:
                 for x in range(rect_width):
                     # Calculate final color with fade out intensity
                     final_color = (
-                        int(self.soft_blue[0] * fade_out_intensity),
-                        int(self.soft_blue[1] * fade_out_intensity),
-                        int(self.soft_blue[2] * fade_out_intensity)
+                        int(final_color_for_fade[0] * fade_out_intensity),
+                        int(final_color_for_fade[1] * fade_out_intensity),
+                        int(final_color_for_fade[2] * fade_out_intensity)
                     )
                     
                     # Set pixel
