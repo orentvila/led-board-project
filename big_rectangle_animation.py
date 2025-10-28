@@ -59,9 +59,9 @@ class BigRectangleAnimation:
             elapsed = time.time() - start_time
             progress = elapsed / self.duration
             
-            # Calculate fade intensity (slow fade in)
-            # Use a smooth curve for gradual fade-in
-            fade_intensity = math.sin(progress * math.pi / 2)  # Smooth sine curve from 0 to 1
+            # Calculate fade intensity using smooth easing function (ease-out cubic)
+            # This provides a much smoother fade-in without flickering
+            fade_intensity = 1.0 - (1.0 - progress) ** 3
             
             # Calculate color transition from start to end color
             current_color = (
@@ -93,8 +93,8 @@ class BigRectangleAnimation:
             # Show the frame
             self.led.show()
             
-            # Small delay for smooth animation
-            time.sleep(0.05)  # 20 FPS
+            # Higher frame rate for smoother animation
+            time.sleep(0.03)  # ~33 FPS for much smoother animation
         
         # Keep the rectangle fully lit for a moment at the end
         print("🔷 Rectangle fully lit, keeping for 2 seconds...")
@@ -138,8 +138,8 @@ class BigRectangleAnimation:
             # Show the frame
             self.led.show()
             
-            # Small delay for smooth animation
-            time.sleep(0.05)
+            # Higher frame rate for smoother animation
+            time.sleep(0.03)
         
         # Clear display completely
         self.led.clear()

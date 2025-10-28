@@ -786,8 +786,9 @@ class LEDDisplayApp:
             elapsed = time.time() - start_time
             progress = elapsed / duration
             
-            # Calculate fade intensity (slow fade in)
-            fade_intensity = math.sin(progress * math.pi / 2)  # Smooth sine curve from 0 to 1
+            # Calculate fade intensity using smooth easing function (ease-out cubic)
+            # This provides a much smoother fade-in without flickering
+            fade_intensity = 1.0 - (1.0 - progress) ** 3
             
             # Calculate color transition from start to end color
             current_color = (
@@ -819,8 +820,8 @@ class LEDDisplayApp:
             # Show the frame
             self.led.show()
             
-            # Small delay for smooth animation
-            time.sleep(0.05)  # 20 FPS
+            # Higher frame rate for smoother animation
+            time.sleep(0.03)  # ~33 FPS for much smoother animation
         
         # Keep the rectangle fully lit for a moment at the end
         print("🔷 Rectangle fully lit, keeping for 2 seconds...")
@@ -864,8 +865,8 @@ class LEDDisplayApp:
             # Show the frame
             self.led.show()
             
-            # Small delay for smooth animation
-            time.sleep(0.05)
+            # Higher frame rate for smoother animation
+            time.sleep(0.03)
         
         # Clear display completely
         self.led.clear()
@@ -1100,13 +1101,26 @@ def main():
         
         if updated:
             print("🔄 Restarting application with updated code...")
+            # Add a small delay to ensure proper cleanup
+            import time
+            time.sleep(1)
             # Restart the application to load new code
             import os
             import sys
             os.execv(sys.executable, ['python'] + sys.argv)
         
+        # Add a small delay to ensure LED controller is ready
+        import time
+        print("🔧 Initializing LED display system...")
+        time.sleep(0.5)
+        
         # Start the application
         app = LEDDisplayApp()
+        
+        # Additional initialization delay to ensure everything is ready
+        print("🔧 Finalizing initialization...")
+        time.sleep(0.5)
+        
         app.run()
     except Exception as e:
         print(f"Error: {e}")
