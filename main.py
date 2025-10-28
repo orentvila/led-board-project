@@ -651,44 +651,16 @@ class LEDDisplayApp:
         ground_y = 44
         
         def draw_trunk():
-            """Draw the tree trunk."""
-            # Main trunk (wider and taller)
+            """Draw the tree trunk (no branches)."""
+            # Main trunk only (no branches)
             for y in range(trunk_height):
                 for x in range(trunk_width):
                     pixel_x = trunk_x + x
                     pixel_y = trunk_y - y
                     if 0 <= pixel_x < width and 0 <= pixel_y < height:
-                        self.led.set_pixel(pixel_x, pixel_y, brown_trunk)
-            
-            # Branches (more realistic)
-            # Left branch
-            for i in range(8):
-                pixel_x = trunk_x - 1 - i
-                pixel_y = trunk_y - 10 - i
-                if 0 <= pixel_x < width and 0 <= pixel_y < height:
-                    self.led.set_pixel(pixel_x, pixel_y, brown_trunk)
-            
-            # Right branch
-            for i in range(8):
-                pixel_x = trunk_x + trunk_width + i
-                pixel_y = trunk_y - 10 - i
-                if 0 <= pixel_x < width and 0 <= pixel_y < height:
-                    self.led.set_pixel(pixel_x, pixel_y, brown_trunk)
-            
-            # Additional smaller branches
-            # Left small branch
-            for i in range(4):
-                pixel_x = trunk_x - 3 - i
-                pixel_y = trunk_y - 15 - i
-                if 0 <= pixel_x < width and 0 <= pixel_y < height:
-                    self.led.set_pixel(pixel_x, pixel_y, brown_trunk)
-            
-            # Right small branch
-            for i in range(4):
-                pixel_x = trunk_x + trunk_width + 2 + i
-                pixel_y = trunk_y - 15 - i
-                if 0 <= pixel_x < width and 0 <= pixel_y < height:
-                    self.led.set_pixel(pixel_x, pixel_y, brown_trunk)
+                        # Only draw trunk pixels that are above ground level
+                        if pixel_y < ground_y:
+                            self.led.set_pixel(pixel_x, pixel_y, brown_trunk)
         
         def draw_leaves():
             """Draw the tree canopy/leaves."""
