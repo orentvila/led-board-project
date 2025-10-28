@@ -944,24 +944,25 @@ class LEDDisplayApp:
         light_smoke = (240, 240, 240) # Light gray smoke
         
         # House dimensions and position
-        house_x = 8   # Left edge of house
-        house_y = 30  # Bottom of house
-        house_width = 16
-        house_height = 18
+        house_x = 6   # Left edge of house
+        house_y = 40  # Bottom of house (lower on screen)
+        house_width = 20
+        house_height = 20
         
         # Roof dimensions
-        roof_height = 8
+        roof_height = 10
+        roof_top_y = house_y - house_height  # Roof sits ON TOP of house
         
         # Chimney dimensions
-        chimney_x = 20
-        chimney_y = 26
-        chimney_width = 3
-        chimney_height = 6
+        chimney_x = 22
+        chimney_y = roof_top_y + 2  # Chimney starts from roof level
+        chimney_width = 4
+        chimney_height = 8
         
         # Window dimensions
         window_x = 12
-        window_y = 36
-        window_size = 4
+        window_y = 32  # Window inside house body
+        window_size = 6
         
         # Smoke particles
         smoke_particles = []
@@ -977,12 +978,11 @@ class LEDDisplayApp:
                         self.led.set_pixel(pixel_x, pixel_y, gray_house)
         
         def draw_roof():
-            """Draw the triangular roof."""
-            roof_top_y = house_y - house_height
+            """Draw the triangular roof sitting on top of house."""
             roof_bottom_y = roof_top_y + roof_height
             
             for y in range(roof_top_y, roof_bottom_y):
-                # Calculate roof width at this height
+                # Calculate roof width at this height (triangle gets narrower toward top)
                 height_from_top = y - roof_top_y
                 roof_width_at_height = house_width - (height_from_top * 2)
                 
@@ -995,7 +995,7 @@ class LEDDisplayApp:
                             self.led.set_pixel(x, y, red_roof)
         
         def draw_chimney():
-            """Draw the brown chimney."""
+            """Draw the brown chimney starting from roof level."""
             for y in range(chimney_height):
                 for x in range(chimney_width):
                     pixel_x = chimney_x + x
@@ -1036,7 +1036,7 @@ class LEDDisplayApp:
             """Add a new smoke particle at the chimney top."""
             particle = {
                 'x': chimney_x + chimney_width // 2 + random.uniform(-0.5, 0.5),
-                'y': chimney_y - chimney_height,
+                'y': chimney_y - chimney_height + 1,  # Start from chimney top
                 'life': 1.0,
                 'speed': random.uniform(0.3, 0.6),
                 'drift': random.uniform(-0.2, 0.2)
