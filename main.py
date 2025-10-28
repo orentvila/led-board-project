@@ -29,13 +29,9 @@ class LEDDisplayApp:
         self.current_pattern = None
         self.running = True
         
-        # Shape animation system
+        # Shape animation system - only big rectangle animation
         self.shape_animations = [
-            "growing_circle_animation.py",
-            "rotating_square_animation.py", 
-            "bouncing_triangle_animation.py",
-            "pulsing_diamond_animation.py",
-            "beating_heart_animation.py"
+            "big_rectangle_animation.py"
         ]
         self.current_shape_index = 0
         self.current_shape_process = None
@@ -102,7 +98,7 @@ class LEDDisplayApp:
         
         # Cycle to next shape with bounds checking
         self.current_shape_index = (self.current_shape_index + 1) % len(self.shape_animations)
-        shape_names = ["Growing Circle", "Rotating Square", "Bouncing Triangle", "Pulsing Diamond", "Beating Heart"]
+        shape_names = ["Big Rectangle"]
         
         # Ensure index is within bounds
         if self.current_shape_index >= len(shape_names):
@@ -757,229 +753,114 @@ class LEDDisplayApp:
                 print("⚠️ Shape index out of bounds, resetting to 0")
             
             if self.current_shape_index == 0:
-                self.run_growing_circle()
-            elif self.current_shape_index == 1:
-                self.run_rotating_square()
-            elif self.current_shape_index == 2:
-                self.run_bouncing_triangle()
-            elif self.current_shape_index == 3:
-                self.run_pulsing_diamond()
-            elif self.current_shape_index == 4:
-                self.run_beating_heart()
+                self.run_big_rectangle()
             else:
                 print(f"⚠️ Unknown shape index: {self.current_shape_index}")
         finally:
             self.shape_animation_running = False
     
-    def run_growing_circle(self):
-        """Run growing circle animation."""
+    def run_big_rectangle(self):
+        """Run big rectangle animation with soft blue color."""
         import math
-        duration = 15
+        duration = 20  # 20 seconds as requested
         start_time = time.time()
         
+        print(f"🔷 Big Rectangle animation started")
+        
+        # Soft blue color #34ABE4
+        soft_blue = (52, 171, 228)
+        
+        # Calculate rectangle dimensions (big rectangle)
+        margin_x = 2
+        margin_y = 4
+        rect_width = 32 - (2 * margin_x)  # 28 pixels wide
+        rect_height = 48 - (2 * margin_y)  # 40 pixels tall
+        
+        # Rectangle position (centered)
+        rect_x = margin_x
+        rect_y = margin_y
+        
         while time.time() - start_time < duration and self.shape_animation_running:
-            center_x, center_y = 16, 24
-            progress = (time.time() - start_time) / duration
-            max_radius = min(16, 24) - 2
-            current_radius = int(progress * max_radius)
+            # Calculate progress (0 to 1)
+            elapsed = time.time() - start_time
+            progress = elapsed / duration
+            
+            # Calculate fade intensity (slow fade in)
+            fade_intensity = math.sin(progress * math.pi / 2)  # Smooth sine curve from 0 to 1
             
             # Clear display
             self.led.clear()
             
-            # Draw circle
-            for y in range(48):
-                for x in range(32):
-                    distance = math.sqrt((x - center_x)**2 + (y - center_y)**2)
-                    if distance <= current_radius:
-                        self.led.set_pixel(x, y, (255, 0, 0))  # Red
-            
-            self.led.show()
-            time.sleep(0.05)
-    
-    def run_rotating_square(self):
-        """Run rotating square animation."""
-        import math
-        duration = 15
-        start_time = time.time()
-        
-        while time.time() - start_time < duration and self.shape_animation_running:
-            center_x, center_y = 16, 24
-            size = 12
-            rotation_angle = (time.time() - start_time) * 0.5
-            
-            # Clear display
-            self.led.clear()
-            
-            # Draw rotated square
-            for y in range(48):
-                for x in range(32):
-                    # Rotate point around center
-                    dx = x - center_x
-                    dy = y - center_y
-                    cos_a = math.cos(rotation_angle)
-                    sin_a = math.sin(rotation_angle)
-                    rx = dx * cos_a - dy * sin_a
-                    ry = dx * sin_a + dy * cos_a
-                    
-                    # Check if point is inside square
-                    if abs(rx) <= size//2 and abs(ry) <= size//2:
-                        self.led.set_pixel(x, y, (0, 0, 255))  # Blue
-            
-            self.led.show()
-            time.sleep(0.05)
-    
-    def run_bouncing_triangle(self):
-        """Run bouncing triangle animation."""
-        duration = 15
-        start_time = time.time()
-        
-        # Triangle position and movement
-        triangle_x = 16
-        triangle_y = 24
-        triangle_dx = 2
-        triangle_dy = 1
-        
-        while time.time() - start_time < duration and self.shape_animation_running:
-            # Update position
-            triangle_x += triangle_dx
-            triangle_y += triangle_dy
-            
-            # Bounce off edges
-            if triangle_x <= 5 or triangle_x >= 27:
-                triangle_dx = -triangle_dx
-            if triangle_y <= 5 or triangle_y >= 43:
-                triangle_dy = -triangle_dy
-            
-            # Keep in bounds
-            triangle_x = max(5, min(27, triangle_x))
-            triangle_y = max(5, min(43, triangle_y))
-            
-            # Clear display
-            self.led.clear()
-            
-            # Draw triangle
-            triangle_size = 8
-            for y in range(48):
-                for x in range(32):
-                    # Check if point is inside triangle
-                    if (y <= triangle_y - triangle_size and 
-                        x >= triangle_x - triangle_size and 
-                        x <= triangle_x + triangle_size and
-                        y >= triangle_y - triangle_size + (abs(x - triangle_x) * 2)):
-                        self.led.set_pixel(x, y, (0, 255, 0))  # Green
-            
-            self.led.show()
-            time.sleep(0.05)
-    
-    def run_pulsing_diamond(self):
-        """Run pulsing diamond animation."""
-        import math
-        duration = 15
-        start_time = time.time()
-        
-        while time.time() - start_time < duration and self.shape_animation_running:
-            center_x, center_y = 16, 24
-            pulse_phase = (time.time() - start_time) * 2
-            pulse_size = int(8 + 4 * math.sin(pulse_phase))
-            
-            # Clear display
-            self.led.clear()
-            
-            # Draw diamond
-            for y in range(48):
-                for x in range(32):
-                    dx = abs(x - center_x)
-                    dy = abs(y - center_y)
-                    if dx + dy <= pulse_size:
-                        self.led.set_pixel(x, y, (255, 255, 0))  # Yellow
-            
-            self.led.show()
-            time.sleep(0.05)
-    
-    def run_beating_heart(self):
-        """Run beating heart animation with soft red colors."""
-        import math
-        duration = 15
-        start_time = time.time()
-        
-        print(f"❤️ Beating heart animation started")
-        
-        # Get display dimensions
-        width = 32
-        height = 48
-        
-        # Soft red colors for the heart
-        heart_colors = {
-            'main': (255, 100, 100),      # Soft red
-            'bright': (255, 150, 150),    # Brighter red for beat
-            'dim': (200, 80, 80),         # Dimmer red
-        }
-        
-        # Heart position (center of screen)
-        heart_x = width // 2
-        heart_y = height // 2
-        
-        def draw_heart(center_x, center_y, size, beat_intensity=1.0):
-            """Draw a heart shape at the given position with beat intensity."""
-            # Calculate heart color based on beat intensity
-            base_color = heart_colors['main']
-            if beat_intensity > 0.8:
-                color = heart_colors['bright']
-            elif beat_intensity < 0.3:
-                color = heart_colors['dim']
-            else:
-                # Interpolate between main and bright/dim
-                if beat_intensity > 0.5:
-                    factor = (beat_intensity - 0.5) * 2
-                    color = (
-                        int(base_color[0] + (heart_colors['bright'][0] - base_color[0]) * factor),
-                        int(base_color[1] + (heart_colors['bright'][1] - base_color[1]) * factor),
-                        int(base_color[2] + (heart_colors['bright'][2] - base_color[2]) * factor)
+            # Draw the rectangle with current fade intensity
+            for y in range(rect_height):
+                for x in range(rect_width):
+                    # Calculate final color with fade intensity
+                    final_color = (
+                        int(soft_blue[0] * fade_intensity),
+                        int(soft_blue[1] * fade_intensity),
+                        int(soft_blue[2] * fade_intensity)
                     )
-                else:
-                    factor = beat_intensity * 2
-                    color = (
-                        int(base_color[0] + (heart_colors['dim'][0] - base_color[0]) * (1 - factor)),
-                        int(base_color[1] + (heart_colors['dim'][1] - base_color[1]) * (1 - factor)),
-                        int(base_color[2] + (heart_colors['dim'][2] - base_color[2]) * (1 - factor))
-                    )
+                    
+                    # Set pixel
+                    pixel_x = rect_x + x
+                    pixel_y = rect_y + y
+                    
+                    if 0 <= pixel_x < 32 and 0 <= pixel_y < 48:
+                        self.led.set_pixel(pixel_x, pixel_y, final_color)
             
-            # Draw heart shape using mathematical heart equation (flipped)
-            for dy in range(-int(size * 1.2), int(size * 1.2) + 1):
-                for dx in range(-int(size * 1.2), int(size * 1.2) + 1):
-                    # Heart equation: (x² + y² - 1)³ - x²y³ ≤ 0 (flipped vertically)
-                    x_norm = dx / size
-                    y_norm = -dy / size  # Flip the Y coordinate
-                    
-                    # Heart equation
-                    heart_eq = (x_norm*x_norm + y_norm*y_norm - 1)**3 - x_norm*x_norm * y_norm*y_norm*y_norm
-                    
-                    if heart_eq <= 0:
-                        x = center_x + dx
-                        y = center_y + dy
-                        if 0 <= x < width and 0 <= y < height:
-                            self.led.set_pixel(x, y, color)
+            # Show the frame
+            self.led.show()
+            
+            # Small delay for smooth animation
+            time.sleep(0.05)  # 20 FPS
         
-        while time.time() - start_time < duration and self.shape_animation_running and not getattr(self, 'animation_stop_flag', False):
-            # Clear display (no background)
+        # Keep the rectangle fully lit for a moment at the end
+        print("🔷 Rectangle fully lit, keeping for 2 seconds...")
+        time.sleep(2)
+        
+        # Fade out slowly
+        print("🔷 Fading out...")
+        fade_out_duration = 3  # 3 seconds fade out
+        fade_start = time.time()
+        
+        while time.time() - fade_start < fade_out_duration and self.shape_animation_running:
+            elapsed_fade = time.time() - fade_start
+            fade_progress = elapsed_fade / fade_out_duration
+            
+            # Calculate fade out intensity (1 to 0)
+            fade_out_intensity = 1.0 - fade_progress
+            
+            # Clear display
             self.led.clear()
             
-            # Calculate beat cycle (slow beating)
-            beat_cycle = (time.time() - start_time) * 0.8  # Slow beat
-            beat_intensity = (math.sin(beat_cycle) + 1) / 2  # 0 to 1
+            # Draw the rectangle with fade out intensity
+            for y in range(rect_height):
+                for x in range(rect_width):
+                    # Calculate final color with fade out intensity
+                    final_color = (
+                        int(soft_blue[0] * fade_out_intensity),
+                        int(soft_blue[1] * fade_out_intensity),
+                        int(soft_blue[2] * fade_out_intensity)
+                    )
+                    
+                    # Set pixel
+                    pixel_x = rect_x + x
+                    pixel_y = rect_y + y
+                    
+                    if 0 <= pixel_x < 32 and 0 <= pixel_y < 48:
+                        self.led.set_pixel(pixel_x, pixel_y, final_color)
             
-            # Calculate heart size with beat
-            base_size = 8
-            size_variation = math.sin(beat_cycle * 2) * 1.5  # Size changes with beat
-            current_size = base_size + size_variation
-            
-            # Draw the beating heart
-            draw_heart(heart_x, heart_y, current_size, beat_intensity)
-            
+            # Show the frame
             self.led.show()
-            time.sleep(0.15)  # Slow beating animation
+            
+            # Small delay for smooth animation
+            time.sleep(0.05)
         
-        print("❤️ Beating heart animation finished")
+        # Clear display completely
+        self.led.clear()
+        self.led.show()
+        
+        print("🔷 Big Rectangle animation finished")
     
     def start_rainbow_pattern(self):
         """Start rainbow wave pattern."""
