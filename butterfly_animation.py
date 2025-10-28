@@ -25,9 +25,9 @@ class ButterflyAnimation:
         self.center_x = 16
         self.center_y = 24
         
-        # Wing dimensions
-        self.upper_wing_radius = 8
-        self.lower_wing_radius = 6
+        # Wing dimensions - much bigger to almost reach screen edges
+        self.upper_wing_radius = 14  # Almost half the screen width
+        self.lower_wing_radius = 10  # Slightly smaller lower wings
         
     def draw_butterfly(self, wing_angle):
         """Draw the butterfly with animated wings."""
@@ -64,23 +64,23 @@ class ButterflyAnimation:
         # Calculate wing positions based on angle
         # wing_angle: 0 = fully open, 1 = fully closed
         
-        # Upper wings (larger)
+        # Upper wings (larger) - positioned further apart for bigger wings
         self.draw_wing_segment(
-            self.center_x - 2, self.center_y - 2,  # Left upper wing center
+            self.center_x - 3, self.center_y - 3,  # Left upper wing center
             self.upper_wing_radius, wing_angle, -1  # Left side
         )
         self.draw_wing_segment(
-            self.center_x + 2, self.center_y - 2,  # Right upper wing center
+            self.center_x + 3, self.center_y - 3,  # Right upper wing center
             self.upper_wing_radius, wing_angle, 1   # Right side
         )
         
-        # Lower wings (smaller)
+        # Lower wings (smaller) - positioned further apart for bigger wings
         self.draw_wing_segment(
-            self.center_x - 1, self.center_y + 2,  # Left lower wing center
+            self.center_x - 2, self.center_y + 3,  # Left lower wing center
             self.lower_wing_radius, wing_angle * 0.8, -1  # Left side
         )
         self.draw_wing_segment(
-            self.center_x + 1, self.center_y + 2,  # Right lower wing center
+            self.center_x + 2, self.center_y + 3,  # Right lower wing center
             self.lower_wing_radius, wing_angle * 0.8, 1   # Right side
         )
     
