@@ -944,25 +944,26 @@ class LEDDisplayApp:
         light_smoke = (240, 240, 240) # Light gray smoke
         
         # House dimensions and position
-        house_x = 6   # Left edge of house
-        house_y = 40  # Bottom of house (lower on screen)
-        house_width = 20
+        house_x = 8   # Left edge of house
+        house_y = 40  # Bottom of house
+        house_width = 16
         house_height = 20
         
-        # Roof dimensions
-        roof_height = 10
+        # Roof dimensions - triangular roof with wider base
+        roof_base_width = house_width + 4  # Roof base is wider than house
+        roof_height = 12
         roof_top_y = house_y - house_height  # Roof sits ON TOP of house
         
-        # Chimney dimensions
-        chimney_x = 22
-        chimney_y = roof_top_y + 2  # Chimney starts from roof level
-        chimney_width = 4
-        chimney_height = 8
+        # Chimney dimensions - sits on top of roof
+        chimney_x = 20
+        chimney_y = roof_top_y - 2  # Chimney sits on top of roof
+        chimney_width = 3
+        chimney_height = 6
         
         # Window dimensions
         window_x = 12
         window_y = 32  # Window inside house body
-        window_size = 6
+        window_size = 4
         
         # Smoke particles
         smoke_particles = []
@@ -978,16 +979,18 @@ class LEDDisplayApp:
                         self.led.set_pixel(pixel_x, pixel_y, gray_house)
         
         def draw_roof():
-            """Draw the triangular roof sitting on top of house."""
+            """Draw the triangular roof with wider base sitting on top of house."""
             roof_bottom_y = roof_top_y + roof_height
             
             for y in range(roof_top_y, roof_bottom_y):
                 # Calculate roof width at this height (triangle gets narrower toward top)
                 height_from_top = y - roof_top_y
-                roof_width_at_height = house_width - (height_from_top * 2)
+                roof_width_at_height = roof_base_width - (height_from_top * 2)
                 
                 if roof_width_at_height > 0:
-                    roof_start_x = house_x + height_from_top
+                    # Center the roof base over the house
+                    roof_offset = (roof_base_width - house_width) // 2
+                    roof_start_x = house_x - roof_offset + height_from_top
                     roof_end_x = roof_start_x + roof_width_at_height
                     
                     for x in range(roof_start_x, roof_end_x):
@@ -995,7 +998,7 @@ class LEDDisplayApp:
                             self.led.set_pixel(x, y, red_roof)
         
         def draw_chimney():
-            """Draw the brown chimney starting from roof level."""
+            """Draw the brown chimney sitting on top of roof."""
             for y in range(chimney_height):
                 for x in range(chimney_width):
                     pixel_x = chimney_x + x
