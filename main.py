@@ -799,7 +799,11 @@ class LEDDisplayApp:
             elapsed = time.time() - start_time
             progress = elapsed / duration
             
-            # Calculate color transition from start to end color (no fade-in)
+            # Calculate fade intensity using smooth easing function (ease-out cubic)
+            # This provides a smooth fade-in effect
+            fade_intensity = 1.0 - (1.0 - progress) ** 3
+            
+            # Calculate color transition from start to end color
             current_color = (
                 int(start_color[0] + (end_color[0] - start_color[0]) * progress),
                 int(start_color[1] + (end_color[1] - start_color[1]) * progress),
@@ -809,15 +813,22 @@ class LEDDisplayApp:
             # Clear display
             self.led.clear()
             
-            # Draw the rectangle with current color (no fade intensity)
+            # Draw the rectangle with current color and fade intensity
             for y in range(rect_height):
                 for x in range(rect_width):
+                    # Calculate final color with fade intensity
+                    final_color = (
+                        int(current_color[0] * fade_intensity),
+                        int(current_color[1] * fade_intensity),
+                        int(current_color[2] * fade_intensity)
+                    )
+                    
                     # Set pixel
                     pixel_x = rect_x + x
                     pixel_y = rect_y + y
                     
                     if 0 <= pixel_x < 32 and 0 <= pixel_y < 48:
-                        self.led.set_pixel(pixel_x, pixel_y, current_color)
+                        self.led.set_pixel(pixel_x, pixel_y, final_color)
             
             # Show the frame
             self.led.show()
