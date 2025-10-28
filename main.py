@@ -935,7 +935,7 @@ class LEDDisplayApp:
         height = 48
         
         # Colors from the image
-        gray_house = (200, 200, 200)  # Light gray house body
+        orange_house = (255, 165, 0)  # Orange house body
         red_roof = (236, 99, 88)      # #EC6358 - red roof
         brown_chimney = (139, 69, 19) # Brown chimney
         light_gray_window_frame = (180, 180, 180)  # Light gray window frame
@@ -960,9 +960,9 @@ class LEDDisplayApp:
         chimney_width = 3
         chimney_height = 6
         
-        # Window dimensions
-        window_x = 12
-        window_y = 32  # Window inside house body
+        # Window dimensions - centered inside house
+        window_x = house_x + (house_width - 4) // 2  # Center window in house
+        window_y = house_y - house_height + 8  # Position window inside house
         window_size = 4
         
         # Smoke particles
@@ -970,16 +970,16 @@ class LEDDisplayApp:
         smoke_start_time = 2  # Start smoke after 2 seconds
         
         def draw_house_body():
-            """Draw the main house body (gray rectangle)."""
+            """Draw the main house body (orange rectangle)."""
             for y in range(house_height):
                 for x in range(house_width):
                     pixel_x = house_x + x
                     pixel_y = house_y - y
                     if 0 <= pixel_x < width and 0 <= pixel_y < height:
-                        self.led.set_pixel(pixel_x, pixel_y, gray_house)
+                        self.led.set_pixel(pixel_x, pixel_y, orange_house)
         
         def draw_roof():
-            """Draw the triangular roof with bottom side touching the house top."""
+            """Draw the triangular roof with apex pointing upward."""
             # Roof bottom should touch the house top
             roof_bottom_y = house_y - house_height  # This is where house top is
             roof_top_y = roof_bottom_y - roof_height  # Triangle apex is above
