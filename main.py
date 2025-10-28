@@ -980,25 +980,29 @@ class LEDDisplayApp:
         
         def draw_roof():
             """Draw the triangular roof sitting properly on the house."""
-            # Roof base sits on top of house
-            roof_base_y = house_y - house_height  # This is where house top is
-            roof_apex_y = roof_base_y - roof_height  # Triangle apex is above
+            # House top is at: house_y - house_height
+            # Roof base sits on house top
+            roof_base_y = house_y - house_height
+            # Roof apex is above the base
+            roof_apex_y = roof_base_y - roof_height
             
-            # Draw triangle from base to apex
-            for y in range(roof_apex_y, roof_base_y):
-                # Calculate roof width at this height (gets wider toward base)
-                height_from_apex = y - roof_apex_y
-                roof_width_at_height = roof_base_width - (height_from_apex * 2)
+            # Draw triangle line by line from top to bottom
+            for line in range(roof_height):
+                current_y = roof_apex_y + line
                 
-                if roof_width_at_height > 0:
-                    # Center the roof over the house
-                    roof_offset = (roof_base_width - house_width) // 2
-                    roof_start_x = house_x - roof_offset + height_from_apex
-                    roof_end_x = roof_start_x + roof_width_at_height
+                # Calculate width for this line (gets wider as we go down)
+                line_width = roof_base_width - (line * 2)
+                
+                if line_width > 0:
+                    # Center the line over the house
+                    line_offset = (roof_base_width - house_width) // 2
+                    start_x = house_x - line_offset + line
+                    end_x = start_x + line_width
                     
-                    for x in range(roof_start_x, roof_end_x):
-                        if 0 <= x < width and 0 <= y < height:
-                            self.led.set_pixel(x, y, red_roof)
+                    # Draw the line
+                    for x in range(start_x, end_x):
+                        if 0 <= x < width and 0 <= current_y < height:
+                            self.led.set_pixel(x, current_y, red_roof)
         
         def draw_chimney():
             """Draw the brown chimney sitting on top of roof."""
@@ -1634,6 +1638,22 @@ def git_pull_update():
 def main():
     """Main entry point."""
     try:
+        # Set up signal handlers for proper cleanup
+        import signal
+        def signal_handler(signum, frame):
+            print("\n🛑 Shutting down gracefully...")
+            try:
+                if not sys.platform.startswith('win'):
+                    import RPi.GPIO as GPIO
+                    GPIO.cleanup()
+                    print("✅ GPIO cleaned up on exit")
+            except:
+                pass
+            sys.exit(0)
+        
+        signal.signal(signal.SIGINT, signal_handler)
+        signal.signal(signal.SIGTERM, signal_handler)
+        
         # Check for git updates first
         updated = git_pull_update()
         
@@ -1641,10 +1661,13 @@ def main():
             print("🔄 Restarting application with updated code...")
             # Clean up GPIO and LED resources before restart
             try:
-                # Force GPIO cleanup
-                import RPi.GPIO as GPIO
-                GPIO.cleanup()
-                print("✅ GPIO cleaned up before restart")
+                # Try to cleanup GPIO if we're on Raspberry Pi
+                if not sys.platform.startswith('win'):
+                    import RPi.GPIO as GPIO
+                    GPIO.cleanup()
+                    print("✅ GPIO cleaned up before restart")
+                else:
+                    print("✅ Mock GPIO - no cleanup needed")
             except Exception as e:
                 print(f"Warning: Error during GPIO cleanup: {e}")
             

@@ -27,12 +27,22 @@ class ButtonController:
             print("Attempting to cleanup and retry...")
             try:
                 GPIO.cleanup()
+                time.sleep(2)  # Wait longer for GPIO to be released
                 GPIO.setmode(GPIO.BCM)
                 GPIO.setwarnings(False)
                 print("✅ GPIO successfully reinitialized")
             except Exception as e2:
                 print(f"Failed to reinitialize GPIO: {e2}")
-                raise e2
+                print("Waiting 5 seconds and trying one more time...")
+                time.sleep(5)
+                try:
+                    GPIO.cleanup()
+                    GPIO.setmode(GPIO.BCM)
+                    GPIO.setwarnings(False)
+                    print("✅ GPIO successfully reinitialized on second attempt")
+                except Exception as e3:
+                    print(f"Final attempt failed: {e3}")
+                    raise e3
         
         # Initialize buttons
         for i, pin in enumerate(config.BUTTON_PINS):
