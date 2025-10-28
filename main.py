@@ -22,10 +22,23 @@ import config
 class LEDDisplayApp:
     def __init__(self):
         """Initialize the LED display application."""
+        print("🔧 Initializing LED controller...")
         self.led = LEDControllerExact()
+        
+        # Test LED controller immediately
+        print("🔧 Testing LED controller...")
+        self.led.clear()
+        self.led.show()
+        time.sleep(0.2)
+        
         self.patterns = DisplayPatterns(self.led)
         # self.squares_animation = SquaresAnimation(self.led)  # File not found
+        print("🔧 Initializing button controller...")
         self.button_controller = ButtonController()
+        
+        # Test button controller
+        time.sleep(0.2)
+        
         self.current_pattern = None
         self.running = True
         
@@ -786,11 +799,7 @@ class LEDDisplayApp:
             elapsed = time.time() - start_time
             progress = elapsed / duration
             
-            # Calculate fade intensity using smooth easing function (ease-out cubic)
-            # This provides a much smoother fade-in without flickering
-            fade_intensity = 1.0 - (1.0 - progress) ** 3
-            
-            # Calculate color transition from start to end color
+            # Calculate color transition from start to end color (no fade-in)
             current_color = (
                 int(start_color[0] + (end_color[0] - start_color[0]) * progress),
                 int(start_color[1] + (end_color[1] - start_color[1]) * progress),
@@ -800,22 +809,15 @@ class LEDDisplayApp:
             # Clear display
             self.led.clear()
             
-            # Draw the rectangle with current color and fade intensity
+            # Draw the rectangle with current color (no fade intensity)
             for y in range(rect_height):
                 for x in range(rect_width):
-                    # Calculate final color with fade intensity
-                    final_color = (
-                        int(current_color[0] * fade_intensity),
-                        int(current_color[1] * fade_intensity),
-                        int(current_color[2] * fade_intensity)
-                    )
-                    
                     # Set pixel
                     pixel_x = rect_x + x
                     pixel_y = rect_y + y
                     
                     if 0 <= pixel_x < 32 and 0 <= pixel_y < 48:
-                        self.led.set_pixel(pixel_x, pixel_y, final_color)
+                        self.led.set_pixel(pixel_x, pixel_y, current_color)
             
             # Show the frame
             self.led.show()
@@ -1101,24 +1103,34 @@ def main():
         
         if updated:
             print("🔄 Restarting application with updated code...")
-            # Add a small delay to ensure proper cleanup
+            # Add a longer delay to ensure proper cleanup and hardware reset
             import time
-            time.sleep(1)
+            time.sleep(2)
             # Restart the application to load new code
             import os
             import sys
             os.execv(sys.executable, ['python'] + sys.argv)
         
-        # Add a small delay to ensure LED controller is ready
+        # Add longer delays to ensure LED controller is fully ready
         import time
         print("🔧 Initializing LED display system...")
-        time.sleep(0.5)
+        time.sleep(1.0)  # Increased from 0.5s
         
         # Start the application
         app = LEDDisplayApp()
         
         # Additional initialization delay to ensure everything is ready
         print("🔧 Finalizing initialization...")
+        time.sleep(1.0)  # Increased from 0.5s
+        
+        # Clear the display to ensure it's ready
+        print("🔧 Clearing display and testing...")
+        app.led.clear()
+        app.led.show()
+        time.sleep(0.5)
+        
+        # Test button controller initialization
+        print("🔧 Testing button controller...")
         time.sleep(0.5)
         
         app.run()
