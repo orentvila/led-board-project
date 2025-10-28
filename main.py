@@ -62,8 +62,8 @@ class LEDDisplayApp:
         self.current_nature_index = 0
         self.nature_animation_running = False
         
-        # Lion animation system
-        self.lion_animation_running = False
+        # House animation system
+        self.house_animation_running = False
         
         # Setup signal handlers for graceful shutdown
         signal.signal(signal.SIGINT, self.signal_handler)
@@ -78,8 +78,8 @@ class LEDDisplayApp:
         self.button_controller.register_callback(0, self.start_shapes_animation)
         # Button 17 (index 1) - Nature animations
         self.button_controller.register_callback(1, self.start_nature_animation)
-        # Button 27 (index 2) - Lion animation
-        self.button_controller.register_callback(2, self.start_lion_animation)
+        # Button 27 (index 2) - House animation
+        self.button_controller.register_callback(2, self.start_house_animation)
         # Button 22 (index 3) - Squares animation
         self.button_controller.register_callback(3, self.start_squares_animation)
     
