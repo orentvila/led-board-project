@@ -986,11 +986,11 @@ class LEDDisplayApp:
             # Roof apex is ABOVE the base (smaller Y value)
             roof_apex_y = roof_base_y - roof_height
             
-            # Draw triangle line by line from apex (top) to base (bottom)
+            # Draw triangle line by line from base (bottom) to apex (top)
             for line in range(roof_height):
-                current_y = roof_apex_y + line
+                current_y = roof_base_y - line  # Start from base and go up
                 
-                # Calculate width for this line (gets wider as we go down)
+                # Calculate width for this line (gets narrower as we go up)
                 line_width = roof_base_width - (line * 2)
                 
                 if line_width > 0:
@@ -1643,6 +1643,7 @@ def main():
         def signal_handler(signum, frame):
             print("\n🛑 Shutting down gracefully...")
             try:
+                import sys
                 if not sys.platform.startswith('win'):
                     import RPi.GPIO as GPIO
                     GPIO.cleanup()
@@ -1662,6 +1663,7 @@ def main():
             # Clean up GPIO and LED resources before restart
             try:
                 # Try to cleanup GPIO if we're on Raspberry Pi
+                import sys
                 if not sys.platform.startswith('win'):
                     import RPi.GPIO as GPIO
                     GPIO.cleanup()
@@ -1682,7 +1684,18 @@ def main():
         # Add longer delays to ensure LED controller is fully ready
         import time
         print("🔧 Initializing LED display system...")
-        time.sleep(1.0)  # Increased from 0.5s
+        time.sleep(2.0)  # Increased delay for GPIO cleanup
+        
+        # Additional GPIO cleanup attempt before starting
+        try:
+            import sys
+            if not sys.platform.startswith('win'):
+                import RPi.GPIO as GPIO
+                GPIO.cleanup()
+                print("✅ Additional GPIO cleanup completed")
+                time.sleep(1.0)  # Wait after cleanup
+        except Exception as e:
+            print(f"Note: Additional GPIO cleanup: {e}")
         
         # Start the application
         app = LEDDisplayApp()
