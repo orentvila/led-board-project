@@ -56,8 +56,7 @@ class LEDDisplayApp:
             "rain_animation.py",
             "growing_flowers_animation.py",
             "bubbles_animation.py",
-            "apple_tree_animation.py",
-            "butterfly_animation.py"
+            "apple_tree_animation.py"
         ]
         self.current_nature_index = 0
         self.nature_animation_running = False
@@ -190,8 +189,6 @@ class LEDDisplayApp:
                 self.run_bubbles_animation()
             elif self.current_nature_index == 4:
                 self.run_apple_tree_animation()
-            elif self.current_nature_index == 5:
-                self.run_butterfly_animation()
         finally:
             self.nature_animation_running = False
             print(f"🔧 Animation finished, flag set to: {self.nature_animation_running}")
@@ -408,7 +405,7 @@ class LEDDisplayApp:
             'x': width // 2,  # Center of display
             'y': height - 8,  # Start from ground
             'stem_height': 0,  # Will grow
-            'max_stem_height': 12,  # Fixed height
+            'max_stem_height': 20,  # Increased height (was 12)
             'petal_size': 0,  # Will grow
             'max_petal_size': 5,  # Fixed size
             'color': random.choice(flower_colors),
@@ -418,16 +415,10 @@ class LEDDisplayApp:
         }
         
         while time.time() - start_time < duration and self.nature_animation_running and not getattr(self, 'animation_stop_flag', False):
-            # Clear display
+            # Clear display (dark background)
             self.led.clear()
             
-            # Create soft sky background
-            for y in range(height):
-                sky_intensity = 1.0 - (y / height) * 0.2
-                sky_color = (int(135 * sky_intensity), int(206 * sky_intensity), int(235 * sky_intensity))
-                
-                for x in range(width):
-                    self.led.set_pixel(x, y, sky_color)
+            # Background is now dark (black) - no sky gradient
             
             # Draw ground
             for x in range(width):
@@ -436,12 +427,16 @@ class LEDDisplayApp:
                     self.led.set_pixel(x, y, ground_color)
             
             # Draw single flower
-            # Draw stem (static position)
+            # Draw stem (with one extra column for thickness)
             stem_color = (34, 139, 34)  # Forest green
             for i in range(int(flower['stem_height'])):
                 y_pos = height - 1 - i
+                # Draw main stem column
                 if 0 <= y_pos < height and 0 <= flower['x'] < width:
                     self.led.set_pixel(flower['x'], y_pos, stem_color)
+                # Draw additional column to make stalk wider
+                if 0 <= y_pos < height and 0 <= flower['x'] + 1 < width:
+                    self.led.set_pixel(flower['x'] + 1, y_pos, stem_color)
             
             # Draw flower petals if bloomed (with gentle sway)
             if flower['bloom_progress'] > 0.3:
@@ -754,139 +749,6 @@ class LEDDisplayApp:
         self.led.clear()
         self.led.show()
         print("🌳 Animation finished")
-    
-    def run_butterfly_animation(self):
-        """Run butterfly animation with flapping wings."""
-        import math
-        duration = 20
-        start_time = time.time()
-        
-        print(f"🦋 Butterfly animation started")
-        
-        # Get display dimensions
-        width = 32
-        height = 48
-        
-        # Colors from the image
-        pink_wings = (240, 128, 128)  # #F08080 - light coral pink
-        brown_body = (180, 100, 80)   # Brownish-pink body
-        black_antennae = (50, 50, 50)  # Dark antennae
-        
-        # Butterfly position (centered)
-        center_x = 16
-        center_y = 24
-        
-        # Wing dimensions - much bigger to almost reach screen edges
-        upper_wing_radius = 14  # Almost half the screen width
-        lower_wing_radius = 10  # Slightly smaller lower wings
-        
-        def draw_butterfly(wing_angle):
-            """Draw the butterfly with animated wings."""
-            # Draw body (vertical oval)
-            for dy in range(-6, 7):
-                for dx in range(-1, 2):
-                    x = center_x + dx
-                    y = center_y + dy
-                    if 0 <= x < width and 0 <= y < height:
-                        # Make body slightly oval
-                        if abs(dx) <= 1 and abs(dy) <= 6:
-                            self.led.set_pixel(x, y, brown_body)
-            
-            # Draw antennae
-            antennae_length = 4
-            for i in range(antennae_length):
-                # Left antenna
-                antenna_x = center_x - 1 - i
-                antenna_y = center_y - 6 - i
-                if 0 <= antenna_x < width and 0 <= antenna_y < height:
-                    self.led.set_pixel(antenna_x, antenna_y, black_antennae)
-                
-                # Right antenna
-                antenna_x = center_x + 1 + i
-                antenna_y = center_y - 6 - i
-                if 0 <= antenna_x < width and 0 <= antenna_y < height:
-                    self.led.set_pixel(antenna_x, antenna_y, black_antennae)
-            
-            # Draw wings with flapping animation
-            draw_wings(wing_angle)
-        
-        def draw_wings(wing_angle):
-            """Draw the butterfly wings with flapping animation."""
-            # Calculate wing positions based on angle
-            # wing_angle: 0 = fully open, 1 = fully closed
-            
-            # Upper wings (larger) - positioned further apart for bigger wings
-            draw_wing_segment(
-                center_x - 3, center_y - 3,  # Left upper wing center
-                upper_wing_radius, wing_angle, -1  # Left side
-            )
-            draw_wing_segment(
-                center_x + 3, center_y - 3,  # Right upper wing center
-                upper_wing_radius, wing_angle, 1   # Right side
-            )
-            
-            # Lower wings (smaller) - positioned further apart for bigger wings
-            draw_wing_segment(
-                center_x - 2, center_y + 3,  # Left lower wing center
-                lower_wing_radius, wing_angle * 0.8, -1  # Left side
-            )
-            draw_wing_segment(
-                center_x + 2, center_y + 3,  # Right lower wing center
-                lower_wing_radius, wing_angle * 0.8, 1   # Right side
-            )
-        
-        def draw_wing_segment(center_x, center_y, radius, wing_angle, side):
-            """Draw a single wing segment."""
-            # Adjust radius based on wing angle (wings get smaller when closed)
-            adjusted_radius = int(radius * (1 - wing_angle * 0.3))
-            
-            for dy in range(-adjusted_radius, adjusted_radius + 1):
-                for dx in range(-adjusted_radius, adjusted_radius + 1):
-                    # Only draw on the correct side
-                    if (side == -1 and dx > 0) or (side == 1 and dx < 0):
-                        continue
-                    
-                    # Calculate distance from center
-                    distance = math.sqrt(dx*dx + dy*dy)
-                    
-                    # Draw wing pixels
-                    if distance <= adjusted_radius:
-                        x = center_x + dx
-                        y = center_y + dy
-                        if 0 <= x < width and 0 <= y < height:
-                            # Add some wing texture variation
-                            if (x + y) % 2 == 0:  # Skip some pixels for texture
-                                continue
-                            self.led.set_pixel(x, y, pink_wings)
-        
-        while time.time() - start_time < duration and self.nature_animation_running and not getattr(self, 'animation_stop_flag', False):
-            elapsed = time.time() - start_time
-            
-            # Clear display
-            self.led.clear()
-            
-            # Calculate wing flapping angle (slow, gentle flapping)
-            # Use sine wave for smooth, natural wing movement
-            flap_frequency = 0.8  # Flaps per second (slow)
-            wing_angle = abs(math.sin(elapsed * flap_frequency * 2 * math.pi))
-            
-            # Draw butterfly
-            draw_butterfly(wing_angle)
-            
-            # Show the frame
-            self.led.show()
-            
-            # Frame rate
-            time.sleep(0.05)  # 20 FPS
-        
-        # Keep final frame for a moment
-        print("🦋 Butterfly Animation completed!")
-        time.sleep(2)
-        
-        # Clear display
-        self.led.clear()
-        self.led.show()
-        print("🦋 Animation finished")
     
     def start_house_animation(self):
         """Start house animation."""
