@@ -209,23 +209,6 @@ class LEDDisplayApp:
             print("❌ Animation flag is False, stopping clouds")
             return
         
-        # TEST: Clear display and show a simple pattern first
-        print("🧪 Testing LED display...")
-        self.led.clear()
-        for x in range(32):
-            for y in range(48):
-                if x < 16 and y < 24:
-                    self.led.set_pixel(x, y, (255, 0, 0))  # Red quadrant
-                elif x >= 16 and y < 24:
-                    self.led.set_pixel(x, y, (0, 255, 0))  # Green quadrant
-                elif x < 16 and y >= 24:
-                    self.led.set_pixel(x, y, (0, 0, 255))  # Blue quadrant
-                else:
-                    self.led.set_pixel(x, y, (255, 255, 0))  # Yellow quadrant
-        self.led.show()
-        time.sleep(2)  # Show test pattern for 2 seconds
-        print("🧪 Test pattern shown, starting clouds...")
-        
         # Get display dimensions
         width = 32
         height = 48
@@ -560,12 +543,11 @@ class LEDDisplayApp:
             # Update and draw bubbles
             bubbles_to_remove = []
             for i, bubble in enumerate(bubbles):
-                # Update bubble position
+                # Update bubble position - only upward movement
                 bubble['y'] -= bubble['speed']
                 
-                # Add gentle wobble
-                wobble_x = math.sin(bubble['wobble_phase'] + current_time * 2) * bubble['wobble_amplitude']
-                bubble_x = int(bubble['x'] + wobble_x)
+                # No horizontal movement - bubbles move straight up
+                bubble_x = int(bubble['x'])
                 bubble_y = int(bubble['y'])
                 
                 # Remove bubbles that have risen off screen
