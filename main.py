@@ -705,12 +705,27 @@ class LEDDisplayApp:
                 # Draw stem
                 if current_y > 0:
                     self.led.set_pixel(current_x, current_y - 1, apple_stem)
+            
+            return current_x  # Return x position for ground placement
+        
+        def draw_apple_on_ground(apple_x):
+            """Draw an apple on the ground at the specified x position."""
+            # Draw apple at ground level
+            ground_apple_y = ground_y  # Ground level
+            if 0 <= apple_x < width and 0 <= ground_apple_y < height:
+                self.led.set_pixel(apple_x, ground_apple_y, red_apple)
+                # Draw stem above the apple
+                if ground_apple_y > 0:
+                    self.led.set_pixel(apple_x, ground_apple_y - 1, apple_stem)
         
         def draw_ground():
             """Draw brown soil ground."""
             for x in range(width):
                 for y in range(ground_y, height):
                     self.led.set_pixel(x, y, brown_soil)
+        
+        # Track apples that have fallen to the ground (apple_index: ground_x_position)
+        fallen_apples = {}
         
         while time.time() - start_time < duration and self.nature_animation_running and not getattr(self, 'animation_stop_flag', False):
             elapsed = time.time() - start_time
@@ -730,6 +745,10 @@ class LEDDisplayApp:
             # Handle falling apples - each starts 3 seconds after the previous one
             falling_indices = set()
             for i in range(len(apple_positions)):
+                # Skip apples that have already fallen
+                if i in fallen_apples:
+                    continue
+                
                 # Calculate when this apple should start falling
                 apple_start_time = falling_apple_start_delay + (i * seconds_between_apples)
                 
@@ -738,14 +757,23 @@ class LEDDisplayApp:
                     fall_progress = (elapsed - apple_start_time) / falling_apple_fall_duration
                     fall_progress = min(1.0, fall_progress)  # Clamp to 1.0
                     
-                    # Only draw if it hasn't finished falling (or draw at ground level)
                     if fall_progress < 1.0:
+                        # Apple is still falling
                         falling_indices.add(i)
-                        draw_falling_apple(i, fall_progress)
-                    # If fall_progress >= 1.0, apple is on the ground and doesn't need to be drawn
+                        apple_x = draw_falling_apple(i, fall_progress)
+                    else:
+                        # Apple has finished falling - add to fallen apples
+                        start_pos = apple_positions[i]
+                        apple_x = start_pos[0]  # Use original x position
+                        fallen_apples[i] = apple_x
             
-            # Draw all apples that are still on the tree (not falling)
-            draw_apples(exclude_falling_indices=falling_indices)
+            # Draw all apples that are still on the tree (not falling and not fallen)
+            all_removed_indices = falling_indices | set(fallen_apples.keys())
+            draw_apples(exclude_falling_indices=all_removed_indices)
+            
+            # Draw fallen apples on the ground
+            for apple_index, ground_x in fallen_apples.items():
+                draw_apple_on_ground(ground_x)
             
             # Show the frame
             self.led.show()
