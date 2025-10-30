@@ -591,7 +591,6 @@ class LEDDisplayApp:
     def run_apple_tree_animation(self):
         """Run apple tree animation with falling apple."""
         import math
-        duration = 20
         start_time = time.time()
         
         print(f"🌳 Apple Tree animation started")
@@ -628,6 +627,13 @@ class LEDDisplayApp:
         falling_apple_start_delay = 3  # First apple starts after 3 seconds
         seconds_between_apples = 3  # 3 seconds between each apple
         falling_apple_fall_duration = 3  # Takes 3 seconds to fall
+        
+        # Calculate animation duration: last apple finishes + 3 seconds
+        num_apples = len(apple_positions)
+        last_apple_index = num_apples - 1
+        last_apple_start_time = falling_apple_start_delay + (last_apple_index * seconds_between_apples)
+        last_apple_finish_time = last_apple_start_time + falling_apple_fall_duration
+        duration = last_apple_finish_time + 3  # Add 3 seconds after last apple falls
         
         # Ground level
         ground_y = 44
