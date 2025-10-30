@@ -124,7 +124,9 @@ class LEDDisplayApp:
         
         if animation_name in self.animation_audio:
             audio_file = self.animation_audio[animation_name]
-            audio_path = os.path.join('audio', audio_file)
+            # Get the directory where this script is located
+            script_dir = os.path.dirname(os.path.abspath(__file__))
+            audio_path = os.path.join(script_dir, 'audio', audio_file)
             
             if os.path.exists(audio_path):
                 try:
@@ -135,6 +137,7 @@ class LEDDisplayApp:
                     print(f"⚠️ Error playing audio {audio_file}: {e}")
             else:
                 print(f"⚠️ Audio file not found: {audio_path}")
+                print(f"   Looking for: {audio_path}")
         else:
             print(f"⚠️ No audio mapped for animation: {animation_name}")
     
