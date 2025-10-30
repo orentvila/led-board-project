@@ -15,13 +15,26 @@ if sys.platform.startswith('win'):
     Color = lambda r, g, b: (r, g, b)
     print("Using mock Raspberry Pi modules for Windows development")
 else:
-    try:
-        from rpi_ws281x import PixelStrip, Color
-    except ImportError:
-        print("Warning: rpi_ws281x not found, using mock modules")
-        from mock_rpi import WS281x
-        PixelStrip = WS281x
-        Color = lambda r, g, b: (r, g, b)
+    # Retry import with delay to handle race conditions during restart
+    PixelStrip = None
+    Color = None
+    import time
+    
+    for attempt in range(3):
+        try:
+            from rpi_ws281x import PixelStrip, Color
+            print("✅ rpi_ws281x imported successfully")
+            break
+        except ImportError as e:
+            if attempt < 2:
+                print(f"⚠️ rpi_ws281x import attempt {attempt + 1} failed, retrying...")
+                time.sleep(0.5)  # Brief delay before retry
+            else:
+                print(f"❌ Warning: rpi_ws281x not found after {attempt + 1} attempts, using mock modules")
+                print(f"   Error: {e}")
+                from mock_rpi import WS281x
+                PixelStrip = WS281x
+                Color = lambda r, g, b: (r, g, b)
 
 class LEDControllerFixed:
     def __init__(self):

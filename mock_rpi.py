@@ -75,12 +75,10 @@ class MockWS281x:
     def setPixelColorRGB(self, pixel, red, green, blue, white=0):
         if 0 <= pixel < self.led_count:
             self.pixels[pixel] = (red, green, blue)
-            # Print every 100th pixel to avoid spam
-            if pixel % 100 == 0:
-                print(f"Pixel {pixel} set to RGB({red}, {green}, {blue})")
+            # No debug prints - too noisy
     
     def show(self):
-        print(f"WS281x show() called - displaying {self.led_count} pixels")
+        # No debug print - too noisy
         # Simulate some delay for the display
         time.sleep(0.01)
     

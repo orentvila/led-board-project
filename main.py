@@ -1663,9 +1663,11 @@ def main():
             except Exception as e:
                 print(f"Warning: Error during GPIO cleanup: {e}")
             
-            # Add a longer delay to ensure proper cleanup and hardware reset
+            # Add a longer delay to ensure proper cleanup, module unloading, and hardware reset
             import time
-            time.sleep(3)  # Increased delay for better cleanup
+            print("⏳ Waiting for modules to fully unload before restart...")
+            time.sleep(5)  # Longer wait to ensure all modules are released and hardware is ready
+            print("🔄 Restarting now...")
             # Restart the application to load new code
             import os
             import sys
