@@ -19,6 +19,15 @@ from button_controller import ButtonController
 from led_controller_exact import LEDControllerExact
 import config
 
+# Try to import pygame for audio support
+try:
+    import pygame
+    AUDIO_AVAILABLE = True
+except ImportError:
+    print("⚠️ Pygame not available, audio will be disabled")
+    AUDIO_AVAILABLE = False
+    pygame = None
+
 class LEDDisplayApp:
     def __init__(self):
         """Initialize the LED display application."""
@@ -66,6 +75,30 @@ class LEDDisplayApp:
         self.clock_animation_running = False
         self.show_clock_first = True  # Flag to cycle between clock and house
         
+        # Initialize audio system
+        self.audio_available = False
+        if AUDIO_AVAILABLE:
+            try:
+                pygame.mixer.init(frequency=22050, size=-16, channels=2, buffer=512)
+                self.audio_available = True
+                print("🔊 Audio system initialized")
+            except Exception as e:
+                print(f"⚠️ Audio system not available: {e}")
+                self.audio_available = False
+        
+        # Audio file mapping for animations
+        # Place audio files in an 'audio' folder in the project directory
+        self.animation_audio = {
+            'big_rectangle': 'big_rectangle.wav',
+            'floating_clouds': 'floating_clouds.wav',
+            'rain': 'rain.wav',
+            'growing_flowers': 'growing_flowers.wav',
+            'bubbles': 'bubbles.wav',
+            'apple_tree': 'apple_tree.wav',
+            'house': 'house.wav',
+            'clock': 'clock.wav',
+        }
+        
         # Setup signal handlers for graceful shutdown
         signal.signal(signal.SIGINT, self.signal_handler)
         signal.signal(signal.SIGTERM, self.signal_handler)
@@ -83,6 +116,38 @@ class LEDDisplayApp:
         self.button_controller.register_callback(2, self.start_clock_or_house_animation)
         # Button 22 (index 3) - Squares animation
         self.button_controller.register_callback(3, self.start_squares_animation)
+    
+    def play_animation_audio(self, animation_name):
+        """Play audio for the specified animation."""
+        if not self.audio_available:
+            return
+        
+        if animation_name in self.animation_audio:
+            audio_file = self.animation_audio[animation_name]
+            audio_path = os.path.join('audio', audio_file)
+            
+            if os.path.exists(audio_path):
+                try:
+                    pygame.mixer.music.load(audio_path)
+                    pygame.mixer.music.play(-1)  # Loop indefinitely
+                    print(f"🔊 Playing audio for {animation_name}: {audio_file}")
+                except Exception as e:
+                    print(f"⚠️ Error playing audio {audio_file}: {e}")
+            else:
+                print(f"⚠️ Audio file not found: {audio_path}")
+        else:
+            print(f"⚠️ No audio mapped for animation: {animation_name}")
+    
+    def stop_animation_audio(self):
+        """Stop any currently playing animation audio."""
+        if not self.audio_available:
+            return
+        
+        try:
+            pygame.mixer.music.stop()
+            print("🔇 Stopped animation audio")
+        except Exception as e:
+            print(f"⚠️ Error stopping audio: {e}")
     
     def signal_handler(self, signum, frame):
         """Handle shutdown signals."""
@@ -196,6 +261,9 @@ class LEDDisplayApp:
     def run_floating_clouds(self):
         """Run floating clouds animation."""
         import math
+        # Play audio for this animation
+        self.play_animation_audio('floating_clouds')
+        
         duration = 30
         start_time = time.time()
         
@@ -301,6 +369,9 @@ class LEDDisplayApp:
     def run_rain_animation(self):
         """Run rain animation with gentle drops and soft colors."""
         import math
+        # Play audio for this animation
+        self.play_animation_audio('rain')
+        
         duration = 30
         start_time = time.time()
         
@@ -375,6 +446,9 @@ class LEDDisplayApp:
     def run_growing_flowers_animation(self):
         """Run growing flowers animation with gentle swaying and blooming."""
         import math
+        # Play audio for this animation
+        self.play_animation_audio('growing_flowers')
+        
         duration = 30
         start_time = time.time()
         
@@ -484,6 +558,9 @@ class LEDDisplayApp:
     def run_bubbles_animation(self):
         """Run bubbles animation with colorful bubbles rising from bottom."""
         import math
+        # Play audio for this animation
+        self.play_animation_audio('bubbles')
+        
         duration = 30
         start_time = time.time()
         
@@ -591,6 +668,9 @@ class LEDDisplayApp:
     def run_apple_tree_animation(self):
         """Run apple tree animation with falling apple."""
         import math
+        # Play audio for this animation
+        self.play_animation_audio('apple_tree')
+        
         start_time = time.time()
         
         print(f"🌳 Apple Tree animation started")
@@ -817,6 +897,9 @@ class LEDDisplayApp:
         """Run house animation with smoke rising from chimney."""
         import math
         import random
+        # Play audio for this animation
+        self.play_animation_audio('house')
+        
         duration = 20
         start_time = time.time()
         
@@ -1045,6 +1128,9 @@ class LEDDisplayApp:
     def run_clock_animation(self):
         """Run clock animation with static hand pointing upward."""
         import math
+        # Play audio for this animation
+        self.play_animation_audio('clock')
+        
         duration = 20
         start_time = time.time()
         
@@ -1328,6 +1414,9 @@ class LEDDisplayApp:
     def run_big_rectangle(self):
         """Run big rectangle animation with soft blue color."""
         import math
+        # Play audio for this animation
+        self.play_animation_audio('big_rectangle')
+        
         duration = 20  # 20 seconds as requested
         start_time = time.time()
         
@@ -1486,6 +1575,9 @@ class LEDDisplayApp:
     def stop_current_pattern(self):
         """Stop the currently running pattern."""
         print("🛑 Stopping all animations...")
+        
+        # Stop audio
+        self.stop_animation_audio()
         
         # Stop pattern animations
         if hasattr(self, 'patterns'):
