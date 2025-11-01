@@ -182,8 +182,13 @@ class LEDDisplayApp:
         print("🔷 Starting shapes animation...")
         self.stop_current_pattern()
         
+        # Clear display and ensure everything is stopped
+        if hasattr(self, 'led'):
+            self.led.clear()
+            self.led.show()
+        
         # Small delay to ensure everything is stopped
-        time.sleep(0.1)
+        time.sleep(0.2)
         
         # Ensure we have animations available
         if not self.shape_animations:
@@ -217,11 +222,14 @@ class LEDDisplayApp:
         
         # Stop any current animation and wait for it to fully stop
         self.stop_current_pattern()
-        time.sleep(0.3)  # Even longer wait to ensure everything is stopped
         
-        # Ensure the flag is False before starting new animation
-        self.nature_animation_running = False
-        time.sleep(0.2)  # Longer pause
+        # Clear display and ensure everything is stopped
+        if hasattr(self, 'led'):
+            self.led.clear()
+            self.led.show()
+        
+        # Small delay to ensure everything is stopped
+        time.sleep(0.2)
         
         # Cycle to next nature animation
         self.current_nature_index = (self.current_nature_index + 1) % len(self.nature_animations)
@@ -892,7 +900,13 @@ class LEDDisplayApp:
         """Start house animation."""
         print("🏠 Starting house animation...")
         self.stop_current_pattern()
-        time.sleep(0.3)  # Longer wait to ensure everything is stopped
+        
+        # Clear display and ensure everything is stopped
+        if hasattr(self, 'led'):
+            self.led.clear()
+            self.led.show()
+        
+        time.sleep(0.2)  # Wait to ensure everything is stopped
         
         # Set flags
         self.animation_stop_flag = False
@@ -1124,7 +1138,13 @@ class LEDDisplayApp:
         """Start clock animation."""
         print("🕐 Starting clock animation...")
         self.stop_current_pattern()
-        time.sleep(0.3)  # Longer wait to ensure everything is stopped
+        
+        # Clear display and ensure everything is stopped
+        if hasattr(self, 'led'):
+            self.led.clear()
+            self.led.show()
+        
+        time.sleep(0.2)  # Wait to ensure everything is stopped
         
         # Set flags
         self.animation_stop_flag = False
@@ -2066,8 +2086,13 @@ class LEDDisplayApp:
         print("🎯 Starting objects animation...")
         self.stop_current_pattern()
         
+        # Clear display and ensure everything is stopped
+        if hasattr(self, 'led'):
+            self.led.clear()
+            self.led.show()
+        
         # Small delay to ensure everything is stopped
-        time.sleep(0.1)
+        time.sleep(0.2)
         
         # Ensure we have animations available
         if not self.objects_animations:
@@ -2096,6 +2121,12 @@ class LEDDisplayApp:
     
     def run_objects_animation(self):
         """Run the current object animation."""
+        # Clear display before starting
+        self.led.clear()
+        self.led.show()
+        
+        # Reset stop flags
+        self.animation_stop_flag = False
         self.objects_animation_running = True
         
         try:
@@ -2340,6 +2371,15 @@ class LEDDisplayApp:
         """Stop the currently running pattern."""
         print("🛑 Stopping all animations...")
         
+        # Set all animation stop flags FIRST
+        self.animation_stop_flag = True
+        self.objects_animation_running = False
+        self.house_animation_running = False
+        self.clock_animation_running = False
+        self.shape_animation_running = False
+        self.nature_animation_running = False
+        self.lion_animation_running = False
+        
         # Stop audio
         self.stop_animation_audio()
         
@@ -2350,33 +2390,23 @@ class LEDDisplayApp:
         #     self.squares_animation.stop()  # File not found
         
         # Stop thread patterns
-        if self.current_pattern and hasattr(self.current_pattern, 'is_alive') and self.current_pattern.is_alive():
+        if hasattr(self, 'current_pattern') and self.current_pattern and hasattr(self.current_pattern, 'is_alive') and self.current_pattern.is_alive():
             print("Stopping thread pattern...")
-            self.current_pattern.join(timeout=1.0)  # Longer timeout
+            self.current_pattern.join(timeout=1.5)  # Longer timeout
             # Force kill if still alive
             if self.current_pattern.is_alive():
                 print("⚠️ Force stopping thread...")
-                # Set a flag to stop the animation
-                if hasattr(self, 'animation_stop_flag'):
-                    self.animation_stop_flag = True
         
         # Stop shape animations
         self.stop_current_shape_animation()
-        self.shape_animation_running = False
         
-        # Stop nature animations
-        self.nature_animation_running = False
-        
-        # Stop lion animations
-        self.lion_animation_running = False
-        
-        # Add animation stop flag
-        self.animation_stop_flag = True
-        
-        # Clear the display
+        # Clear the display to prevent overlapping animations
         if hasattr(self, 'led'):
             self.led.clear()
             self.led.show()
+        
+        # Small delay to ensure everything is stopped
+        time.sleep(0.2)
         
         # Reset the flag after clearing
         self.animation_stop_flag = False
