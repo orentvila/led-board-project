@@ -2133,12 +2133,10 @@ class LEDDisplayApp:
         clock_fill = (108, 36, 152)  # #6C2498
         white = (255, 255, 255)      # White border and hands
         
-        # Clock dimensions - radius of 30 LEDs (but limited by screen size)
-        # Screen is 32×48, so max radius is 16 (width) or 24 (height)
-        # Use 24 to get as close to 30 as possible while fitting on screen
+        # Clock dimensions - diameter of 28 LEDs, so radius of 14
         clock_center_x = width // 2
         clock_center_y = height // 2
-        clock_radius = 24  # Maximum radius that fits on 48px tall screen
+        clock_radius = 14  # Diameter of 28 LEDs
         
         # Hand parameters - don't touch border
         hand_inner_radius = 3  # Small center circle
@@ -2247,14 +2245,14 @@ class LEDDisplayApp:
         
         print(f"🚦 Traffic lights animation started")
         
-        # Traffic light fixture size: 40×24 (but screen is 32×48, so scale to fit)
-        # Scale proportionally: 40×24 -> 32×19 (maintains aspect ratio)
-        # But let's use 32×24 to make it more visible (stretches slightly)
-        fixture_width = 32  # Full width of screen
-        fixture_height = 24  # Half height of screen
+        # Traffic light fixture - wider than lights but thinner
+        light_size = 8  # Each light is 8 pixels in diameter
+        fixture_width = 12  # Wider than light circles (8), but not too wide
+        fixture_height = 20  # Thinner than before
         
         # Position traffic lights in center
-        fixture_x = 0  # Start at left edge
+        fixture_center_x = width // 2  # Center horizontally
+        fixture_x = fixture_center_x - fixture_width // 2  # Center the fixture
         fixture_y = (height - fixture_height) // 2  # Center vertically
         
         # Light colors
@@ -2264,25 +2262,21 @@ class LEDDisplayApp:
         off_color = (40, 40, 40)  # Dark gray when off
         fixture_color = (60, 60, 60)  # Dark gray for fixture
         
-        # Light positions within fixture (3 lights: red on top, yellow middle, green bottom)
-        light_size = 8  # Each light is 8 pixels in diameter
-        light_spacing = 8
-        fixture_center_x = fixture_x + fixture_width // 2
-        
-        red_light_y = fixture_y + light_size // 2
-        yellow_light_y = fixture_y + fixture_height // 2
-        green_light_y = fixture_y + fixture_height - light_size // 2
-        
         # Track which lights are on
         current_light = None  # 'red', 'yellow', 'green', or None
         
         def draw_traffic_lights(active_light):
             """Draw traffic light fixture with active light."""
-            # Draw fixture background
+            # Draw fixture background (wider than lights)
             for y in range(fixture_y, fixture_y + fixture_height):
                 for x in range(fixture_x, fixture_x + fixture_width):
                     if 0 <= x < width and 0 <= y < height:
                         self.led.set_pixel(x, y, fixture_color)
+            
+            # Calculate light positions evenly spaced
+            red_light_y = fixture_y + light_spacing
+            yellow_light_y = fixture_y + fixture_height // 2
+            green_light_y = fixture_y + fixture_height - light_spacing
             
             # Draw red light
             light_color = red_light if active_light == 'red' else off_color
@@ -2377,27 +2371,33 @@ class LEDDisplayApp:
         
         # Umbrella dimensions
         umbrella_center_x = width // 2
-        umbrella_center_y = height // 4  # Top quarter of screen
-        max_radius = 16  # Maximum open radius
-        handle_length = 20  # Length of handle
+        # Umbrella bottom should be at bottom of screen
+        # Calculate center_y based on handle length and max radius
+        handle_length = 35  # Long enough to reach bottom
+        max_radius = 16  # Maximum open radius (but will only open half way = 8)
+        umbrella_center_y = height - handle_length  # Position so handle reaches bottom
+        # Actually, let's position it so the canopy center is higher, but handle goes to bottom
+        canopy_center_y = height - handle_length - max_radius // 2  # Center of canopy
         
         def draw_umbrella(open_progress):
             """Draw umbrella with opening animation."""
-            # open_progress: 0 (closed) to 1 (fully open)
+            # open_progress: 0 (closed) to 0.5 (half open - max)
+            # Limit to half opening
+            limited_progress = min(open_progress, 0.5)
             
-            # Calculate current radius based on opening progress
-            current_radius = max_radius * open_progress
+            # Calculate current radius based on opening progress (max half of max_radius)
+            current_radius = (max_radius // 2) * (limited_progress * 2)  # Scale 0-0.5 to 0-max_radius/2
             
-            # Draw handle (vertical line from umbrella center down)
-            handle_start_y = umbrella_center_y
-            handle_end_y = umbrella_center_y + handle_length
+            # Draw handle (vertical line from canopy center down to bottom)
+            handle_start_y = canopy_center_y
+            handle_end_y = height - 1  # Bottom of screen
             
             for y in range(handle_start_y, min(handle_end_y, height)):
                 if 0 <= umbrella_center_x < width and 0 <= y < height:
                     self.led.set_pixel(umbrella_center_x, y, (100, 100, 100))  # Dark gray handle
             
             # Draw umbrella canopy
-            if open_progress > 0:
+            if limited_progress > 0:
                 # Create segments (8 segments for umbrella)
                 num_segments = 8
                 for segment in range(num_segments):
@@ -2412,7 +2412,7 @@ class LEDDisplayApp:
                     for y in range(height):
                         for x in range(width):
                             dx = x - umbrella_center_x
-                            dy = y - umbrella_center_y
+                            dy = y - canopy_center_y
                             distance = math.sqrt(dx*dx + dy*dy)
                             
                             # Check if pixel is within current radius
@@ -2425,12 +2425,12 @@ class LEDDisplayApp:
                                 
                                 # Check if angle is within segment range
                                 if start_angle <= angle < end_angle or (start_angle > end_angle and (angle >= start_angle or angle < end_angle)):
-                                    # Only draw if above the handle (in the canopy area)
-                                    if y < umbrella_center_y:
+                                    # Only draw if above the handle start (in the canopy area)
+                                    if y < handle_start_y:
                                         self.led.set_pixel(x, y, segment_color)
             
             # Draw handle tip (small circle at bottom)
-            handle_tip_y = min(umbrella_center_y + handle_length, height - 1)
+            handle_tip_y = height - 1
             if 0 <= umbrella_center_x < width and 0 <= handle_tip_y < height:
                 self.led.set_pixel(umbrella_center_x, handle_tip_y, (100, 100, 100))
                 if umbrella_center_x - 1 >= 0:
@@ -2438,10 +2438,10 @@ class LEDDisplayApp:
                 if umbrella_center_x + 1 < width:
                     self.led.set_pixel(umbrella_center_x + 1, handle_tip_y, (100, 100, 100))
         
-        # Opening phase
+        # Opening phase (opens only half way)
         while time.time() - start_time < open_duration and self.objects_animation_running and not getattr(self, 'animation_stop_flag', False):
             elapsed = time.time() - start_time
-            open_progress = min(1.0, elapsed / open_duration)
+            open_progress = min(0.5, elapsed / open_duration)  # Max 0.5 (half open)
             
             # Clear display
             self.led.clear()
@@ -2455,14 +2455,14 @@ class LEDDisplayApp:
             # Frame rate
             time.sleep(0.05)  # 20 FPS
         
-        # Static open phase - keep umbrella fully open for 5 seconds
+        # Static open phase - keep umbrella half open for 5 seconds
         static_start = time.time()
         while time.time() - static_start < static_duration and self.objects_animation_running and not getattr(self, 'animation_stop_flag', False):
             # Clear display
             self.led.clear()
             
-            # Draw fully open umbrella
-            draw_umbrella(1.0)
+            # Draw half-open umbrella (0.5 progress)
+            draw_umbrella(0.5)
             
             # Show the frame
             self.led.show()
