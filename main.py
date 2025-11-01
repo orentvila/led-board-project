@@ -51,9 +51,9 @@ class LEDDisplayApp:
         self.current_pattern = None
         self.running = True
         
-        # Shape animation system - only big rectangle animation
+        # Shape animation system - 4 animations cycling
         self.shape_animations = [
-            "big_rectangle_animation.py"
+            "squares", "rectangles", "bubbles", "stars"
         ]
         self.current_shape_index = 0
         self.current_shape_process = None
@@ -97,6 +97,10 @@ class LEDDisplayApp:
             'apple_tree': 'apple_tree.wav',
             'house': 'house.wav',
             'clock': 'clock.wav',
+            'squares': 'squares.wav',
+            'rectangles': 'rectangles.wav',
+            'bubbles_shape': 'bubbles_shape.wav',
+            'stars': 'stars.wav',
         }
         
         # Setup signal handlers for graceful shutdown
@@ -1408,129 +1412,534 @@ class LEDDisplayApp:
                 print("⚠️ Shape index out of bounds, resetting to 0")
             
             if self.current_shape_index == 0:
-                self.run_big_rectangle()
+                self.run_squares_animation()
+            elif self.current_shape_index == 1:
+                self.run_rectangles_animation()
+            elif self.current_shape_index == 2:
+                self.run_bubbles_shape_animation()
+            elif self.current_shape_index == 3:
+                self.run_stars_animation()
             else:
                 print(f"⚠️ Unknown shape index: {self.current_shape_index}")
         finally:
             self.shape_animation_running = False
     
-    def run_big_rectangle(self):
-        """Run big rectangle animation with soft blue color."""
+    def run_squares_animation(self):
+        """Run squares animation - squares appear randomly, fade in, fill screen."""
         import math
         # Play audio for this animation
-        self.play_animation_audio('big_rectangle')
+        self.play_animation_audio('squares')
         
-        duration = 20  # 20 seconds as requested
+        duration = 30
         start_time = time.time()
+        width = 32
+        height = 48
         
-        print(f"🔷 Big Rectangle animation started")
+        # Square size: 1/16 of screen = 8x12 pixels (32/4 = 8, 48/4 = 12)
+        square_width = 8
+        square_height = 12
         
-        # Starting color #73C0E0 and ending color #157BB8
-        start_color = (115, 192, 224)  # RGB values for #73C0E0
-        end_color = (21, 123, 184)    # RGB values for #157BB8
+        # Colors
+        colors = [
+            (240, 135, 135),  # #F08787
+            (255, 199, 167),  # #FFC7A7
+            (254, 226, 173),  # #FEE2AD
+            (248, 250, 180),  # #F8FAB4
+        ]
         
-        # Calculate rectangle dimensions (big rectangle)
-        margin_x = 2
-        margin_y = 4
-        rect_width = 32 - (2 * margin_x)  # 28 pixels wide
-        rect_height = 48 - (2 * margin_y)  # 40 pixels tall
+        # Calculate grid positions for squares
+        grid_cols = width // square_width  # 4 columns
+        grid_rows = height // square_height  # 4 rows
+        total_squares = grid_cols * grid_rows  # 16 squares
         
-        # Rectangle position (centered)
-        rect_x = margin_x
-        rect_y = margin_y
+        # Track which squares have appeared
+        appeared_squares = {}  # {(grid_x, grid_y): (appear_time, color)}
+        
+        print(f"🔲 Squares animation started")
         
         while time.time() - start_time < duration and self.shape_animation_running:
-            # Calculate progress (0 to 1)
             elapsed = time.time() - start_time
-            progress = elapsed / duration
             
-            # Calculate fade intensity using smooth easing function (ease-out cubic)
-            # This provides a smooth fade-in effect
-            fade_intensity = 1.0 - (1.0 - progress) ** 3
-            
-            # Calculate color transition from start to end color
-            current_color = (
-                int(start_color[0] + (end_color[0] - start_color[0]) * progress),
-                int(start_color[1] + (end_color[1] - start_color[1]) * progress),
-                int(start_color[2] + (end_color[2] - start_color[2]) * progress)
-            )
+            # Add a new square every 2 seconds
+            if elapsed > 0 and len(appeared_squares) < total_squares:
+                next_square_time = len(appeared_squares) * 2
+                if elapsed >= next_square_time:
+                    # Find a random position that hasn't appeared yet
+                    available_positions = []
+                    for row in range(grid_rows):
+                        for col in range(grid_cols):
+                            if (col, row) not in appeared_squares:
+                                available_positions.append((col, row))
+                    
+                    if available_positions:
+                        pos = random.choice(available_positions)
+                        color = random.choice(colors)
+                        appeared_squares[pos] = (elapsed, color)
             
             # Clear display
             self.led.clear()
             
-            # Draw the rectangle with current color and fade intensity
-            for y in range(rect_height):
-                for x in range(rect_width):
-                    # Calculate final color with fade intensity
-                    final_color = (
-                        int(current_color[0] * fade_intensity),
-                        int(current_color[1] * fade_intensity),
-                        int(current_color[2] * fade_intensity)
-                    )
-                    
-                    # Set pixel
-                    pixel_x = rect_x + x
-                    pixel_y = rect_y + y
-                    
-                    if 0 <= pixel_x < 32 and 0 <= pixel_y < 48:
-                        self.led.set_pixel(pixel_x, pixel_y, final_color)
+            # Draw all appeared squares with fade-in
+            for (grid_x, grid_y), (appear_time, color) in appeared_squares.items():
+                # Calculate fade-in progress (0 to 1 over 1 second)
+                square_age = elapsed - appear_time
+                fade_progress = min(1.0, square_age / 1.0)  # Fade in over 1 second
+                fade_intensity = 1.0 - (1.0 - fade_progress) ** 2  # Ease-out
+                
+                # Calculate pixel position
+                pixel_x_start = grid_x * square_width
+                pixel_y_start = grid_y * square_height
+                
+                # Draw square
+                for x in range(square_width):
+                    for y in range(square_height):
+                        px = pixel_x_start + x
+                        py = pixel_y_start + y
+                        if 0 <= px < width and 0 <= py < height:
+                            final_color = (
+                                int(color[0] * fade_intensity),
+                                int(color[1] * fade_intensity),
+                                int(color[2] * fade_intensity)
+                            )
+                            self.led.set_pixel(px, py, final_color)
             
-            # Show the frame
             self.led.show()
-            
-            # Higher frame rate for smoother animation
-            time.sleep(0.03)  # ~33 FPS for much smoother animation
+            time.sleep(0.05)  # 20 FPS
         
-        # Keep the rectangle fully lit for a moment at the end
-        print("🔷 Rectangle fully lit, keeping for 2 seconds...")
-        time.sleep(2)
+        # Fade out all squares smoothly
+        print("🔲 Fading out squares...")
+        fade_out_duration = 3
+        fade_out_start = time.time()
         
-        # Fade out slowly
-        print("🔷 Fading out...")
-        fade_out_duration = 3  # 3 seconds fade out
-        fade_start = time.time()
-        
-        while time.time() - fade_start < fade_out_duration and self.shape_animation_running:
-            elapsed_fade = time.time() - fade_start
+        while time.time() - fade_out_start < fade_out_duration and self.shape_animation_running:
+            elapsed_fade = time.time() - fade_out_start
             fade_progress = elapsed_fade / fade_out_duration
-            
-            # Calculate fade out intensity (1 to 0)
-            fade_out_intensity = 1.0 - fade_progress
-            
-            # Use the final color for fade out
-            final_color_for_fade = end_color
+            fade_out_intensity = 1.0 - (fade_progress ** 2)  # Ease-out
             
             # Clear display
             self.led.clear()
             
-            # Draw the rectangle with fade out intensity
-            for y in range(rect_height):
-                for x in range(rect_width):
-                    # Calculate final color with fade out intensity
-                    final_color = (
-                        int(final_color_for_fade[0] * fade_out_intensity),
-                        int(final_color_for_fade[1] * fade_out_intensity),
-                        int(final_color_for_fade[2] * fade_out_intensity)
-                    )
-                    
-                    # Set pixel
-                    pixel_x = rect_x + x
-                    pixel_y = rect_y + y
-                    
-                    if 0 <= pixel_x < 32 and 0 <= pixel_y < 48:
-                        self.led.set_pixel(pixel_x, pixel_y, final_color)
+            # Draw all squares with fade-out intensity
+            for (grid_x, grid_y), (_, color) in appeared_squares.items():
+                pixel_x_start = grid_x * square_width
+                pixel_y_start = grid_y * square_height
+                
+                for x in range(square_width):
+                    for y in range(square_height):
+                        px = pixel_x_start + x
+                        py = pixel_y_start + y
+                        if 0 <= px < width and 0 <= py < height:
+                            final_color = (
+                                int(color[0] * fade_out_intensity),
+                                int(color[1] * fade_out_intensity),
+                                int(color[2] * fade_out_intensity)
+                            )
+                            self.led.set_pixel(px, py, final_color)
             
-            # Show the frame
             self.led.show()
-            
-            # Higher frame rate for smoother animation
-            time.sleep(0.03)
+            time.sleep(0.05)
         
         # Clear display completely
         self.led.clear()
         self.led.show()
+        print("🔲 Squares animation finished")
+    
+    def run_rectangles_animation(self):
+        """Run rectangles animation - rectangles appear randomly, fade in, fill screen."""
+        import math
+        # Play audio for this animation
+        self.play_animation_audio('rectangles')
         
-        print("🔷 Big Rectangle animation finished")
+        duration = 30
+        start_time = time.time()
+        width = 32
+        height = 48
+        
+        # Rectangle: one side is full (16/16 = full width or height), other side is 2 pixels
+        # So rectangles are either 32x2 (horizontal) or 2x48 (vertical)
+        rect_horizontal = (32, 2)  # Full width, 2 height
+        rect_vertical = (2, 48)    # 2 width, full height
+        
+        # Colors
+        colors = [
+            (245, 210, 210),  # #F5D2D2
+            (248, 247, 186),  # #F8F7BA
+            (189, 227, 195),  # #BDE3C3
+            (163, 204, 218),  # #A3CCDA
+        ]
+        
+        # Track appeared rectangles: {(x, y, is_horizontal): (appear_time, color)}
+        appeared_rectangles = {}
+        max_rectangles = 20  # Reasonable number to fill screen
+        
+        print(f"▬ Rectangles animation started")
+        
+        while time.time() - start_time < duration and self.shape_animation_running:
+            elapsed = time.time() - start_time
+            
+            # Add a new rectangle every 2 seconds
+            if elapsed > 0 and len(appeared_rectangles) < max_rectangles:
+                next_rect_time = len(appeared_rectangles) * 2
+                if elapsed >= next_rect_time:
+                    # Randomly choose horizontal or vertical
+                    is_horizontal = random.choice([True, False])
+                    color = random.choice(colors)
+                    
+                    if is_horizontal:
+                        # Horizontal rectangle: random y position
+                        x = 0
+                        y = random.randint(0, height - rect_horizontal[1])
+                        pos = (x, y, True)
+                    else:
+                        # Vertical rectangle: random x position
+                        x = random.randint(0, width - rect_vertical[0])
+                        y = 0
+                        pos = (x, y, False)
+                    
+                    appeared_rectangles[pos] = (elapsed, color)
+            
+            # Clear display
+            self.led.clear()
+            
+            # Draw all appeared rectangles with fade-in
+            for (x, y, is_horizontal), (appear_time, color) in appeared_rectangles.items():
+                square_age = elapsed - appear_time
+                fade_progress = min(1.0, square_age / 1.0)
+                fade_intensity = 1.0 - (1.0 - fade_progress) ** 2  # Ease-out
+                
+                if is_horizontal:
+                    rect_w, rect_h = rect_horizontal
+                else:
+                    rect_w, rect_h = rect_vertical
+                
+                # Draw rectangle
+                for dx in range(rect_w):
+                    for dy in range(rect_h):
+                        px = x + dx
+                        py = y + dy
+                        if 0 <= px < width and 0 <= py < height:
+                            final_color = (
+                                int(color[0] * fade_intensity),
+                                int(color[1] * fade_intensity),
+                                int(color[2] * fade_intensity)
+                            )
+                            self.led.set_pixel(px, py, final_color)
+            
+            self.led.show()
+            time.sleep(0.05)
+        
+        # Fade out
+        print("▬ Fading out rectangles...")
+        fade_out_duration = 3
+        fade_out_start = time.time()
+        
+        while time.time() - fade_out_start < fade_out_duration and self.shape_animation_running:
+            elapsed_fade = time.time() - fade_out_start
+            fade_progress = elapsed_fade / fade_out_duration
+            fade_out_intensity = 1.0 - (fade_progress ** 2)
+            
+            self.led.clear()
+            for (x, y, is_horizontal), (_, color) in appeared_rectangles.items():
+                if is_horizontal:
+                    rect_w, rect_h = rect_horizontal
+                else:
+                    rect_w, rect_h = rect_vertical
+                
+                for dx in range(rect_w):
+                    for dy in range(rect_h):
+                        px = x + dx
+                        py = y + dy
+                        if 0 <= px < width and 0 <= py < height:
+                            final_color = (
+                                int(color[0] * fade_out_intensity),
+                                int(color[1] * fade_out_intensity),
+                                int(color[2] * fade_out_intensity)
+                            )
+                            self.led.set_pixel(px, py, final_color)
+            
+            self.led.show()
+            time.sleep(0.05)
+        
+        self.led.clear()
+        self.led.show()
+        print("▬ Rectangles animation finished")
+    
+    def run_bubbles_shape_animation(self):
+        """Run bubbles animation starting from top, revealing downward."""
+        import math
+        # Play audio for this animation
+        self.play_animation_audio('bubbles_shape')
+        
+        duration = 30
+        start_time = time.time()
+        width = 32
+        height = 48
+        
+        print(f"🫧 Bubbles shape animation started")
+        
+        # Use same bubble colors as current bubbles animation
+        bubble_colors = [
+            (135, 206, 235),  # Sky blue
+            (173, 216, 230),  # Light blue
+            (176, 224, 230),  # Powder blue
+            (224, 255, 255),  # Light cyan
+            (175, 238, 238),  # Pale turquoise
+        ]
+        
+        # Initialize bubbles (same as current bubbles but will reveal from top)
+        bubbles = []
+        for _ in range(8):
+            bubble = {
+                'x': random.randint(5, width - 5),
+                'y': random.randint(height // 4, height - 5),  # Start in lower 3/4
+                'radius': random.randint(2, 4),
+                'speed': random.uniform(0.3, 0.6),
+                'color': random.choice(bubble_colors),
+                'initial_y': random.randint(height // 4, height - 5),
+            }
+            bubbles.append(bubble)
+        
+        # Track reveal progress (how much of screen is revealed from top)
+        reveal_start_y = 0  # Start revealing from top
+        
+        while time.time() - start_time < duration and self.shape_animation_running:
+            elapsed = time.time() - start_time
+            
+            # Reveal screen from top - reveal more over time
+            # By end of 30 seconds, reveal the full height
+            reveal_progress = min(1.0, elapsed / duration)
+            reveal_end_y = int(height * reveal_progress)
+            
+            # Update bubbles (move up slowly)
+            for bubble in bubbles:
+                bubble['y'] -= bubble['speed']
+                
+                # Reset bubble if it goes off top
+                if bubble['y'] < -bubble['radius']:
+                    bubble['y'] = height + bubble['radius']
+                    bubble['x'] = random.randint(5, width - 5)
+            
+            # Clear display
+            self.led.clear()
+            
+            # Draw bubbles only if they're in the revealed area
+            for bubble in bubbles:
+                bubble_y = int(bubble['y'])
+                bubble_x = int(bubble['x'])
+                radius = bubble['radius']
+                color = bubble['color']
+                
+                # Only draw if bubble is in revealed area
+                if bubble_y - radius < reveal_end_y:
+                    # Draw bubble circle
+                    for dy in range(-radius, radius + 1):
+                        for dx in range(-radius, radius + 1):
+                            distance = math.sqrt(dx*dx + dy*dy)
+                            if distance <= radius:
+                                px = bubble_x + dx
+                                py = bubble_y + dy
+                                if 0 <= px < width and 0 <= py < height:
+                                    # Only draw if in revealed area
+                                    if py <= reveal_end_y:
+                                        self.led.set_pixel(px, py, color)
+            
+            self.led.show()
+            time.sleep(0.05)
+        
+        # Fade out
+        print("🫧 Fading out bubbles...")
+        fade_out_duration = 3
+        fade_out_start = time.time()
+        
+        while time.time() - fade_out_start < fade_out_duration and self.shape_animation_running:
+            elapsed_fade = time.time() - fade_out_start
+            fade_progress = elapsed_fade / fade_out_duration
+            fade_out_intensity = 1.0 - (fade_progress ** 2)
+            
+            self.led.clear()
+            for bubble in bubbles:
+                bubble_y = int(bubble['y'])
+                bubble_x = int(bubble['x'])
+                radius = bubble['radius']
+                color = bubble['color']
+                
+                for dy in range(-radius, radius + 1):
+                    for dx in range(-radius, radius + 1):
+                        distance = math.sqrt(dx*dx + dy*dy)
+                        if distance <= radius:
+                            px = bubble_x + dx
+                            py = bubble_y + dy
+                            if 0 <= px < width and 0 <= py < height:
+                                final_color = (
+                                    int(color[0] * fade_out_intensity),
+                                    int(color[1] * fade_out_intensity),
+                                    int(color[2] * fade_out_intensity)
+                                )
+                                self.led.set_pixel(px, py, final_color)
+            
+            self.led.show()
+            time.sleep(0.05)
+        
+        self.led.clear()
+        self.led.show()
+        print("🫧 Bubbles shape animation finished")
+    
+    def run_stars_animation(self):
+        """Run stars animation - 8 stars appear one by one."""
+        import math
+        # Play audio for this animation
+        self.play_animation_audio('stars')
+        
+        duration = 30
+        start_time = time.time()
+        width = 32
+        height = 48
+        
+        # Colors
+        colors = [
+            (195, 255, 147),  # #C3FF93
+            (255, 219, 92),   # #FFDB5C
+            (255, 175, 97),   # #FFAF61
+            (255, 112, 171),  # #FF70AB
+            (255, 118, 206),  # #FF76CE
+            (253, 255, 194),  # #FDFFC2
+            (148, 255, 216),  # #94FFD8
+            (163, 216, 255),  # #A3D8FF
+        ]
+        
+        # 8 stars total
+        num_stars = 8
+        star_positions = []  # Will store (x, y, color, appear_time)
+        
+        # Generate random positions for stars (not filling entire screen)
+        star_radius = 4  # Size of star
+        min_distance = 8  # Minimum distance between stars
+        
+        print(f"⭐ Stars animation started")
+        
+        while time.time() - start_time < duration and self.shape_animation_running:
+            elapsed = time.time() - start_time
+            
+            # Add a new star every 3 seconds
+            if elapsed > 0 and len(star_positions) < num_stars:
+                next_star_time = len(star_positions) * 3
+                if elapsed >= next_star_time:
+                    # Find a valid position (not too close to other stars)
+                    attempts = 0
+                    while attempts < 50:
+                        x = random.randint(star_radius, width - star_radius - 1)
+                        y = random.randint(star_radius, height - star_radius - 1)
+                        
+                        # Check distance from other stars
+                        too_close = False
+                        for sx, sy, _, _ in star_positions:
+                            dist = math.sqrt((x - sx)**2 + (y - sy)**2)
+                            if dist < min_distance:
+                                too_close = True
+                                break
+                        
+                        if not too_close:
+                            color = colors[len(star_positions)]
+                            star_positions.append((x, y, color, elapsed))
+                            break
+                        attempts += 1
+            
+            # Clear display
+            self.led.clear()
+            
+            # Draw all appeared stars with fade-in
+            for x, y, color, appear_time in star_positions:
+                star_age = elapsed - appear_time
+                fade_progress = min(1.0, star_age / 1.0)
+                fade_intensity = 1.0 - (1.0 - fade_progress) ** 2  # Ease-out
+                
+                # Draw star shape (cross/plus shape)
+                star_size = 4
+                final_color = (
+                    int(color[0] * fade_intensity),
+                    int(color[1] * fade_intensity),
+                    int(color[2] * fade_intensity)
+                )
+                
+                # Horizontal line
+                for dx in range(-star_size, star_size + 1):
+                    px = x + dx
+                    py = y
+                    if 0 <= px < width and 0 <= py < height:
+                        self.led.set_pixel(px, py, final_color)
+                
+                # Vertical line
+                for dy in range(-star_size, star_size + 1):
+                    px = x
+                    py = y + dy
+                    if 0 <= px < width and 0 <= py < height:
+                        self.led.set_pixel(px, py, final_color)
+                
+                # Diagonal lines (simple X)
+                for i in range(-star_size // 2, star_size // 2 + 1):
+                    # Top-left to bottom-right
+                    px = x + i
+                    py = y + i
+                    if 0 <= px < width and 0 <= py < height:
+                        self.led.set_pixel(px, py, final_color)
+                    
+                    # Top-right to bottom-left
+                    px = x + i
+                    py = y - i
+                    if 0 <= px < width and 0 <= py < height:
+                        self.led.set_pixel(px, py, final_color)
+            
+            self.led.show()
+            time.sleep(0.05)
+        
+        # Fade out
+        print("⭐ Fading out stars...")
+        fade_out_duration = 3
+        fade_out_start = time.time()
+        
+        while time.time() - fade_out_start < fade_out_duration and self.shape_animation_running:
+            elapsed_fade = time.time() - fade_out_start
+            fade_progress = elapsed_fade / fade_out_duration
+            fade_out_intensity = 1.0 - (fade_progress ** 2)
+            
+            self.led.clear()
+            for x, y, color, _ in star_positions:
+                star_size = 4
+                final_color = (
+                    int(color[0] * fade_out_intensity),
+                    int(color[1] * fade_out_intensity),
+                    int(color[2] * fade_out_intensity)
+                )
+                
+                # Draw star
+                for dx in range(-star_size, star_size + 1):
+                    px = x + dx
+                    py = y
+                    if 0 <= px < width and 0 <= py < height:
+                        self.led.set_pixel(px, py, final_color)
+                
+                for dy in range(-star_size, star_size + 1):
+                    px = x
+                    py = y + dy
+                    if 0 <= px < width and 0 <= py < height:
+                        self.led.set_pixel(px, py, final_color)
+                
+                for i in range(-star_size // 2, star_size // 2 + 1):
+                    px = x + i
+                    py = y + i
+                    if 0 <= px < width and 0 <= py < height:
+                        self.led.set_pixel(px, py, final_color)
+                    px = x + i
+                    py = y - i
+                    if 0 <= px < width and 0 <= py < height:
+                        self.led.set_pixel(px, py, final_color)
+            
+            self.led.show()
+            time.sleep(0.05)
+        
+        self.led.clear()
+        self.led.show()
+        print("⭐ Stars animation finished")
     
     def start_rainbow_pattern(self):
         """Start rainbow wave pattern."""
