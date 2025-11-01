@@ -186,7 +186,8 @@ class LEDDisplayApp:
         
         # Cycle to next shape with bounds checking
         self.current_shape_index = (self.current_shape_index + 1) % len(self.shape_animations)
-        shape_names = ["Big Rectangle"]
+        
+        shape_names = ["Squares", "Rectangles", "Bubbles", "Stars"]
         
         # Ensure index is within bounds
         if self.current_shape_index >= len(shape_names):
@@ -194,14 +195,14 @@ class LEDDisplayApp:
         
         shape_name = shape_names[self.current_shape_index]
         
-        print(f"🎬 Starting {shape_name}...")
+        print(f"🎬 Starting {shape_name} animation...")
         
         # Start the shape animation as a thread
         self.current_pattern = threading.Thread(target=self.run_shape_animation)
         self.current_pattern.daemon = False  # Don't use daemon threads
         self.current_pattern.start()
         
-        print(f"✅ Started {shape_name}")
+        print(f"✅ Started {shape_name} animation")
     
     def start_nature_animation(self):
         """Start nature animation - cycles through different nature scenes."""
@@ -1430,8 +1431,6 @@ class LEDDisplayApp:
         # Play audio for this animation
         self.play_animation_audio('squares')
         
-        duration = 30
-        start_time = time.time()
         width = 32
         height = 48
         
@@ -1439,12 +1438,20 @@ class LEDDisplayApp:
         square_width = 8
         square_height = 12
         
-        # Colors
+        # Colors - original plus additional
         colors = [
             (240, 135, 135),  # #F08787
             (255, 199, 167),  # #FFC7A7
             (254, 226, 173),  # #FEE2AD
             (248, 250, 180),  # #F8FAB4
+            (78, 215, 241),   # #4ED7F1
+            (111, 230, 252),  # #6FE6FC
+            (168, 241, 255),  # #A8F1FF
+            (255, 250, 141),  # #FFFA8D
+            (117, 106, 182),  # #756AB6
+            (172, 135, 197),  # #AC87C5
+            (224, 174, 208),  # #E0AED0
+            (255, 229, 229),  # #FFE5E5
         ]
         
         # Calculate grid positions for squares
@@ -1452,12 +1459,23 @@ class LEDDisplayApp:
         grid_rows = height // square_height  # 4 rows
         total_squares = grid_cols * grid_rows  # 16 squares
         
+        # Calculate timing: enough time for all squares to appear + fade-in, then fade-out separately
+        # 16 squares * 2 seconds = 32 seconds for all to appear
+        # Plus 1 second fade-in for last square = 33 seconds main animation
+        squares_appear_time = total_squares * 2  # 32 seconds for all squares
+        fade_in_time = 1  # 1 second fade-in for last square
+        main_animation_duration = squares_appear_time + fade_in_time  # 33 seconds
+        fade_out_duration = 3  # 3 seconds fade-out after main animation
+        
+        start_time = time.time()
+        
         # Track which squares have appeared
         appeared_squares = {}  # {(grid_x, grid_y): (appear_time, color)}
         
         print(f"🔲 Squares animation started")
         
-        while time.time() - start_time < duration and self.shape_animation_running:
+        # Main animation: squares appear and fade in
+        while time.time() - start_time < main_animation_duration and self.shape_animation_running:
             elapsed = time.time() - start_time
             
             # Add a new square every 2 seconds
@@ -1506,9 +1524,8 @@ class LEDDisplayApp:
             self.led.show()
             time.sleep(0.05)  # 20 FPS
         
-        # Fade out all squares smoothly
+        # Fade out all squares smoothly (only after main animation completes)
         print("🔲 Fading out squares...")
-        fade_out_duration = 3
         fade_out_start = time.time()
         
         while time.time() - fade_out_start < fade_out_duration and self.shape_animation_running:
@@ -1538,7 +1555,7 @@ class LEDDisplayApp:
             
             self.led.show()
             time.sleep(0.05)
-        
+    
         # Clear display completely
         self.led.clear()
         self.led.show()
@@ -1627,7 +1644,7 @@ class LEDDisplayApp:
             
             self.led.show()
             time.sleep(0.05)
-        
+    
         # Fade out
         print("▬ Fading out rectangles...")
         fade_out_duration = 3
@@ -1745,7 +1762,7 @@ class LEDDisplayApp:
             
             self.led.show()
             time.sleep(0.05)
-        
+    
         # Fade out
         print("🫧 Fading out bubbles...")
         fade_out_duration = 3
