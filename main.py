@@ -1598,36 +1598,43 @@ class LEDDisplayApp:
         start_time = time.time()
         
         # Generate triangle positions in grid (4×3 grid)
+        # Each section will have a right-angled triangle that fills it completely
         triangle_positions = []
         for row in range(grid_rows):
             for col in range(grid_cols):
                 x_start = col * section_width
                 y_start = row * section_height
-                # Alternate triangle directions for visual interest
-                direction = 'up' if (row + col) % 2 == 0 else 'down'
-                triangle_positions.append((x_start, y_start, direction))
+                # Alternate right-angled triangle types for visual interest
+                # Types: 'top-left', 'top-right', 'bottom-left', 'bottom-right'
+                triangle_type = [
+                    'top-left', 'top-right', 'bottom-left', 'bottom-right'
+                ][(row * grid_cols + col) % 4]
+                triangle_positions.append((x_start, y_start, triangle_type))
         
         # Track which triangles have appeared: {triangle_index: (appear_time, color)}
         appeared_triangles = {}
         
         print(f"△ Triangles animation started")
         
-        def draw_triangle_in_section(section_x, section_y, direction, color, intensity):
-            """Draw a triangle filling a section."""
-            # Triangle fills the entire section
-            if direction == 'up':
-                # Pointing up: apex at top, base at bottom of section
+        def draw_triangle_in_section(section_x, section_y, triangle_type, color, intensity):
+            """Draw a right-angled triangle filling a section completely."""
+            # Right-angled triangles fill the entire section (8×16 pixels)
+            # The triangle's right angle is at one corner, hypotenuse goes to opposite corner
+            if triangle_type == 'top-left':
+                # Right angle at top-left, hypotenuse from top-left to bottom-right
+                # Fill from left edge, expanding downward and rightward
                 for y in range(section_height):
-                    # Calculate width at this row (narrow at top, wide at bottom)
-                    # When y=0: width=0 (apex), when y=section_height-1: width=full (base)
-                    progress = y / (section_height - 1) if section_height > 1 else 0
+                    # At row y, fill from x=0 to x that corresponds to the diagonal
+                    # Calculate based on proportion: y / section_height gives progress
+                    progress = (y + 1) / section_height
                     width_at_row = int(section_width * progress)
-                    if width_at_row == 0 and y == 0:
-                        width_at_row = 1  # At least 1 pixel at apex
-                    x_offset = (section_width - width_at_row) // 2
+                    if width_at_row < 1:
+                        width_at_row = 1
+                    if width_at_row > section_width:
+                        width_at_row = section_width
                     
                     for x in range(width_at_row):
-                        px = section_x + x_offset + x
+                        px = section_x + x
                         py = section_y + y
                         if 0 <= px < width and 0 <= py < height:
                             final_color = (
@@ -1636,19 +1643,64 @@ class LEDDisplayApp:
                                 int(color[2] * intensity)
                             )
                             self.led.set_pixel(px, py, final_color)
-            else:  # direction == 'down'
-                # Pointing down: base at top of section
+            
+            elif triangle_type == 'top-right':
+                # Right angle at top-right, hypotenuse from top-right to bottom-left
+                # Fill from right edge, expanding downward and leftward
                 for y in range(section_height):
-                    # Calculate width at this row (narrower toward bottom)
-                    # When y=0: full width, when y=section_height-1: 1 pixel
-                    progress = y / (section_height - 1) if section_height > 1 else 0
-                    width_at_row = int(section_width * (1.0 - progress))
-                    if width_at_row == 0:
-                        width_at_row = 1  # At least 1 pixel at bottom
-                    x_offset = (section_width - width_at_row) // 2
+                    progress = (y + 1) / section_height
+                    width_at_row = int(section_width * progress)
+                    if width_at_row < 1:
+                        width_at_row = 1
+                    if width_at_row > section_width:
+                        width_at_row = section_width
                     
                     for x in range(width_at_row):
-                        px = section_x + x_offset + x
+                        px = section_x + (section_width - 1 - x)
+                        py = section_y + y
+                        if 0 <= px < width and 0 <= py < height:
+                            final_color = (
+                                int(color[0] * intensity),
+                                int(color[1] * intensity),
+                                int(color[2] * intensity)
+                            )
+                            self.led.set_pixel(px, py, final_color)
+            
+            elif triangle_type == 'bottom-left':
+                # Right angle at bottom-left, hypotenuse from bottom-left to top-right
+                # Fill from left edge, expanding upward and rightward
+                for y in range(section_height):
+                    progress = (section_height - y) / section_height
+                    width_at_row = int(section_width * progress)
+                    if width_at_row < 1:
+                        width_at_row = 1
+                    if width_at_row > section_width:
+                        width_at_row = section_width
+                    
+                    for x in range(width_at_row):
+                        px = section_x + x
+                        py = section_y + y
+                        if 0 <= px < width and 0 <= py < height:
+                            final_color = (
+                                int(color[0] * intensity),
+                                int(color[1] * intensity),
+                                int(color[2] * intensity)
+                            )
+                            self.led.set_pixel(px, py, final_color)
+            
+            else:  # triangle_type == 'bottom-right'
+                # Right angle at bottom-right, hypotenuse from bottom-right to top-left
+                # Fill from right edge, expanding upward and leftward
+                for y in range(section_height):
+                    progress = (section_height - y) / section_height
+                    width_at_row = int(section_width * progress)
+                    if width_at_row < 1:
+                        width_at_row = 1
+                    if width_at_row > section_width:
+                        width_at_row = section_width
+                    
+                    for x in range(width_at_row):
+                        px = section_x + (section_width - 1 - x)
                         py = section_y + y
                         if 0 <= px < width and 0 <= py < height:
                             final_color = (
@@ -1685,8 +1737,8 @@ class LEDDisplayApp:
                 fade_intensity = 1.0 - (1.0 - fade_progress) ** 2  # Ease-out
                 
                 # Get triangle position
-                section_x, section_y, direction = triangle_positions[triangle_idx]
-                draw_triangle_in_section(section_x, section_y, direction, color, fade_intensity)
+                section_x, section_y, triangle_type = triangle_positions[triangle_idx]
+                draw_triangle_in_section(section_x, section_y, triangle_type, color, fade_intensity)
             
             self.led.show()
             time.sleep(0.05)
@@ -1702,8 +1754,8 @@ class LEDDisplayApp:
             
             self.led.clear()
             for triangle_idx, (_, color) in appeared_triangles.items():
-                section_x, section_y, direction = triangle_positions[triangle_idx]
-                draw_triangle_in_section(section_x, section_y, direction, color, fade_out_intensity)
+                section_x, section_y, triangle_type = triangle_positions[triangle_idx]
+                draw_triangle_in_section(section_x, section_y, triangle_type, color, fade_out_intensity)
             
             self.led.show()
             time.sleep(0.05)
