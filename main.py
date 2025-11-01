@@ -53,7 +53,7 @@ class LEDDisplayApp:
         
         # Shape animation system - 4 animations cycling
         self.shape_animations = [
-            "squares", "rectangles", "bubbles", "stars"
+            "squares", "triangles", "bubbles", "stars"
         ]
         self.current_shape_index = 0
         self.current_shape_process = None
@@ -64,7 +64,6 @@ class LEDDisplayApp:
             "floating_clouds_animation.py",
             "rain_animation.py",
             "growing_flowers_animation.py",
-            "bubbles_animation.py",
             "apple_tree_animation.py"
         ]
         self.current_nature_index = 0
@@ -93,13 +92,12 @@ class LEDDisplayApp:
             'floating_clouds': 'floating_clouds.wav',
             'rain': 'rain.wav',
             'growing_flowers': 'growing_flowers.wav',
-            'bubbles': 'bubbles.wav',
             'apple_tree': 'apple_tree.wav',
             'house': 'house.wav',
             'clock': 'clock.wav',
             'squares': 'squares.wav',
-            'rectangles': 'rectangles.wav',
-            'bubbles_shape': 'bubbles_shape.wav',
+            'triangles': 'triangles.wav',
+            'bubbles': 'bubbles.wav',
             'stars': 'stars.wav',
         }
         
@@ -187,7 +185,7 @@ class LEDDisplayApp:
         # Cycle to next shape with bounds checking
         self.current_shape_index = (self.current_shape_index + 1) % len(self.shape_animations)
         
-        shape_names = ["Squares", "Rectangles", "Bubbles", "Stars"]
+        shape_names = ["Squares", "Triangles", "Bubbles", "Stars"]
         
         # Ensure index is within bounds
         if self.current_shape_index >= len(shape_names):
@@ -259,8 +257,6 @@ class LEDDisplayApp:
             elif self.current_nature_index == 2:
                 self.run_growing_flowers_animation()
             elif self.current_nature_index == 3:
-                self.run_bubbles_animation()
-            elif self.current_nature_index == 4:
                 self.run_apple_tree_animation()
         finally:
             self.nature_animation_running = False
@@ -1415,7 +1411,7 @@ class LEDDisplayApp:
             if self.current_shape_index == 0:
                 self.run_squares_animation()
             elif self.current_shape_index == 1:
-                self.run_rectangles_animation()
+                self.run_triangles_animation()
             elif self.current_shape_index == 2:
                 self.run_bubbles_shape_animation()
             elif self.current_shape_index == 3:
@@ -1561,21 +1557,22 @@ class LEDDisplayApp:
         self.led.show()
         print("🔲 Squares animation finished")
     
-    def run_rectangles_animation(self):
-        """Run rectangles animation - rectangles appear randomly, fade in, fill screen."""
+    def run_triangles_animation(self):
+        """Run triangles animation - triangles appear randomly, fade in, fill screen."""
         import math
         # Play audio for this animation
-        self.play_animation_audio('rectangles')
+        self.play_animation_audio('triangles')
         
         duration = 30
         start_time = time.time()
         width = 32
         height = 48
         
-        # Rectangle: one side is full (16/16 = full width or height), other side is 2 pixels
-        # So rectangles are either 32x2 (horizontal) or 2x48 (vertical)
-        rect_horizontal = (32, 2)  # Full width, 2 height
-        rect_vertical = (2, 48)    # 2 width, full height
+        # Triangle size: similar to rectangles, one side is full (16/16 = full width or height)
+        # Triangle pointing up/down: base full width (32px), height 2px
+        # Triangle pointing left/right: base full height (48px), width 2px
+        triangle_base_size = max(width, height)  # 48 for vertical, 32 for horizontal
+        triangle_height = 2  # Height of triangle
         
         # Colors
         colors = [
@@ -1585,68 +1582,122 @@ class LEDDisplayApp:
             (163, 204, 218),  # #A3CCDA
         ]
         
-        # Track appeared rectangles: {(x, y, is_horizontal): (appear_time, color)}
-        appeared_rectangles = {}
-        max_rectangles = 20  # Reasonable number to fill screen
+        # Track appeared triangles: {(x, y, direction): (appear_time, color)}
+        # direction: 'up', 'down', 'left', 'right'
+        appeared_triangles = {}
+        max_triangles = 20  # Reasonable number to fill screen
         
-        print(f"▬ Rectangles animation started")
+        print(f"△ Triangles animation started")
+        
+        def draw_triangle(px_start, py_start, direction, color, intensity):
+            """Draw a triangle at position."""
+            if direction == 'up':
+                # Pointing up: base at bottom
+                base_y = py_start + triangle_height - 1
+                for y in range(triangle_height):
+                    pixels_from_base = triangle_height - 1 - y
+                    width_at_row = triangle_base_size - (pixels_from_base * 2)
+                    x_start = px_start + pixels_from_base
+                    for x in range(width_at_row):
+                        px = x_start + x
+                        py = py_start + y
+                        if 0 <= px < width and 0 <= py < height:
+                            final_color = (
+                                int(color[0] * intensity),
+                                int(color[1] * intensity),
+                                int(color[2] * intensity)
+                            )
+                            self.led.set_pixel(px, py, final_color)
+            elif direction == 'down':
+                # Pointing down: base at top
+                for y in range(triangle_height):
+                    width_at_row = triangle_base_size - (y * 2)
+                    pixels_from_center = (triangle_base_size - width_at_row) // 2
+                    x_start = px_start + pixels_from_center
+                    for x in range(width_at_row):
+                        px = x_start + x
+                        py = py_start + y
+                        if 0 <= px < width and 0 <= py < height:
+                            final_color = (
+                                int(color[0] * intensity),
+                                int(color[1] * intensity),
+                                int(color[2] * intensity)
+                            )
+                            self.led.set_pixel(px, py, final_color)
+            elif direction == 'left':
+                # Pointing left: base on right
+                for x in range(triangle_height):
+                    height_at_col = triangle_base_size - (x * 2)
+                    pixels_from_center = (triangle_base_size - height_at_col) // 2
+                    y_start = py_start + pixels_from_center
+                    for y in range(height_at_col):
+                        px = px_start + x
+                        py = y_start + y
+                        if 0 <= px < width and 0 <= py < height:
+                            final_color = (
+                                int(color[0] * intensity),
+                                int(color[1] * intensity),
+                                int(color[2] * intensity)
+                            )
+                            self.led.set_pixel(px, py, final_color)
+            elif direction == 'right':
+                # Pointing right: base on left
+                base_x = px_start + triangle_height - 1
+                for x in range(triangle_height):
+                    pixels_from_base = triangle_height - 1 - x
+                    height_at_col = triangle_base_size - (pixels_from_base * 2)
+                    y_start = py_start + pixels_from_base
+                    for y in range(height_at_col):
+                        px = px_start + x
+                        py = y_start + y
+                        if 0 <= px < width and 0 <= py < height:
+                            final_color = (
+                                int(color[0] * intensity),
+                                int(color[1] * intensity),
+                                int(color[2] * intensity)
+                            )
+                            self.led.set_pixel(px, py, final_color)
         
         while time.time() - start_time < duration and self.shape_animation_running:
             elapsed = time.time() - start_time
             
-            # Add a new rectangle every 2 seconds
-            if elapsed > 0 and len(appeared_rectangles) < max_rectangles:
-                next_rect_time = len(appeared_rectangles) * 2
-                if elapsed >= next_rect_time:
-                    # Randomly choose horizontal or vertical
-                    is_horizontal = random.choice([True, False])
+            # Add a new triangle every 2 seconds
+            if elapsed > 0 and len(appeared_triangles) < max_triangles:
+                next_triangle_time = len(appeared_triangles) * 2
+                if elapsed >= next_triangle_time:
+                    # Randomly choose direction
+                    direction = random.choice(['up', 'down', 'left', 'right'])
                     color = random.choice(colors)
                     
-                    if is_horizontal:
-                        # Horizontal rectangle: random y position
+                    if direction in ['up', 'down']:
+                        # Horizontal triangles: random y position
                         x = 0
-                        y = random.randint(0, height - rect_horizontal[1])
-                        pos = (x, y, True)
+                        y = random.randint(0, height - triangle_height)
+                        pos = (x, y, direction)
                     else:
-                        # Vertical rectangle: random x position
-                        x = random.randint(0, width - rect_vertical[0])
+                        # Vertical triangles: random x position
+                        x = random.randint(0, width - triangle_height)
                         y = 0
-                        pos = (x, y, False)
+                        pos = (x, y, direction)
                     
-                    appeared_rectangles[pos] = (elapsed, color)
+                    appeared_triangles[pos] = (elapsed, color)
             
             # Clear display
             self.led.clear()
             
-            # Draw all appeared rectangles with fade-in
-            for (x, y, is_horizontal), (appear_time, color) in appeared_rectangles.items():
-                square_age = elapsed - appear_time
-                fade_progress = min(1.0, square_age / 1.0)
+            # Draw all appeared triangles with fade-in
+            for (x, y, direction), (appear_time, color) in appeared_triangles.items():
+                triangle_age = elapsed - appear_time
+                fade_progress = min(1.0, triangle_age / 1.0)
                 fade_intensity = 1.0 - (1.0 - fade_progress) ** 2  # Ease-out
                 
-                if is_horizontal:
-                    rect_w, rect_h = rect_horizontal
-                else:
-                    rect_w, rect_h = rect_vertical
-                
-                # Draw rectangle
-                for dx in range(rect_w):
-                    for dy in range(rect_h):
-                        px = x + dx
-                        py = y + dy
-                        if 0 <= px < width and 0 <= py < height:
-                            final_color = (
-                                int(color[0] * fade_intensity),
-                                int(color[1] * fade_intensity),
-                                int(color[2] * fade_intensity)
-                            )
-                            self.led.set_pixel(px, py, final_color)
+                draw_triangle(x, y, direction, color, fade_intensity)
             
             self.led.show()
             time.sleep(0.05)
-    
+        
         # Fade out
-        print("▬ Fading out rectangles...")
+        print("△ Fading out triangles...")
         fade_out_duration = 3
         fade_out_start = time.time()
         
@@ -1656,114 +1707,121 @@ class LEDDisplayApp:
             fade_out_intensity = 1.0 - (fade_progress ** 2)
             
             self.led.clear()
-            for (x, y, is_horizontal), (_, color) in appeared_rectangles.items():
-                if is_horizontal:
-                    rect_w, rect_h = rect_horizontal
-                else:
-                    rect_w, rect_h = rect_vertical
-                
-                for dx in range(rect_w):
-                    for dy in range(rect_h):
-                        px = x + dx
-                        py = y + dy
-                        if 0 <= px < width and 0 <= py < height:
-                            final_color = (
-                                int(color[0] * fade_out_intensity),
-                                int(color[1] * fade_out_intensity),
-                                int(color[2] * fade_out_intensity)
-                            )
-                            self.led.set_pixel(px, py, final_color)
+            for (x, y, direction), (_, color) in appeared_triangles.items():
+                draw_triangle(x, y, direction, color, fade_out_intensity)
             
             self.led.show()
             time.sleep(0.05)
         
         self.led.clear()
         self.led.show()
-        print("▬ Rectangles animation finished")
+        print("△ Triangles animation finished")
     
     def run_bubbles_shape_animation(self):
-        """Run bubbles animation starting from top, revealing downward."""
+        """Run bubbles animation - using the nature bubbles animation."""
         import math
         # Play audio for this animation
-        self.play_animation_audio('bubbles_shape')
+        self.play_animation_audio('bubbles')
         
         duration = 30
         start_time = time.time()
         width = 32
         height = 48
         
-        print(f"🫧 Bubbles shape animation started")
+        print(f"🫧 Bubbles animation started")
         
-        # Use same bubble colors as current bubbles animation
+        # Bubble colors - soft, translucent colors
         bubble_colors = [
-            (135, 206, 235),  # Sky blue
-            (173, 216, 230),  # Light blue
-            (176, 224, 230),  # Powder blue
-            (224, 255, 255),  # Light cyan
-            (175, 238, 238),  # Pale turquoise
+            (100, 200, 255),  # Light blue
+            (255, 150, 200),  # Pink
+            (200, 255, 150),  # Light green
+            (255, 200, 100),  # Orange
+            (200, 150, 255),  # Purple
+            (150, 255, 200),  # Mint green
+            (255, 100, 150),  # Rose
+            (100, 255, 255),  # Cyan
         ]
         
-        # Initialize bubbles (same as current bubbles but will reveal from top)
-        bubbles = []
-        for _ in range(8):
-            bubble = {
-                'x': random.randint(5, width - 5),
-                'y': random.randint(height // 4, height - 5),  # Start in lower 3/4
-                'radius': random.randint(2, 4),
-                'speed': random.uniform(0.3, 0.6),
-                'color': random.choice(bubble_colors),
-                'initial_y': random.randint(height // 4, height - 5),
-            }
-            bubbles.append(bubble)
+        # Animation parameters
+        bubble_spawn_rate = 0.3  # New bubble every 0.3 seconds
+        max_bubbles = 15  # Maximum number of bubbles on screen
+        bubble_sizes = [2, 3, 4, 5]  # Different bubble sizes
+        rise_speeds = [0.5, 0.8, 1.2, 1.5]  # Different rise speeds
         
-        # Track reveal progress (how much of screen is revealed from top)
-        reveal_start_y = 0  # Start revealing from top
+        # Bubble storage
+        bubbles = []
+        last_spawn_time = 0
         
         while time.time() - start_time < duration and self.shape_animation_running:
-            elapsed = time.time() - start_time
-            
-            # Reveal screen from top - reveal more over time
-            # By end of 30 seconds, reveal the full height
-            reveal_progress = min(1.0, elapsed / duration)
-            reveal_end_y = int(height * reveal_progress)
-            
-            # Update bubbles (move up slowly)
-            for bubble in bubbles:
-                bubble['y'] -= bubble['speed']
-                
-                # Reset bubble if it goes off top
-                if bubble['y'] < -bubble['radius']:
-                    bubble['y'] = height + bubble['radius']
-                    bubble['x'] = random.randint(5, width - 5)
-            
-            # Clear display
+            # Clear display with black background
             self.led.clear()
             
-            # Draw bubbles only if they're in the revealed area
-            for bubble in bubbles:
-                bubble_y = int(bubble['y'])
+            current_time = time.time() - start_time
+            
+            # Spawn new bubbles
+            if current_time - last_spawn_time >= bubble_spawn_rate and len(bubbles) < max_bubbles:
+                bubble = {
+                    'x': random.randint(2, width - 3),
+                    'y': height - 1,  # Start at bottom
+                    'size': random.choice(bubble_sizes),
+                    'speed': random.choice(rise_speeds),
+                    'color': random.choice(bubble_colors),
+                    'wobble_phase': random.uniform(0, 2 * math.pi),
+                    'wobble_amplitude': random.uniform(0.5, 1.5)
+                }
+                bubbles.append(bubble)
+                last_spawn_time = current_time
+            
+            # Update and draw bubbles
+            bubbles_to_remove = []
+            for i, bubble in enumerate(bubbles):
+                # Update bubble position - only upward movement
+                bubble['y'] -= bubble['speed']
+                
+                # No horizontal movement - bubbles move straight up
                 bubble_x = int(bubble['x'])
-                radius = bubble['radius']
+                bubble_y = int(bubble['y'])
+                
+                # Remove bubbles that have risen off screen
+                if bubble_y < -bubble['size']:
+                    bubbles_to_remove.append(i)
+                    continue
+                
+                # Draw bubble with soft, translucent effect
+                size = bubble['size']
                 color = bubble['color']
                 
-                # Only draw if bubble is in revealed area
-                if bubble_y - radius < reveal_end_y:
-                    # Draw bubble circle
-                    for dy in range(-radius, radius + 1):
-                        for dx in range(-radius, radius + 1):
-                            distance = math.sqrt(dx*dx + dy*dy)
-                            if distance <= radius:
-                                px = bubble_x + dx
-                                py = bubble_y + dy
-                                if 0 <= px < width and 0 <= py < height:
-                                    # Only draw if in revealed area
-                                    if py <= reveal_end_y:
-                                        self.led.set_pixel(px, py, color)
+                # Draw bubble with soft edges
+                for dy in range(-size, size + 1):
+                    for dx in range(-size, size + 1):
+                        distance = math.sqrt(dx*dx + dy*dy)
+                        if distance <= size:
+                            x = bubble_x + dx
+                            y = bubble_y + dy
+                            
+                            if 0 <= x < width and 0 <= y < height:
+                                # Create translucent effect
+                                intensity = 1.0 - (distance / size) * 0.5
+                                r = int(color[0] * intensity)
+                                g = int(color[1] * intensity)
+                                b = int(color[2] * intensity)
+                                
+                                # Add some sparkle effect
+                                if random.random() < 0.1:
+                                    r = min(255, r + 50)
+                                    g = min(255, g + 50)
+                                    b = min(255, b + 50)
+                                
+                                self.led.set_pixel(x, y, (r, g, b))
+            
+            # Remove bubbles that are off screen
+            for i in reversed(bubbles_to_remove):
+                bubbles.pop(i)
             
             self.led.show()
-            time.sleep(0.05)
-    
-        # Fade out
+            time.sleep(0.05)  # 20 FPS for smooth bubble movement
+        
+        # Fade out all bubbles smoothly
         print("🫧 Fading out bubbles...")
         fade_out_duration = 3
         fade_out_start = time.time()
@@ -1771,35 +1829,38 @@ class LEDDisplayApp:
         while time.time() - fade_out_start < fade_out_duration and self.shape_animation_running:
             elapsed_fade = time.time() - fade_out_start
             fade_progress = elapsed_fade / fade_out_duration
-            fade_out_intensity = 1.0 - (fade_progress ** 2)
+            fade_out_intensity = 1.0 - (fade_progress ** 2)  # Ease-out
             
             self.led.clear()
+            
+            # Draw all remaining bubbles with fade-out
             for bubble in bubbles:
-                bubble_y = int(bubble['y'])
                 bubble_x = int(bubble['x'])
-                radius = bubble['radius']
+                bubble_y = int(bubble['y'])
+                size = bubble['size']
                 color = bubble['color']
                 
-                for dy in range(-radius, radius + 1):
-                    for dx in range(-radius, radius + 1):
+                for dy in range(-size, size + 1):
+                    for dx in range(-size, size + 1):
                         distance = math.sqrt(dx*dx + dy*dy)
-                        if distance <= radius:
-                            px = bubble_x + dx
-                            py = bubble_y + dy
-                            if 0 <= px < width and 0 <= py < height:
-                                final_color = (
-                                    int(color[0] * fade_out_intensity),
-                                    int(color[1] * fade_out_intensity),
-                                    int(color[2] * fade_out_intensity)
-                                )
-                                self.led.set_pixel(px, py, final_color)
+                        if distance <= size:
+                            x = bubble_x + dx
+                            y = bubble_y + dy
+                            
+                            if 0 <= x < width and 0 <= y < height:
+                                # Combine fade-out with translucent effect
+                                intensity = (1.0 - (distance / size) * 0.5) * fade_out_intensity
+                                r = int(color[0] * intensity)
+                                g = int(color[1] * intensity)
+                                b = int(color[2] * intensity)
+                                self.led.set_pixel(x, y, (r, g, b))
             
             self.led.show()
             time.sleep(0.05)
         
         self.led.clear()
         self.led.show()
-        print("🫧 Bubbles shape animation finished")
+        print("🫧 Bubbles animation finished")
     
     def run_stars_animation(self):
         """Run stars animation - 8 stars appear one by one."""
