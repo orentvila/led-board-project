@@ -1558,49 +1558,77 @@ class LEDDisplayApp:
         print("🔲 Squares animation finished")
     
     def run_triangles_animation(self):
-        """Run triangles animation - triangles appear randomly, fade in, fill screen."""
+        """Run triangles animation - 12 equal triangles appear one by one, filling screen."""
         import math
         # Play audio for this animation
         self.play_animation_audio('triangles')
         
-        duration = 30
-        start_time = time.time()
         width = 32
         height = 48
         
-        # Triangle size: similar to rectangles, one side is full (16/16 = full width or height)
-        # Triangle pointing up/down: base full width (32px), height 2px
-        # Triangle pointing left/right: base full height (48px), width 2px
-        triangle_base_size = max(width, height)  # 48 for vertical, 32 for horizontal
-        triangle_height = 2  # Height of triangle
+        # Divide screen into 12 equal triangles: 4 columns × 3 rows = 12 sections
+        grid_cols = 4
+        grid_rows = 3
+        total_triangles = grid_cols * grid_rows  # 12 triangles
         
-        # Colors
+        # Each section size
+        section_width = width // grid_cols  # 8 pixels
+        section_height = height // grid_rows  # 16 pixels
+        
+        # Colors (8 colors total, will cycle through them)
         colors = [
-            (245, 210, 210),  # #F5D2D2
-            (248, 247, 186),  # #F8F7BA
-            (189, 227, 195),  # #BDE3C3
-            (163, 204, 218),  # #A3CCDA
+            (235, 90, 60),   # #EB5A3C
+            (223, 151, 85),  # #DF9755
+            (231, 210, 131), # #E7D283
+            (237, 244, 194), # #EDF4C2
+            (124, 68, 79),   # #7C444F
+            (159, 82, 85),   # #9F5255
+            (225, 106, 84),  # #E16A54
+            (243, 158, 96),  # #F39E60
         ]
         
-        # Track appeared triangles: {(x, y, direction): (appear_time, color)}
-        # direction: 'up', 'down', 'left', 'right'
+        # Calculate timing: enough time for all triangles to appear + fade-in + fade-out
+        # 12 triangles * 2 seconds = 24 seconds for all to appear
+        # Plus 1 second fade-in for last triangle + 3 seconds fade-out = 28 seconds total
+        triangles_appear_time = total_triangles * 2  # 24 seconds for all triangles
+        fade_in_time = 1  # 1 second fade-in for last triangle
+        fade_out_duration = 3
+        main_animation_duration = triangles_appear_time + fade_in_time  # 25 seconds
+        
+        start_time = time.time()
+        
+        # Generate triangle positions in grid (4×3 grid)
+        triangle_positions = []
+        for row in range(grid_rows):
+            for col in range(grid_cols):
+                x_start = col * section_width
+                y_start = row * section_height
+                # Alternate triangle directions for visual interest
+                direction = 'up' if (row + col) % 2 == 0 else 'down'
+                triangle_positions.append((x_start, y_start, direction))
+        
+        # Track which triangles have appeared: {triangle_index: (appear_time, color)}
         appeared_triangles = {}
-        max_triangles = 20  # Reasonable number to fill screen
         
         print(f"△ Triangles animation started")
         
-        def draw_triangle(px_start, py_start, direction, color, intensity):
-            """Draw a triangle at position."""
+        def draw_triangle_in_section(section_x, section_y, direction, color, intensity):
+            """Draw a triangle filling a section."""
+            # Triangle fills the entire section
             if direction == 'up':
-                # Pointing up: base at bottom
-                base_y = py_start + triangle_height - 1
-                for y in range(triangle_height):
-                    pixels_from_base = triangle_height - 1 - y
-                    width_at_row = triangle_base_size - (pixels_from_base * 2)
-                    x_start = px_start + pixels_from_base
+                # Pointing up: apex at top, base at bottom of section
+                for y in range(section_height):
+                    # Calculate width at this row (narrow at top, wide at bottom)
+                    # When y=0: width=0 (apex), when y=section_height-1: width=full (base)
+                    progress = y / (section_height - 1) if section_height > 1 else 0
+                    width_at_row = int(section_width * progress)
+                    if width_at_row == 0 and y == 0:
+                        width_at_row = 1  # At least 1 pixel at apex
+                    x_offset = (section_width - width_at_row) // 2
+                    
                     for x in range(width_at_row):
-                        px = x_start + x
-                        py = py_start + y
+                        px = section_x + x_offset + x
+                        py = section_y + y
                         if 0 <= px < width and 0 <= py < height:
                             final_color = (
                                 int(color[0] * intensity),
@@ -1608,48 +1636,20 @@ class LEDDisplayApp:
                                 int(color[2] * intensity)
                             )
                             self.led.set_pixel(px, py, final_color)
-            elif direction == 'down':
-                # Pointing down: base at top
-                for y in range(triangle_height):
-                    width_at_row = triangle_base_size - (y * 2)
-                    pixels_from_center = (triangle_base_size - width_at_row) // 2
-                    x_start = px_start + pixels_from_center
+            else:  # direction == 'down'
+                # Pointing down: base at top of section
+                for y in range(section_height):
+                    # Calculate width at this row (narrower toward bottom)
+                    # When y=0: full width, when y=section_height-1: 1 pixel
+                    progress = y / (section_height - 1) if section_height > 1 else 0
+                    width_at_row = int(section_width * (1.0 - progress))
+                    if width_at_row == 0:
+                        width_at_row = 1  # At least 1 pixel at bottom
+                    x_offset = (section_width - width_at_row) // 2
+                    
                     for x in range(width_at_row):
-                        px = x_start + x
-                        py = py_start + y
-                        if 0 <= px < width and 0 <= py < height:
-                            final_color = (
-                                int(color[0] * intensity),
-                                int(color[1] * intensity),
-                                int(color[2] * intensity)
-                            )
-                            self.led.set_pixel(px, py, final_color)
-            elif direction == 'left':
-                # Pointing left: base on right
-                for x in range(triangle_height):
-                    height_at_col = triangle_base_size - (x * 2)
-                    pixels_from_center = (triangle_base_size - height_at_col) // 2
-                    y_start = py_start + pixels_from_center
-                    for y in range(height_at_col):
-                        px = px_start + x
-                        py = y_start + y
-                        if 0 <= px < width and 0 <= py < height:
-                            final_color = (
-                                int(color[0] * intensity),
-                                int(color[1] * intensity),
-                                int(color[2] * intensity)
-                            )
-                            self.led.set_pixel(px, py, final_color)
-            elif direction == 'right':
-                # Pointing right: base on left
-                base_x = px_start + triangle_height - 1
-                for x in range(triangle_height):
-                    pixels_from_base = triangle_height - 1 - x
-                    height_at_col = triangle_base_size - (pixels_from_base * 2)
-                    y_start = py_start + pixels_from_base
-                    for y in range(height_at_col):
-                        px = px_start + x
-                        py = y_start + y
+                        px = section_x + x_offset + x
+                        py = section_y + y
                         if 0 <= px < width and 0 <= py < height:
                             final_color = (
                                 int(color[0] * intensity),
@@ -1658,57 +1658,52 @@ class LEDDisplayApp:
                             )
                             self.led.set_pixel(px, py, final_color)
         
-        while time.time() - start_time < duration and self.shape_animation_running:
+        # Main animation: triangles appear and fade in
+        while time.time() - start_time < main_animation_duration and self.shape_animation_running:
             elapsed = time.time() - start_time
             
             # Add a new triangle every 2 seconds
-            if elapsed > 0 and len(appeared_triangles) < max_triangles:
+            if elapsed > 0 and len(appeared_triangles) < total_triangles:
                 next_triangle_time = len(appeared_triangles) * 2
                 if elapsed >= next_triangle_time:
-                    # Randomly choose direction
-                    direction = random.choice(['up', 'down', 'left', 'right'])
-                    color = random.choice(colors)
+                    # Find a random triangle position that hasn't appeared yet
+                    available_indices = [i for i in range(total_triangles) if i not in appeared_triangles]
                     
-                    if direction in ['up', 'down']:
-                        # Horizontal triangles: random y position
-                        x = 0
-                        y = random.randint(0, height - triangle_height)
-                        pos = (x, y, direction)
-                    else:
-                        # Vertical triangles: random x position
-                        x = random.randint(0, width - triangle_height)
-                        y = 0
-                        pos = (x, y, direction)
-                    
-                    appeared_triangles[pos] = (elapsed, color)
+                    if available_indices:
+                        triangle_idx = random.choice(available_indices)
+                        # Cycle through colors
+                        color = colors[triangle_idx % len(colors)]
+                        appeared_triangles[triangle_idx] = (elapsed, color)
             
             # Clear display
             self.led.clear()
             
             # Draw all appeared triangles with fade-in
-            for (x, y, direction), (appear_time, color) in appeared_triangles.items():
+            for triangle_idx, (appear_time, color) in appeared_triangles.items():
                 triangle_age = elapsed - appear_time
                 fade_progress = min(1.0, triangle_age / 1.0)
                 fade_intensity = 1.0 - (1.0 - fade_progress) ** 2  # Ease-out
                 
-                draw_triangle(x, y, direction, color, fade_intensity)
+                # Get triangle position
+                section_x, section_y, direction = triangle_positions[triangle_idx]
+                draw_triangle_in_section(section_x, section_y, direction, color, fade_intensity)
             
             self.led.show()
             time.sleep(0.05)
         
-        # Fade out
+        # Fade out all triangles smoothly
         print("△ Fading out triangles...")
-        fade_out_duration = 3
         fade_out_start = time.time()
         
         while time.time() - fade_out_start < fade_out_duration and self.shape_animation_running:
             elapsed_fade = time.time() - fade_out_start
             fade_progress = elapsed_fade / fade_out_duration
-            fade_out_intensity = 1.0 - (fade_progress ** 2)
+            fade_out_intensity = 1.0 - (fade_progress ** 2)  # Ease-out
             
             self.led.clear()
-            for (x, y, direction), (_, color) in appeared_triangles.items():
-                draw_triangle(x, y, direction, color, fade_out_intensity)
+            for triangle_idx, (_, color) in appeared_triangles.items():
+                section_x, section_y, direction = triangle_positions[triangle_idx]
+                draw_triangle_in_section(section_x, section_y, direction, color, fade_out_intensity)
             
             self.led.show()
             time.sleep(0.05)
@@ -1746,7 +1741,7 @@ class LEDDisplayApp:
         bubble_spawn_rate = 0.3  # New bubble every 0.3 seconds
         max_bubbles = 15  # Maximum number of bubbles on screen
         bubble_sizes = [2, 3, 4, 5]  # Different bubble sizes
-        rise_speeds = [0.5, 0.8, 1.2, 1.5]  # Different rise speeds
+        rise_speeds = [0.3, 0.5, 0.7, 0.9]  # Slower rise speeds
         
         # Bubble storage
         bubbles = []
