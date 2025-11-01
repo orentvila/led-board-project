@@ -76,6 +76,11 @@ class LEDDisplayApp:
         self.current_object_index = 0
         self.objects_animation_running = False
         
+        # Clock/House animation cycling for Button 27
+        self.show_clock_first = True
+        self.clock_animation_running = False
+        self.house_animation_running = False
+        
         # Initialize audio system
         self.audio_available = False
         if AUDIO_AVAILABLE:
@@ -1085,7 +1090,7 @@ class LEDDisplayApp:
                                 random.random() < 0.6):  # Random smoke texture
                                 self.led.set_pixel(smoke_x, smoke_y, color)
         
-        while time.time() - start_time < duration and self.objects_animation_running and not getattr(self, 'animation_stop_flag', False):
+        while time.time() - start_time < duration and (self.objects_animation_running or self.house_animation_running) and not getattr(self, 'animation_stop_flag', False):
             elapsed = time.time() - start_time
             
             # Clear display
