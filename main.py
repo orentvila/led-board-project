@@ -71,7 +71,7 @@ class LEDDisplayApp:
         
         # Objects animation system
         self.objects_animations = [
-            "house", "clock", "traffic_lights", "umbrella"
+            "house", "clock", "traffic_lights"
         ]
         self.current_object_index = 0
         self.objects_animation_running = False
@@ -107,7 +107,6 @@ class LEDDisplayApp:
             'house': 'house.wav',
             'clock': 'clock.wav',
             'traffic_lights': 'traffic_lights.wav',
-            'umbrella': 'umbrella.wav',
         }
         
         # Setup signal handlers for graceful shutdown
@@ -2078,7 +2077,7 @@ class LEDDisplayApp:
         # Cycle to next object with bounds checking
         self.current_object_index = (self.current_object_index + 1) % len(self.objects_animations)
         
-        object_names = ["House", "Clock", "Traffic Lights", "Umbrella"]
+        object_names = ["House", "Clock", "Traffic Lights"]
         
         # Ensure index is within bounds
         if self.current_object_index >= len(object_names):
@@ -2111,8 +2110,6 @@ class LEDDisplayApp:
                 self.run_clock_objects_animation()
             elif self.current_object_index == 2:
                 self.run_traffic_lights_animation()
-            elif self.current_object_index == 3:
-                self.run_umbrella_animation()
             else:
                 print(f"⚠️ Unknown object index: {self.current_object_index}")
         finally:
@@ -2262,6 +2259,9 @@ class LEDDisplayApp:
         off_color = (40, 40, 40)  # Dark gray when off
         fixture_color = (60, 60, 60)  # Dark gray for fixture
         
+        # Light spacing for positioning
+        light_spacing = 5  # Space between lights
+        
         # Track which lights are on
         current_light = None  # 'red', 'yellow', 'green', or None
         
@@ -2340,137 +2340,6 @@ class LEDDisplayApp:
             time.sleep(0.05)  # 20 FPS
         
         print("🚦 Traffic lights animation finished")
-        time.sleep(2)
-        
-        # Clear display
-        self.led.clear()
-        self.led.show()
-    
-    def run_umbrella_animation(self):
-        """Run umbrella animation - starts closed and opens over 20 seconds."""
-        import math
-        # Play audio for this animation
-        self.play_animation_audio('umbrella')
-        
-        open_duration = 20  # Opening animation
-        static_duration = 5  # Stay open static
-        total_duration = open_duration + static_duration
-        start_time = time.time()
-        width = 32
-        height = 48
-        
-        print(f"☂️ Umbrella animation started")
-        
-        # Colors
-        colors = [
-            (119, 190, 240),  # #77BEF0
-            (255, 203, 97),   # #FFCB61
-            (255, 137, 79),   # #FF894F
-            (234, 91, 111),   # #EA5B6F
-        ]
-        
-        # Umbrella dimensions
-        umbrella_center_x = width // 2
-        # Umbrella bottom should be at bottom of screen
-        # Calculate center_y based on handle length and max radius
-        handle_length = 35  # Long enough to reach bottom
-        max_radius = 16  # Maximum open radius (but will only open half way = 8)
-        umbrella_center_y = height - handle_length  # Position so handle reaches bottom
-        # Actually, let's position it so the canopy center is higher, but handle goes to bottom
-        canopy_center_y = height - handle_length - max_radius // 2  # Center of canopy
-        
-        def draw_umbrella(open_progress):
-            """Draw umbrella with opening animation."""
-            # open_progress: 0 (closed) to 0.5 (half open - max)
-            # Limit to half opening
-            limited_progress = min(open_progress, 0.5)
-            
-            # Calculate current radius based on opening progress (max half of max_radius)
-            current_radius = (max_radius // 2) * (limited_progress * 2)  # Scale 0-0.5 to 0-max_radius/2
-            
-            # Draw handle (vertical line from canopy center down to bottom)
-            handle_start_y = canopy_center_y
-            handle_end_y = height - 1  # Bottom of screen
-            
-            for y in range(handle_start_y, min(handle_end_y, height)):
-                if 0 <= umbrella_center_x < width and 0 <= y < height:
-                    self.led.set_pixel(umbrella_center_x, y, (100, 100, 100))  # Dark gray handle
-            
-            # Draw umbrella canopy
-            if limited_progress > 0:
-                # Create segments (8 segments for umbrella)
-                num_segments = 8
-                for segment in range(num_segments):
-                    # Each segment gets a different color
-                    segment_color = colors[segment % len(colors)]
-                    
-                    # Calculate segment angles
-                    start_angle = (segment * 360 / num_segments) - 90  # Start at top (-90 degrees)
-                    end_angle = ((segment + 1) * 360 / num_segments) - 90
-                    
-                    # Draw segment as a pie slice
-                    for y in range(height):
-                        for x in range(width):
-                            dx = x - umbrella_center_x
-                            dy = y - canopy_center_y
-                            distance = math.sqrt(dx*dx + dy*dy)
-                            
-                            # Check if pixel is within current radius
-                            if distance <= current_radius:
-                                # Calculate angle of this pixel
-                                angle = math.degrees(math.atan2(dy, dx))
-                                # Normalize angle to 0-360
-                                if angle < 0:
-                                    angle += 360
-                                
-                                # Check if angle is within segment range
-                                if start_angle <= angle < end_angle or (start_angle > end_angle and (angle >= start_angle or angle < end_angle)):
-                                    # Only draw if above the handle start (in the canopy area)
-                                    if y < handle_start_y:
-                                        self.led.set_pixel(x, y, segment_color)
-            
-            # Draw handle tip (small circle at bottom)
-            handle_tip_y = height - 1
-            if 0 <= umbrella_center_x < width and 0 <= handle_tip_y < height:
-                self.led.set_pixel(umbrella_center_x, handle_tip_y, (100, 100, 100))
-                if umbrella_center_x - 1 >= 0:
-                    self.led.set_pixel(umbrella_center_x - 1, handle_tip_y, (100, 100, 100))
-                if umbrella_center_x + 1 < width:
-                    self.led.set_pixel(umbrella_center_x + 1, handle_tip_y, (100, 100, 100))
-        
-        # Opening phase (opens only half way)
-        while time.time() - start_time < open_duration and self.objects_animation_running and not getattr(self, 'animation_stop_flag', False):
-            elapsed = time.time() - start_time
-            open_progress = min(0.5, elapsed / open_duration)  # Max 0.5 (half open)
-            
-            # Clear display
-            self.led.clear()
-            
-            # Draw umbrella with current opening progress
-            draw_umbrella(open_progress)
-            
-            # Show the frame
-            self.led.show()
-            
-            # Frame rate
-            time.sleep(0.05)  # 20 FPS
-        
-        # Static open phase - keep umbrella half open for 5 seconds
-        static_start = time.time()
-        while time.time() - static_start < static_duration and self.objects_animation_running and not getattr(self, 'animation_stop_flag', False):
-            # Clear display
-            self.led.clear()
-            
-            # Draw half-open umbrella (0.5 progress)
-            draw_umbrella(0.5)
-            
-            # Show the frame
-            self.led.show()
-            
-            # Frame rate
-            time.sleep(0.05)  # 20 FPS
-        
-        print("☂️ Umbrella animation finished")
         time.sleep(2)
         
         # Clear display
