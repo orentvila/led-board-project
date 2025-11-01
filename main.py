@@ -1566,13 +1566,13 @@ class LEDDisplayApp:
         width = 32
         height = 48
         
-        # Divide screen into 12 equal triangles: 4 columns × 3 rows = 12 sections
-        grid_cols = 4
+        # Divide screen into 24 equal triangles: 8 columns × 3 rows = 24 sections
+        grid_cols = 8
         grid_rows = 3
-        total_triangles = grid_cols * grid_rows  # 12 triangles
+        total_triangles = grid_cols * grid_rows  # 24 triangles
         
         # Each section size
-        section_width = width // grid_cols  # 8 pixels
+        section_width = width // grid_cols  # 4 pixels
         section_height = height // grid_rows  # 16 pixels
         
         # Colors (8 colors total, will cycle through them)
@@ -1588,16 +1588,19 @@ class LEDDisplayApp:
         ]
         
         # Calculate timing: enough time for all triangles to appear + fade-in + fade-out
-        # 12 triangles * 2 seconds = 24 seconds for all to appear
-        # Plus 1 second fade-in for last triangle + 3 seconds fade-out = 28 seconds total
-        triangles_appear_time = total_triangles * 2  # 24 seconds for all triangles
+        # 24 triangles, but we want to fit in ~30 seconds total
+        # Adjust: triangles appear faster so all fit in 30 seconds total
+        # 24 triangles * 1.1 seconds = 26.4 seconds for all to appear
+        # Plus 1 second fade-in for last triangle + 3 seconds fade-out = ~30 seconds total
+        time_between_triangles = 1.1  # Slightly faster than 2 seconds
+        triangles_appear_time = total_triangles * time_between_triangles  # ~26.4 seconds for all triangles
         fade_in_time = 1  # 1 second fade-in for last triangle
         fade_out_duration = 3
-        main_animation_duration = triangles_appear_time + fade_in_time  # 25 seconds
+        main_animation_duration = triangles_appear_time + fade_in_time  # ~27.4 seconds
         
         start_time = time.time()
         
-        # Generate triangle positions in grid (4×3 grid)
+        # Generate triangle positions in grid (8×3 grid = 24 triangles)
         # Each section will have a right-angled triangle that fills it completely
         triangle_positions = []
         for row in range(grid_rows):
@@ -1714,9 +1717,9 @@ class LEDDisplayApp:
         while time.time() - start_time < main_animation_duration and self.shape_animation_running:
             elapsed = time.time() - start_time
             
-            # Add a new triangle every 2 seconds
+            # Add a new triangle at regular intervals
             if elapsed > 0 and len(appeared_triangles) < total_triangles:
-                next_triangle_time = len(appeared_triangles) * 2
+                next_triangle_time = len(appeared_triangles) * time_between_triangles
                 if elapsed >= next_triangle_time:
                     # Find a random triangle position that hasn't appeared yet
                     available_indices = [i for i in range(total_triangles) if i not in appeared_triangles]
