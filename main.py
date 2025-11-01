@@ -69,10 +69,12 @@ class LEDDisplayApp:
         self.current_nature_index = 0
         self.nature_animation_running = False
         
-        # House animation system
-        self.house_animation_running = False
-        self.clock_animation_running = False
-        self.show_clock_first = True  # Flag to cycle between clock and house
+        # Objects animation system
+        self.objects_animations = [
+            "house", "clock", "traffic_lights", "umbrella"
+        ]
+        self.current_object_index = 0
+        self.objects_animation_running = False
         
         # Initialize audio system
         self.audio_available = False
@@ -93,12 +95,14 @@ class LEDDisplayApp:
             'rain': 'rain.wav',
             'growing_flowers': 'growing_flowers.wav',
             'apple_tree': 'apple_tree.wav',
-            'house': 'house.wav',
-            'clock': 'clock.wav',
             'squares': 'squares.wav',
             'triangles': 'triangles.wav',
             'bubbles': 'bubbles.wav',
             'stars': 'stars.wav',
+            'house': 'house.wav',
+            'clock': 'clock.wav',
+            'traffic_lights': 'traffic_lights.wav',
+            'umbrella': 'umbrella.wav',
         }
         
         # Setup signal handlers for graceful shutdown
@@ -116,8 +120,8 @@ class LEDDisplayApp:
         self.button_controller.register_callback(1, self.start_nature_animation)
         # Button 27 (index 2) - Clock/House animation (cycle between them)
         self.button_controller.register_callback(2, self.start_clock_or_house_animation)
-        # Button 22 (index 3) - Squares animation
-        self.button_controller.register_callback(3, self.start_squares_animation)
+        # Button 22 (index 3) - Objects animations
+        self.button_controller.register_callback(3, self.start_objects_animation)
     
     def play_animation_audio(self, animation_name):
         """Play audio for the specified animation."""
@@ -1081,7 +1085,7 @@ class LEDDisplayApp:
                                 random.random() < 0.6):  # Random smoke texture
                                 self.led.set_pixel(smoke_x, smoke_y, color)
         
-        while time.time() - start_time < duration and self.house_animation_running and not getattr(self, 'animation_stop_flag', False):
+        while time.time() - start_time < duration and self.objects_animation_running and not getattr(self, 'animation_stop_flag', False):
             elapsed = time.time() - start_time
             
             # Clear display
@@ -2053,15 +2057,420 @@ class LEDDisplayApp:
         self.current_pattern.daemon = False  # Don't use daemon threads
         self.current_pattern.start()
     
-    def start_squares_animation(self):
-        """Start squares animation pattern."""
-        print("Starting squares animation")
+    def start_objects_animation(self):
+        """Start objects animation - cycles through different objects."""
+        print("🎯 Starting objects animation...")
         self.stop_current_pattern()
-        time.sleep(0.1)  # Ensure everything is stopped
-        # self.current_pattern = threading.Thread(target=self.squares_animation.run_animation)  # File not found
-        # self.current_pattern.daemon = False  # Don't use daemon threads
-        # self.current_pattern.start()
-        print("⚠️ Squares animation not available - file not found")
+        
+        # Small delay to ensure everything is stopped
+        time.sleep(0.1)
+        
+        # Ensure we have animations available
+        if not self.objects_animations:
+            print("⚠️ No object animations available")
+            return
+        
+        # Cycle to next object with bounds checking
+        self.current_object_index = (self.current_object_index + 1) % len(self.objects_animations)
+        
+        object_names = ["House", "Clock", "Traffic Lights", "Umbrella"]
+        
+        # Ensure index is within bounds
+        if self.current_object_index >= len(object_names):
+            self.current_object_index = 0
+        
+        object_name = object_names[self.current_object_index]
+        
+        print(f"🎬 Starting {object_name} animation...")
+        
+        # Start the object animation as a thread
+        self.current_pattern = threading.Thread(target=self.run_objects_animation)
+        self.current_pattern.daemon = False  # Don't use daemon threads
+        self.current_pattern.start()
+        
+        print(f"✅ Started {object_name} animation")
+    
+    def run_objects_animation(self):
+        """Run the current object animation."""
+        self.objects_animation_running = True
+        
+        try:
+            # Ensure index is within bounds
+            if self.current_object_index >= len(self.objects_animations):
+                self.current_object_index = 0
+                print("⚠️ Object index out of bounds, resetting to 0")
+            
+            if self.current_object_index == 0:
+                self.run_house_animation()
+            elif self.current_object_index == 1:
+                self.run_clock_objects_animation()
+            elif self.current_object_index == 2:
+                self.run_traffic_lights_animation()
+            elif self.current_object_index == 3:
+                self.run_umbrella_animation()
+            else:
+                print(f"⚠️ Unknown object index: {self.current_object_index}")
+        finally:
+            self.objects_animation_running = False
+    
+    def run_clock_objects_animation(self):
+        """Run clock animation with moving hands in a circle."""
+        import math
+        # Play audio for this animation
+        self.play_animation_audio('clock')
+        
+        duration = 20
+        start_time = time.time()
+        width = 32
+        height = 48
+        
+        # Colors
+        clock_fill = (108, 36, 152)  # #6C2498
+        white = (255, 255, 255)      # White border and hands
+        
+        # Clock dimensions - radius of 30 LEDs (but limited by screen size)
+        # Screen is 32×48, so max radius is 16 (width) or 24 (height)
+        # Use 24 to get as close to 30 as possible while fitting on screen
+        clock_center_x = width // 2
+        clock_center_y = height // 2
+        clock_radius = 24  # Maximum radius that fits on 48px tall screen
+        
+        # Hand parameters - don't touch border
+        hand_inner_radius = 3  # Small center circle
+        hand_outer_radius = clock_radius - 4  # Hands stop before border
+        
+        print(f"🕐 Clock animation started")
+        
+        def draw_clock(elapsed_time):
+            """Draw the complete clock with moving hands."""
+            # Draw white border (outer ring)
+            for angle in range(0, 360, 1):
+                rad = math.radians(angle)
+                x = int(clock_center_x + clock_radius * math.cos(rad))
+                y = int(clock_center_y + clock_radius * math.sin(rad))
+                if 0 <= x < width and 0 <= y < height:
+                    self.led.set_pixel(x, y, white)
+            
+            # Draw filled clock face (#6C2498)
+            for y in range(height):
+                for x in range(width):
+                    dx = x - clock_center_x
+                    dy = y - clock_center_y
+                    distance = math.sqrt(dx*dx + dy*dy)
+                    if distance < clock_radius:
+                        self.led.set_pixel(x, y, clock_fill)
+            
+            # Redraw white border on top of fill
+            for angle in range(0, 360, 1):
+                rad = math.radians(angle)
+                x = int(clock_center_x + clock_radius * math.cos(rad))
+                y = int(clock_center_y + clock_radius * math.sin(rad))
+                if 0 <= x < width and 0 <= y < height:
+                    self.led.set_pixel(x, y, white)
+            
+            # Calculate hand positions based on elapsed time
+            # Minutes hand: full rotation in 60 seconds
+            minutes_angle = (elapsed_time * 360 / 60) % 360
+            # Hours hand: full rotation in 12 * 60 = 720 seconds
+            hours_angle = (elapsed_time * 360 / 720) % 360
+            
+            # Draw minute hand (longer)
+            minutes_rad = math.radians(minutes_angle - 90)  # -90 to start at 12 o'clock
+            for r in range(hand_inner_radius, int(hand_outer_radius * 0.9)):  # Minutes hand is 90% of max
+                px = int(clock_center_x + r * math.cos(minutes_rad))
+                py = int(clock_center_y + r * math.sin(minutes_rad))
+                if 0 <= px < width and 0 <= py < height:
+                    # Check distance from center to ensure it's inside the circle
+                    dist_from_center = math.sqrt((px - clock_center_x)**2 + (py - clock_center_y)**2)
+                    if dist_from_center < clock_radius:
+                        self.led.set_pixel(px, py, white)
+            
+            # Draw hour hand (shorter)
+            hours_rad = math.radians(hours_angle - 90)  # -90 to start at 12 o'clock
+            for r in range(hand_inner_radius, int(hand_outer_radius * 0.6)):  # Hours hand is 60% of max
+                px = int(clock_center_x + r * math.cos(hours_rad))
+                py = int(clock_center_y + r * math.sin(hours_rad))
+                if 0 <= px < width and 0 <= py < height:
+                    # Check distance from center to ensure it's inside the circle
+                    dist_from_center = math.sqrt((px - clock_center_x)**2 + (py - clock_center_y)**2)
+                    if dist_from_center < clock_radius:
+                        self.led.set_pixel(px, py, white)
+            
+            # Draw center circle (white)
+            for dy in range(-hand_inner_radius, hand_inner_radius + 1):
+                for dx in range(-hand_inner_radius, hand_inner_radius + 1):
+                    dist = math.sqrt(dx*dx + dy*dy)
+                    if dist <= hand_inner_radius:
+                        px = clock_center_x + dx
+                        py = clock_center_y + dy
+                        if 0 <= px < width and 0 <= py < height:
+                            self.led.set_pixel(px, py, white)
+        
+        while time.time() - start_time < duration and self.objects_animation_running and not getattr(self, 'animation_stop_flag', False):
+            elapsed = time.time() - start_time
+            
+            # Clear display
+            self.led.clear()
+            
+            # Draw clock with moving hands
+            draw_clock(elapsed)
+            
+            # Show the frame
+            self.led.show()
+            
+            # Frame rate
+            time.sleep(0.05)  # 20 FPS
+        
+        # Keep final frame for a moment
+        print("🕐 Clock animation finished")
+        time.sleep(2)
+        
+        # Clear display
+        self.led.clear()
+        self.led.show()
+    
+    def run_traffic_lights_animation(self):
+        """Run traffic lights animation - different lights turn on every 5 seconds."""
+        import math
+        # Play audio for this animation
+        self.play_animation_audio('traffic_lights')
+        
+        duration = 20
+        start_time = time.time()
+        width = 32
+        height = 48
+        
+        print(f"🚦 Traffic lights animation started")
+        
+        # Traffic light fixture size: 40×24 (but screen is 32×48, so scale to fit)
+        # Scale proportionally: 40×24 -> 32×19 (maintains aspect ratio)
+        # But let's use 32×24 to make it more visible (stretches slightly)
+        fixture_width = 32  # Full width of screen
+        fixture_height = 24  # Half height of screen
+        
+        # Position traffic lights in center
+        fixture_x = 0  # Start at left edge
+        fixture_y = (height - fixture_height) // 2  # Center vertically
+        
+        # Light colors
+        red_light = (255, 0, 0)
+        yellow_light = (255, 255, 0)
+        green_light = (0, 255, 0)
+        off_color = (40, 40, 40)  # Dark gray when off
+        fixture_color = (60, 60, 60)  # Dark gray for fixture
+        
+        # Light positions within fixture (3 lights: red on top, yellow middle, green bottom)
+        light_size = 8  # Each light is 8 pixels in diameter
+        light_spacing = 8
+        fixture_center_x = fixture_x + fixture_width // 2
+        
+        red_light_y = fixture_y + light_size // 2
+        yellow_light_y = fixture_y + fixture_height // 2
+        green_light_y = fixture_y + fixture_height - light_size // 2
+        
+        # Track which lights are on
+        current_light = None  # 'red', 'yellow', 'green', or None
+        
+        def draw_traffic_lights(active_light):
+            """Draw traffic light fixture with active light."""
+            # Draw fixture background
+            for y in range(fixture_y, fixture_y + fixture_height):
+                for x in range(fixture_x, fixture_x + fixture_width):
+                    if 0 <= x < width and 0 <= y < height:
+                        self.led.set_pixel(x, y, fixture_color)
+            
+            # Draw red light
+            light_color = red_light if active_light == 'red' else off_color
+            for dy in range(-light_size//2, light_size//2 + 1):
+                for dx in range(-light_size//2, light_size//2 + 1):
+                    dist = math.sqrt(dx*dx + dy*dy)
+                    if dist <= light_size // 2:
+                        px = fixture_center_x + dx
+                        py = red_light_y + dy
+                        if 0 <= px < width and 0 <= py < height:
+                            self.led.set_pixel(px, py, light_color)
+            
+            # Draw yellow light
+            light_color = yellow_light if active_light == 'yellow' else off_color
+            for dy in range(-light_size//2, light_size//2 + 1):
+                for dx in range(-light_size//2, light_size//2 + 1):
+                    dist = math.sqrt(dx*dx + dy*dy)
+                    if dist <= light_size // 2:
+                        px = fixture_center_x + dx
+                        py = yellow_light_y + dy
+                        if 0 <= px < width and 0 <= py < height:
+                            self.led.set_pixel(px, py, light_color)
+            
+            # Draw green light
+            light_color = green_light if active_light == 'green' else off_color
+            for dy in range(-light_size//2, light_size//2 + 1):
+                for dx in range(-light_size//2, light_size//2 + 1):
+                    dist = math.sqrt(dx*dx + dy*dy)
+                    if dist <= light_size // 2:
+                        px = fixture_center_x + dx
+                        py = green_light_y + dy
+                        if 0 <= px < width and 0 <= py < height:
+                            self.led.set_pixel(px, py, light_color)
+        
+        while time.time() - start_time < duration and self.objects_animation_running and not getattr(self, 'animation_stop_flag', False):
+            elapsed = time.time() - start_time
+            
+            # Determine which light should be on based on elapsed time
+            # Every 5 seconds, a different light turns on
+            light_phase = int(elapsed / 5) % 4  # 0=none, 1=red, 2=yellow, 3=green
+            
+            if light_phase == 0:
+                current_light = None  # No lights
+            elif light_phase == 1:
+                current_light = 'red'
+            elif light_phase == 2:
+                current_light = 'yellow'
+            else:
+                current_light = 'green'
+            
+            # Clear display
+            self.led.clear()
+            
+            # Draw traffic lights
+            draw_traffic_lights(current_light)
+            
+            # Show the frame
+            self.led.show()
+            
+            # Frame rate
+            time.sleep(0.05)  # 20 FPS
+        
+        print("🚦 Traffic lights animation finished")
+        time.sleep(2)
+        
+        # Clear display
+        self.led.clear()
+        self.led.show()
+    
+    def run_umbrella_animation(self):
+        """Run umbrella animation - starts closed and opens over 20 seconds."""
+        import math
+        # Play audio for this animation
+        self.play_animation_audio('umbrella')
+        
+        open_duration = 20  # Opening animation
+        static_duration = 5  # Stay open static
+        total_duration = open_duration + static_duration
+        start_time = time.time()
+        width = 32
+        height = 48
+        
+        print(f"☂️ Umbrella animation started")
+        
+        # Colors
+        colors = [
+            (119, 190, 240),  # #77BEF0
+            (255, 203, 97),   # #FFCB61
+            (255, 137, 79),   # #FF894F
+            (234, 91, 111),   # #EA5B6F
+        ]
+        
+        # Umbrella dimensions
+        umbrella_center_x = width // 2
+        umbrella_center_y = height // 4  # Top quarter of screen
+        max_radius = 16  # Maximum open radius
+        handle_length = 20  # Length of handle
+        
+        def draw_umbrella(open_progress):
+            """Draw umbrella with opening animation."""
+            # open_progress: 0 (closed) to 1 (fully open)
+            
+            # Calculate current radius based on opening progress
+            current_radius = max_radius * open_progress
+            
+            # Draw handle (vertical line from umbrella center down)
+            handle_start_y = umbrella_center_y
+            handle_end_y = umbrella_center_y + handle_length
+            
+            for y in range(handle_start_y, min(handle_end_y, height)):
+                if 0 <= umbrella_center_x < width and 0 <= y < height:
+                    self.led.set_pixel(umbrella_center_x, y, (100, 100, 100))  # Dark gray handle
+            
+            # Draw umbrella canopy
+            if open_progress > 0:
+                # Create segments (8 segments for umbrella)
+                num_segments = 8
+                for segment in range(num_segments):
+                    # Each segment gets a different color
+                    segment_color = colors[segment % len(colors)]
+                    
+                    # Calculate segment angles
+                    start_angle = (segment * 360 / num_segments) - 90  # Start at top (-90 degrees)
+                    end_angle = ((segment + 1) * 360 / num_segments) - 90
+                    
+                    # Draw segment as a pie slice
+                    for y in range(height):
+                        for x in range(width):
+                            dx = x - umbrella_center_x
+                            dy = y - umbrella_center_y
+                            distance = math.sqrt(dx*dx + dy*dy)
+                            
+                            # Check if pixel is within current radius
+                            if distance <= current_radius:
+                                # Calculate angle of this pixel
+                                angle = math.degrees(math.atan2(dy, dx))
+                                # Normalize angle to 0-360
+                                if angle < 0:
+                                    angle += 360
+                                
+                                # Check if angle is within segment range
+                                if start_angle <= angle < end_angle or (start_angle > end_angle and (angle >= start_angle or angle < end_angle)):
+                                    # Only draw if above the handle (in the canopy area)
+                                    if y < umbrella_center_y:
+                                        self.led.set_pixel(x, y, segment_color)
+            
+            # Draw handle tip (small circle at bottom)
+            handle_tip_y = min(umbrella_center_y + handle_length, height - 1)
+            if 0 <= umbrella_center_x < width and 0 <= handle_tip_y < height:
+                self.led.set_pixel(umbrella_center_x, handle_tip_y, (100, 100, 100))
+                if umbrella_center_x - 1 >= 0:
+                    self.led.set_pixel(umbrella_center_x - 1, handle_tip_y, (100, 100, 100))
+                if umbrella_center_x + 1 < width:
+                    self.led.set_pixel(umbrella_center_x + 1, handle_tip_y, (100, 100, 100))
+        
+        # Opening phase
+        while time.time() - start_time < open_duration and self.objects_animation_running and not getattr(self, 'animation_stop_flag', False):
+            elapsed = time.time() - start_time
+            open_progress = min(1.0, elapsed / open_duration)
+            
+            # Clear display
+            self.led.clear()
+            
+            # Draw umbrella with current opening progress
+            draw_umbrella(open_progress)
+            
+            # Show the frame
+            self.led.show()
+            
+            # Frame rate
+            time.sleep(0.05)  # 20 FPS
+        
+        # Static open phase - keep umbrella fully open for 5 seconds
+        static_start = time.time()
+        while time.time() - static_start < static_duration and self.objects_animation_running and not getattr(self, 'animation_stop_flag', False):
+            # Clear display
+            self.led.clear()
+            
+            # Draw fully open umbrella
+            draw_umbrella(1.0)
+            
+            # Show the frame
+            self.led.show()
+            
+            # Frame rate
+            time.sleep(0.05)  # 20 FPS
+        
+        print("☂️ Umbrella animation finished")
+        time.sleep(2)
+        
+        # Clear display
+        self.led.clear()
+        self.led.show()
     
     def stop_current_pattern(self):
         """Stop the currently running pattern."""
@@ -2166,7 +2575,7 @@ class LEDDisplayApp:
         print("  Button 18: Shapes animation")
         print("  Button 17: Nature animations")
         print("  Button 27: Lion animation")
-        print("  Button 22: Squares animation")
+        print("  Button 22: Objects animation")
         
         try:
             while self.running:
