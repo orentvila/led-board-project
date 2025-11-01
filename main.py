@@ -2242,10 +2242,10 @@ class LEDDisplayApp:
         
         print(f"🚦 Traffic lights animation started")
         
-        # Traffic light fixture - wider than lights but thinner
-        light_size = 8  # Each light is 8 pixels in diameter
-        fixture_width = 12  # Wider than light circles (8), but not too wide
-        fixture_height = 20  # Thinner than before
+        # Traffic light fixture - longer rectangle
+        light_radius = 4  # Each light is 8 pixels in diameter (radius = 4)
+        fixture_width = 12  # Wider than light circles
+        fixture_height = 36  # Longer/taller rectangle
         
         # Position traffic lights in center
         fixture_center_x = width // 2  # Center horizontally
@@ -2259,57 +2259,47 @@ class LEDDisplayApp:
         off_color = (40, 40, 40)  # Dark gray when off
         fixture_color = (60, 60, 60)  # Dark gray for fixture
         
-        # Light spacing for positioning
-        light_spacing = 5  # Space between lights
+        # Light positions - evenly spaced vertically in the fixture
+        light_spacing = 8  # Space between light centers
+        red_light_y = fixture_y + light_spacing  # Top light
+        yellow_light_y = fixture_y + fixture_height // 2  # Middle light
+        green_light_y = fixture_y + fixture_height - light_spacing  # Bottom light
         
         # Track which lights are on
         current_light = None  # 'red', 'yellow', 'green', or None
         
+        def draw_circle(center_x, center_y, radius, color):
+            """Draw a perfect circle."""
+            for dy in range(-radius, radius + 1):
+                for dx in range(-radius, radius + 1):
+                    # Calculate distance from center
+                    dist = math.sqrt(dx*dx + dy*dy)
+                    # Only draw if within circle radius (perfect circle)
+                    if dist <= radius:
+                        px = center_x + dx
+                        py = center_y + dy
+                        if 0 <= px < width and 0 <= py < height:
+                            self.led.set_pixel(px, py, color)
+        
         def draw_traffic_lights(active_light):
             """Draw traffic light fixture with active light."""
-            # Draw fixture background (wider than lights)
+            # Draw fixture background (longer rectangle)
             for y in range(fixture_y, fixture_y + fixture_height):
                 for x in range(fixture_x, fixture_x + fixture_width):
                     if 0 <= x < width and 0 <= y < height:
                         self.led.set_pixel(x, y, fixture_color)
             
-            # Calculate light positions evenly spaced
-            red_light_y = fixture_y + light_spacing
-            yellow_light_y = fixture_y + fixture_height // 2
-            green_light_y = fixture_y + fixture_height - light_spacing
-            
-            # Draw red light
+            # Draw red light (top) - perfect circle
             light_color = red_light if active_light == 'red' else off_color
-            for dy in range(-light_size//2, light_size//2 + 1):
-                for dx in range(-light_size//2, light_size//2 + 1):
-                    dist = math.sqrt(dx*dx + dy*dy)
-                    if dist <= light_size // 2:
-                        px = fixture_center_x + dx
-                        py = red_light_y + dy
-                        if 0 <= px < width and 0 <= py < height:
-                            self.led.set_pixel(px, py, light_color)
+            draw_circle(fixture_center_x, red_light_y, light_radius, light_color)
             
-            # Draw yellow light
+            # Draw yellow light (middle) - perfect circle
             light_color = yellow_light if active_light == 'yellow' else off_color
-            for dy in range(-light_size//2, light_size//2 + 1):
-                for dx in range(-light_size//2, light_size//2 + 1):
-                    dist = math.sqrt(dx*dx + dy*dy)
-                    if dist <= light_size // 2:
-                        px = fixture_center_x + dx
-                        py = yellow_light_y + dy
-                        if 0 <= px < width and 0 <= py < height:
-                            self.led.set_pixel(px, py, light_color)
+            draw_circle(fixture_center_x, yellow_light_y, light_radius, light_color)
             
-            # Draw green light
+            # Draw green light (bottom) - perfect circle
             light_color = green_light if active_light == 'green' else off_color
-            for dy in range(-light_size//2, light_size//2 + 1):
-                for dx in range(-light_size//2, light_size//2 + 1):
-                    dist = math.sqrt(dx*dx + dy*dy)
-                    if dist <= light_size // 2:
-                        px = fixture_center_x + dx
-                        py = green_light_y + dy
-                        if 0 <= px < width and 0 <= py < height:
-                            self.led.set_pixel(px, py, light_color)
+            draw_circle(fixture_center_x, green_light_y, light_radius, light_color)
         
         while time.time() - start_time < duration and self.objects_animation_running and not getattr(self, 'animation_stop_flag', False):
             elapsed = time.time() - start_time
