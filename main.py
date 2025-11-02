@@ -78,8 +78,7 @@ class LEDDisplayApp:
         
         # Animals animation system for Button 27
         self.animals_animations = [
-            "cat",
-            "duck"
+            "horse"
         ]
         self.current_animals_index = 0
         self.animals_animation_running = False
@@ -1285,7 +1284,7 @@ class LEDDisplayApp:
         self.current_animals_index = (self.current_animals_index + 1) % len(self.animals_animations)
         animation_name = self.animals_animations[self.current_animals_index]
         
-        animal_names = ["Cat", "Duck"]
+        animal_names = ["Horse"]
         animal_name = animal_names[self.current_animals_index]
         
         print(f"🐾 Starting {animal_name} animation...")
@@ -1308,15 +1307,9 @@ class LEDDisplayApp:
                 return not self.animals_animation_running or getattr(self, 'animation_stop_flag', False)
             
             if self.current_animals_index == 0:
-                # Cat animation
-                from cat_animation import CatAnimation
-                animation = CatAnimation()
-                animation.run_animation(should_stop)
-                animation.cleanup()
-            elif self.current_animals_index == 1:
-                # Duck animation
-                from duck_animation import DuckAnimation
-                animation = DuckAnimation()
+                # Horse animation
+                from horse_animation import HorseAnimation
+                animation = HorseAnimation()
                 animation.run_animation(should_stop)
                 animation.cleanup()
         except Exception as e:
