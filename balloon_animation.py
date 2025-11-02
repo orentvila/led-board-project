@@ -119,6 +119,11 @@ class BalloonAnimation:
         """
         self.led.clear()  # Black background
         
+        # Calculate center position
+        center_x = self.width // 2
+        balloon_left = center_x - self.scaled_width // 2
+        balloon_right = center_x + self.scaled_width // 2
+        
         # Draw scaled balloon
         # Scale down by drawing every Nth pixel based on scale_factor
         for orig_y in range(48):
@@ -129,11 +134,11 @@ class BalloonAnimation:
                     scaled_y = int(orig_y * self.scale_factor)
                     
                     # Center horizontally and apply y_offset for flying
-                    display_x = (self.width - self.scaled_width) // 2 + scaled_x
+                    display_x = balloon_left + scaled_x
                     display_y = scaled_y + y_offset
                     
-                    # Check bounds before drawing
-                    if 0 <= display_x < self.width and 0 <= display_y < self.height:
+                    # Strict bounds checking - only draw within balloon bounds
+                    if balloon_left <= display_x < balloon_right and 0 <= display_y < self.height:
                         # Get appropriate color for this part of balloon
                         color = self.get_balloon_color(scaled_x, scaled_y, orig_y)
                         
@@ -143,6 +148,12 @@ class BalloonAnimation:
                         b = int(color[2] * brightness)
                         
                         self.safe_set_pixel(display_x, display_y, (r, g, b))
+        
+        # Explicitly turn off any pixels beyond the balloon width
+        for y in range(self.height):
+            for x in range(self.width):
+                if x < balloon_left or x >= balloon_right:
+                    self.safe_set_pixel(x, y, (0, 0, 0))
         
         self.led.show()
     
@@ -158,9 +169,11 @@ class BalloonAnimation:
         
         print("🎈 Starting balloon animation...")
         
-        # Animation cycle: balloon starts at bottom, flies up and repeats
-        cycle_duration = 8.0  # 8 seconds per flight cycle
-        max_y_offset = self.height + self.scaled_height  # Fly completely off screen
+        # Animation: balloon starts at bottom, flies up once over 20 seconds
+        # Start from bottom (completely below screen) to top (completely above screen)
+        start_y_offset = self.height + self.scaled_height  # Start below screen
+        end_y_offset = -self.scaled_height  # End above screen
+        total_distance = start_y_offset - end_y_offset
         
         while time.time() - start_time < duration:
             # Check stop flag
@@ -170,11 +183,12 @@ class BalloonAnimation:
             
             elapsed = time.time() - start_time
             
-            # Calculate y_offset for flying up
-            # Cycle: starts at bottom (y_offset = height), flies to top (y_offset = -scaled_height)
-            cycle_progress = (elapsed % cycle_duration) / cycle_duration
-            # Start from bottom (positive offset) to top (negative offset)
-            y_offset = int(self.height + self.scaled_height - cycle_progress * (self.height + self.scaled_height * 2))
+            # Calculate y_offset for flying up - single cycle over full duration
+            # Progress from 0.0 (start) to 1.0 (end)
+            progress = min(1.0, elapsed / duration)
+            
+            # Linear interpolation from start to end
+            y_offset = int(start_y_offset - progress * total_distance)
             
             # Subtle brightness pulse
             pulse = 0.9 + 0.1 * (1.0 + math.sin(elapsed * 1.5)) / 2.0  # 0.9 to 1.0
