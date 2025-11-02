@@ -64,15 +64,26 @@ class BalloonAnimation:
         self.sky_color = (135, 206, 250)  # Sky blue background
         self.cloud_color = (255, 255, 255)  # White clouds
         
+        # Scaling factor - make balloon smaller (0.75 = 75% size)
+        self.scale_factor = 0.75
+        self.scaled_width = int(32 * self.scale_factor)  # 24 pixels
+        self.scaled_height = int(48 * self.scale_factor)  # 36 pixels
+        
     def safe_set_pixel(self, x, y, color):
         """Safely set a pixel if coordinates are within bounds."""
         if 0 <= x < self.width and 0 <= y < self.height:
             self.led.set_pixel(x, y, color)
     
-    def get_balloon_color(self, x, y):
-        """Get color for balloon pixel based on position (striped pattern)."""
+    def get_balloon_color(self, x, y, original_y):
+        """Get color for balloon pixel based on position (striped pattern).
+        
+        Args:
+            x: Scaled x coordinate
+            y: Scaled y coordinate (for display)
+            original_y: Original y coordinate from bitmap (for color selection)
+        """
         # Top part of balloon (rows 0-20) - colorful stripes
-        if y < 20:
+        if original_y < 20:
             # Vertical stripes pattern
             stripe_width = 4
             stripe_index = (x // stripe_width) % 3
@@ -83,7 +94,7 @@ class BalloonAnimation:
             else:
                 return self.balloon_color_3  # Orange/Yellow
         # Bottom part (rows 20-28) - similar pattern
-        elif y < 28:
+        elif original_y < 28:
             stripe_width = 3
             stripe_index = (x // stripe_width) % 3
             if stripe_index == 0:
@@ -93,51 +104,50 @@ class BalloonAnimation:
             else:
                 return self.balloon_color_3
         # Basket area (rows 28-32)
-        elif y < 32:
+        elif original_y < 32:
             return self.basket_color
         # Ropes (rows 32-48)
         else:
             return self.ropes_color
     
-    def draw_balloon(self, brightness=1.0, frame=0):
-        """Draw the balloon from the bitmap data - no background.
+    def draw_balloon(self, brightness=1.0, y_offset=0):
+        """Draw the balloon from the bitmap data - scaled down and positioned.
         
         Args:
             brightness: Brightness multiplier (0.0 to 1.0)
-            frame: Animation frame number for subtle effects
+            y_offset: Vertical offset for flying animation (negative moves up)
         """
         self.led.clear()  # Black background
         
-        # Draw only the balloon - strict bounds checking
-        # Bitmap is exactly 32x48, so only draw within those bounds
-        for y in range(min(self.height, 48)):
-            for x in range(min(self.width, 32)):
-                # Double check bounds
-                if x >= 32 or y >= 48:
-                    continue
+        # Draw scaled balloon
+        # Scale down by drawing every Nth pixel based on scale_factor
+        for orig_y in range(48):
+            for orig_x in range(32):
+                if self.balloon_pixels[orig_y][orig_x] == 1:
+                    # Calculate scaled position
+                    scaled_x = int(orig_x * self.scale_factor)
+                    scaled_y = int(orig_y * self.scale_factor)
                     
-                if self.balloon_pixels[y][x] == 1:
-                    # Get appropriate color for this part of balloon
-                    color = self.get_balloon_color(x, y)
+                    # Center horizontally and apply y_offset for flying
+                    display_x = (self.width - self.scaled_width) // 2 + scaled_x
+                    display_y = scaled_y + y_offset
                     
-                    # Apply brightness
-                    r = int(color[0] * brightness)
-                    g = int(color[1] * brightness)
-                    b = int(color[2] * brightness)
-                    
-                    # Extra safety check in set_pixel
-                    if 0 <= x < self.width and 0 <= y < self.height:
-                        self.safe_set_pixel(x, y, (r, g, b))
-        
-        # Explicitly ensure all pixels beyond column 31 are off
-        for y in range(self.height):
-            for x in range(32, self.width):
-                self.safe_set_pixel(x, y, (0, 0, 0))
+                    # Check bounds before drawing
+                    if 0 <= display_x < self.width and 0 <= display_y < self.height:
+                        # Get appropriate color for this part of balloon
+                        color = self.get_balloon_color(scaled_x, scaled_y, orig_y)
+                        
+                        # Apply brightness
+                        r = int(color[0] * brightness)
+                        g = int(color[1] * brightness)
+                        b = int(color[2] * brightness)
+                        
+                        self.safe_set_pixel(display_x, display_y, (r, g, b))
         
         self.led.show()
     
     def run_animation(self, should_stop=None):
-        """Run the balloon animation with subtle floating effect.
+        """Run the balloon animation flying upward.
         
         Args:
             should_stop: Optional callback function that returns True if animation should stop.
@@ -148,19 +158,30 @@ class BalloonAnimation:
         
         print("🎈 Starting balloon animation...")
         
+        # Animation cycle: balloon starts at bottom, flies up and repeats
+        cycle_duration = 8.0  # 8 seconds per flight cycle
+        max_y_offset = self.height + self.scaled_height  # Fly completely off screen
+        
         while time.time() - start_time < duration:
             # Check stop flag
             if should_stop and should_stop():
                 print("🎈 Balloon animation stopped by user")
                 break
             
-            # Subtle floating effect - gentle brightness pulse
             elapsed = time.time() - start_time
+            
+            # Calculate y_offset for flying up
+            # Cycle: starts at bottom (y_offset = height), flies to top (y_offset = -scaled_height)
+            cycle_progress = (elapsed % cycle_duration) / cycle_duration
+            # Start from bottom (positive offset) to top (negative offset)
+            y_offset = int(self.height + self.scaled_height - cycle_progress * (self.height + self.scaled_height * 2))
+            
+            # Subtle brightness pulse
             pulse = 0.9 + 0.1 * (1.0 + math.sin(elapsed * 1.5)) / 2.0  # 0.9 to 1.0
             
-            self.draw_balloon(brightness=pulse, frame=frame)
+            self.draw_balloon(brightness=pulse, y_offset=y_offset)
             frame += 1
-            time.sleep(0.1)  # 10 FPS
+            time.sleep(0.05)  # 20 FPS for smoother animation
         
         print("🎈 Balloon animation completed!")
         
