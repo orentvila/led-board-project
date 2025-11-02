@@ -5,6 +5,7 @@ Displays an elephant image from binary bitmap data
 """
 
 import time
+import math
 from led_controller_exact import LEDControllerExact
 import config
 
@@ -58,48 +59,89 @@ class ElephantBitmapAnimation:
         self.elephant_color = (150, 150, 150)  # Grey for elephant
         self.ground_color = (139, 90, 43)  # Brown soil color
         
+        # Animation settings
+        self.ground_height = 3
+        # Calculate where to position elephant vertically (feet just above ground)
+        # Elephant height from bitmap is up to y=46 (we exclude row 47)
+        # Ground starts at y = height - ground_height = 48 - 3 = 45
+        # So elephant should be positioned so its bottom is above y=45
+        self.elephant_bottom_y = self.height - self.ground_height - 1  # y=44 (just above ground)
+        
     def safe_set_pixel(self, x, y, color):
         """Safely set a pixel if coordinates are within bounds."""
         if 0 <= x < self.width and 0 <= y < self.height:
             self.led.set_pixel(x, y, color)
     
-    def draw_elephant(self):
-        """Draw the elephant from the bitmap data with grey color and brown ground."""
+    def draw_elephant(self, x_offset=0, y_offset=0):
+        """Draw the elephant from the bitmap data with grey color and brown ground.
+        
+        Args:
+            x_offset: Horizontal offset for walking animation
+            y_offset: Vertical offset for walking bounce effect
+        """
         self.led.clear()  # Black background
         
-        # Draw ground/soil at the bottom (2-3 rows)
-        ground_height = 3
-        for y in range(self.height - ground_height, self.height):
+        # Draw ground/soil at the bottom
+        for y in range(self.height - self.ground_height, self.height):
             for x in range(self.width):
                 self.safe_set_pixel(x, y, self.ground_color)
         
-        # Draw elephant - only draw pixels that are 1 in the bitmap
-        # Exclude: bottom row (y=47) and left 4 pixels (x < 4)
-        for y in range(min(self.height, 48)):
-            # Skip the bottom row
-            if y >= 47:
+        # Draw elephant - positioned above the ground with offsets
+        # Elephant bitmap rows: 0-46 (we exclude row 47)
+        # Position elephant so its bottom aligns with elephant_bottom_y
+        elephant_bitmap_height = 47  # Rows 0-46 (excluding row 47)
+        
+        for bitmap_y in range(elephant_bitmap_height):
+            # Skip the bottom row of bitmap (y=47)
+            if bitmap_y >= 47:
                 continue
-            for x in range(min(self.width, 32)):
-                # Skip the first 4 pixels on the left
-                if x < 4:
+                
+            # Calculate actual screen Y position
+            # Start from top of elephant and position bottom at elephant_bottom_y
+            screen_y = self.elephant_bottom_y - (elephant_bitmap_height - 1 - bitmap_y) + y_offset
+            
+            # Skip if outside screen bounds
+            if screen_y < 0 or screen_y >= self.height - self.ground_height:
+                continue
+            
+            for bitmap_x in range(32):
+                # Skip the first 4 pixels on the left (x < 4)
+                if bitmap_x < 4:
                     continue
-                if self.elephant_pixels[y][x] == 1:
-                    # Draw elephant in grey, but make sure it appears above the ground
-                    # If the elephant pixel is in the ground area, draw it anyway (elephant on top)
-                    self.safe_set_pixel(x, y, self.elephant_color)
+                    
+                if self.elephant_pixels[bitmap_y][bitmap_x] == 1:
+                    # Calculate actual screen X position
+                    screen_x = bitmap_x - 4 + x_offset  # -4 because we skip first 4 pixels
+                    
+                    # Wrap around horizontally for continuous walking
+                    if screen_x < 0:
+                        screen_x = screen_x + self.width
+                    elif screen_x >= self.width:
+                        screen_x = screen_x - self.width
+                    
+                    # Only draw if pixel is above the ground
+                    if screen_y < self.height - self.ground_height:
+                        self.safe_set_pixel(screen_x, screen_y, self.elephant_color)
         
         self.led.show()
     
     def run_animation(self, should_stop=None):
-        """Run the elephant bitmap animation.
+        """Run the elephant walking animation.
         
         Args:
             should_stop: Optional callback function that returns True if animation should stop.
         """
-        duration = 20  # 20 seconds
+        duration = 30  # 30 seconds
         start_time = time.time()
         
-        print("🐘 Starting elephant bitmap animation...")
+        print("🐘 Starting elephant walking animation...")
+        
+        # Animation parameters
+        walk_speed = 0.3  # pixels per frame (horizontal movement speed)
+        bounce_amplitude = 1.5  # pixels (vertical bounce for walking)
+        bounce_frequency = 2.0  # cycles per second
+        
+        frame = 0
         
         while time.time() - start_time < duration:
             # Check stop flag
@@ -107,8 +149,18 @@ class ElephantBitmapAnimation:
                 print("🐘 Elephant animation stopped by user")
                 break
             
-            self.draw_elephant()
-            time.sleep(0.1)  # 10 FPS
+            elapsed = time.time() - start_time
+            
+            # Calculate horizontal position (walking from left to right, looping)
+            x_offset = int((frame * walk_speed) % (self.width + 8))  # +8 for smooth looping
+            
+            # Calculate vertical bounce (subtle up/down motion for walking effect)
+            y_offset = int(math.sin(elapsed * bounce_frequency * 2 * math.pi) * bounce_amplitude)
+            
+            self.draw_elephant(x_offset=x_offset, y_offset=y_offset)
+            
+            frame += 1
+            time.sleep(0.05)  # 20 FPS for smoother animation
         
         print("🐘 Elephant animation completed!")
         
