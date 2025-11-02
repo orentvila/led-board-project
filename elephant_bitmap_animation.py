@@ -148,11 +148,9 @@ class ElephantBitmapAnimation:
         print("🐘 Starting elephant walking animation...")
         
         # Animation parameters
-        walk_speed = 0.3  # pixels per frame (horizontal movement speed)
-        bounce_amplitude = 1.5  # pixels (vertical bounce for walking)
-        bounce_frequency = 2.0  # cycles per second
-        
-        frame = 0
+        walk_speed = 8.0  # pixels per second (horizontal movement speed)
+        bounce_amplitude = 0.8  # pixels (reduced for smoother vertical bounce)
+        bounce_frequency = 1.5  # cycles per second (slower for smoother motion)
         
         while time.time() - start_time < duration:
             # Check stop flag
@@ -162,15 +160,19 @@ class ElephantBitmapAnimation:
             
             elapsed = time.time() - start_time
             
-            # Calculate horizontal position (walking from left to right, looping)
-            x_offset = int((frame * walk_speed) % (self.width + 8))  # +8 for smooth looping
+            # Calculate horizontal position using time-based smooth movement
+            # Walk from left to right, looping continuously
+            total_distance = self.width + 8  # +8 for smooth looping
+            x_offset_float = (elapsed * walk_speed) % total_distance
+            x_offset = round(x_offset_float)  # Use round instead of int for smoother motion
             
             # Calculate vertical bounce (subtle up/down motion for walking effect)
-            y_offset = int(math.sin(elapsed * bounce_frequency * 2 * math.pi) * bounce_amplitude)
+            # Use smoother sine wave with smaller amplitude
+            y_offset_float = math.sin(elapsed * bounce_frequency * 2 * math.pi) * bounce_amplitude
+            y_offset = round(y_offset_float)  # Use round instead of int for smoother motion
             
             self.draw_elephant(x_offset=x_offset, y_offset=y_offset)
             
-            frame += 1
             time.sleep(0.05)  # 20 FPS for smoother animation
         
         print("🐘 Elephant animation completed!")
