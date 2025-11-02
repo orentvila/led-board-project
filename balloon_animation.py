@@ -37,9 +37,10 @@ class BalloonAnimation:
             0x00, 0x80, 0x00, 0x0f, 0x00, 0x80, 0x00, 0x0f, 0x00, 0x80, 0x00, 0x0f, 0x00, 0xff, 0xf0, 0x0f
         ]
         
-        # Convert bitmap to 32x48 pixel array (INVERTED for better visibility)
+        # Convert bitmap to 32x48 pixel array
         # Each byte has 8 bits, MSB first (bit 7 is leftmost pixel)
         # 32 pixels per row = 4 bytes per row
+        # Bit value 1 = balloon pixel (draw), Bit value 0 = background (don't draw)
         self.balloon_pixels = []
         
         for row in range(48):
@@ -50,8 +51,8 @@ class BalloonAnimation:
                 bit_index = 7 - (col % 8)  # MSB first (bit 7 is leftmost pixel)
                 byte_value = bitmap_hex[byte_index]
                 pixel = (byte_value >> bit_index) & 1
-                # INVERT: 1 becomes 0, 0 becomes 1
-                row_data.append(1 - pixel)
+                # NO INVERSION: 1 = balloon pixel, 0 = background
+                row_data.append(pixel)
             self.balloon_pixels.append(row_data)
         
         # Colors - vibrant balloon colors
