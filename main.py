@@ -71,7 +71,7 @@ class LEDDisplayApp:
         
         # Objects animation system
         self.objects_animations = [
-            "house", "traffic_lights", "balloon"
+            "house", "balloon"
         ]
         self.current_object_index = 0
         self.objects_animation_running = False
@@ -2146,7 +2146,7 @@ class LEDDisplayApp:
         # Cycle to next object with bounds checking
         self.current_object_index = (self.current_object_index + 1) % len(self.objects_animations)
         
-        object_names = ["House", "Traffic Lights", "Balloon"]
+        object_names = ["House", "Balloon"]
         
         # Ensure index is within bounds
         if self.current_object_index >= len(object_names):
@@ -2182,8 +2182,6 @@ class LEDDisplayApp:
             if self.current_object_index == 0:
                 self.run_house_animation()
             elif self.current_object_index == 1:
-                self.run_traffic_lights_animation()
-            elif self.current_object_index == 2:
                 # Balloon animation
                 def should_stop():
                     return not self.objects_animation_running or getattr(self, 'animation_stop_flag', False)
