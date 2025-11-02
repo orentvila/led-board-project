@@ -55,7 +55,8 @@ class ElephantBitmapAnimation:
             self.elephant_pixels.append(row_data)
         
         # Colors
-        self.elephant_color = (255, 255, 255)  # White for elephant
+        self.elephant_color = (150, 150, 150)  # Grey for elephant
+        self.ground_color = (139, 90, 43)  # Brown soil color
         
     def safe_set_pixel(self, x, y, color):
         """Safely set a pixel if coordinates are within bounds."""
@@ -63,8 +64,14 @@ class ElephantBitmapAnimation:
             self.led.set_pixel(x, y, color)
     
     def draw_elephant(self):
-        """Draw the elephant from the bitmap data."""
+        """Draw the elephant from the bitmap data with grey color and brown ground."""
         self.led.clear()  # Black background
+        
+        # Draw ground/soil at the bottom (2-3 rows)
+        ground_height = 3
+        for y in range(self.height - ground_height, self.height):
+            for x in range(self.width):
+                self.safe_set_pixel(x, y, self.ground_color)
         
         # Draw elephant - only draw pixels that are 1 in the bitmap
         # Exclude: bottom row (y=47) and left 4 pixels (x < 4)
@@ -77,6 +84,8 @@ class ElephantBitmapAnimation:
                 if x < 4:
                     continue
                 if self.elephant_pixels[y][x] == 1:
+                    # Draw elephant in grey, but make sure it appears above the ground
+                    # If the elephant pixel is in the ground area, draw it anyway (elephant on top)
                     self.safe_set_pixel(x, y, self.elephant_color)
         
         self.led.show()
