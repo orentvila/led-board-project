@@ -108,9 +108,14 @@ class BalloonAnimation:
         """
         self.led.clear()  # Black background
         
-        # Draw only the balloon - no background
+        # Draw only the balloon - strict bounds checking
+        # Bitmap is exactly 32x48, so only draw within those bounds
         for y in range(min(self.height, 48)):
             for x in range(min(self.width, 32)):
+                # Double check bounds
+                if x >= 32 or y >= 48:
+                    continue
+                    
                 if self.balloon_pixels[y][x] == 1:
                     # Get appropriate color for this part of balloon
                     color = self.get_balloon_color(x, y)
@@ -120,7 +125,14 @@ class BalloonAnimation:
                     g = int(color[1] * brightness)
                     b = int(color[2] * brightness)
                     
-                    self.safe_set_pixel(x, y, (r, g, b))
+                    # Extra safety check in set_pixel
+                    if 0 <= x < self.width and 0 <= y < self.height:
+                        self.safe_set_pixel(x, y, (r, g, b))
+        
+        # Explicitly ensure all pixels beyond column 31 are off
+        for y in range(self.height):
+            for x in range(32, self.width):
+                self.safe_set_pixel(x, y, (0, 0, 0))
         
         self.led.show()
     
