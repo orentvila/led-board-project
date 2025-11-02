@@ -55,14 +55,11 @@ class BalloonAnimation:
                 row_data.append(pixel)
             self.balloon_pixels.append(row_data)
         
-        # Colors - vibrant balloon colors
-        self.balloon_color_1 = (255, 100, 100)  # Red
-        self.balloon_color_2 = (100, 100, 255)  # Blue
-        self.balloon_color_3 = (255, 200, 100)  # Orange/Yellow
-        self.basket_color = (150, 100, 50)  # Brown basket
-        self.ropes_color = (200, 200, 200)  # Gray ropes
-        self.sky_color = (135, 206, 250)  # Sky blue background
-        self.cloud_color = (255, 255, 255)  # White clouds
+        # Colors - match the image design
+        self.teal_color = (100, 200, 180)  # Light teal/turquoise for outer panels
+        self.pale_yellow = (255, 255, 200)  # Pale yellow/cream for center panel and basket
+        self.black_outline = (0, 0, 0)  # Black for outlines (handled by bitmap)
+        self.basket_color = (255, 255, 200)  # Pale yellow/cream basket (same as center)
         
         # Scaling factor - make balloon smaller (0.75 = 75% size)
         self.scale_factor = 0.75
@@ -74,41 +71,30 @@ class BalloonAnimation:
         if 0 <= x < self.width and 0 <= y < self.height:
             self.led.set_pixel(x, y, color)
     
-    def get_balloon_color(self, x, y, original_y):
-        """Get color for balloon pixel based on position (striped pattern).
+    def get_balloon_color(self, x, y, original_y, original_x):
+        """Get color for balloon pixel based on position (three vertical panels).
         
         Args:
             x: Scaled x coordinate
             y: Scaled y coordinate (for display)
             original_y: Original y coordinate from bitmap (for color selection)
+            original_x: Original x coordinate from bitmap (for panel selection)
         """
-        # Top part of balloon (rows 0-20) - colorful stripes
-        if original_y < 20:
-            # Vertical stripes pattern
-            stripe_width = 4
-            stripe_index = (x // stripe_width) % 3
-            if stripe_index == 0:
-                return self.balloon_color_1  # Red
-            elif stripe_index == 1:
-                return self.balloon_color_2  # Blue
-            else:
-                return self.balloon_color_3  # Orange/Yellow
-        # Bottom part (rows 20-28) - similar pattern
-        elif original_y < 28:
-            stripe_width = 3
-            stripe_index = (x // stripe_width) % 3
-            if stripe_index == 0:
-                return self.balloon_color_1
-            elif stripe_index == 1:
-                return self.balloon_color_2
-            else:
-                return self.balloon_color_3
-        # Basket area (rows 28-32)
-        elif original_y < 32:
-            return self.basket_color
-        # Ropes (rows 32-48)
+        # Three vertical panels: left (teal), center (pale yellow), right (teal)
+        # Center panel is wider - roughly 12 pixels, side panels are ~10 pixels each
+        left_panel_width = 10
+        center_panel_width = 12
+        
+        # Determine which panel based on original_x position
+        if original_x < left_panel_width:
+            # Left panel - teal
+            return self.teal_color
+        elif original_x < left_panel_width + center_panel_width:
+            # Center panel - pale yellow
+            return self.pale_yellow
         else:
-            return self.ropes_color
+            # Right panel - teal
+            return self.teal_color
     
     def draw_balloon(self, brightness=1.0, y_offset=0):
         """Draw the balloon from the bitmap data - scaled down and positioned.
@@ -139,8 +125,13 @@ class BalloonAnimation:
                     
                     # Strict bounds checking - only draw within balloon bounds
                     if balloon_left <= display_x < balloon_right and 0 <= display_y < self.height:
-                        # Get appropriate color for this part of balloon
-                        color = self.get_balloon_color(scaled_x, scaled_y, orig_y)
+                        # Determine color based on position
+                        # For basket/ropes area (rows 28-48), use pale yellow
+                        if orig_y >= 28:
+                            color = self.pale_yellow
+                        else:
+                            # Get color based on three-panel design
+                            color = self.get_balloon_color(scaled_x, scaled_y, orig_y, orig_x)
                         
                         # Apply brightness
                         r = int(color[0] * brightness)
