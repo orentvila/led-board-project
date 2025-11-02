@@ -77,7 +77,9 @@ class LEDDisplayApp:
         self.objects_animation_running = False
         
         # Animals animation system for Button 27
-        self.animals_animations = []
+        self.animals_animations = [
+            "elephant_bitmap"
+        ]
         self.current_animals_index = 0
         self.animals_animation_running = False
         
@@ -1278,7 +1280,7 @@ class LEDDisplayApp:
         # Small delay to ensure everything is stopped
         time.sleep(0.2)
         
-        # Animals animation system is now empty
+        # Animals animation system
         if not self.animals_animations:
             print("🐾 No animals animations available")
             return
@@ -1287,7 +1289,8 @@ class LEDDisplayApp:
         self.current_animals_index = (self.current_animals_index + 1) % len(self.animals_animations)
         animation_name = self.animals_animations[self.current_animals_index]
         
-        animal_name = animation_name.capitalize()
+        animal_names = ["Elephant"]
+        animal_name = animal_names[self.current_animals_index]
         
         print(f"🐾 Starting {animal_name} animation...")
         
@@ -1308,8 +1311,12 @@ class LEDDisplayApp:
             def should_stop():
                 return not self.animals_animation_running or getattr(self, 'animation_stop_flag', False)
             
-            # No animals animations - just clear and return
-            print("🐾 No animals animations configured")
+            if self.current_animals_index == 0:
+                # Elephant bitmap animation
+                from elephant_bitmap_animation import ElephantBitmapAnimation
+                animation = ElephantBitmapAnimation()
+                animation.run_animation(should_stop)
+                animation.cleanup()
         except Exception as e:
             print(f"❌ Error running animals animation: {e}")
             import traceback
