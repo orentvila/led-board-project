@@ -61,40 +61,27 @@ class BalloonAnimation:
             return self.color_pink
     
     def is_inside_balloon_envelope(self, x, y, center_x, top_y):
-        """Check if a point is inside the balloon envelope (bulbous shape).
+        """Check if a point is inside the balloon envelope (circular shape).
         
         Args:
             x, y: Point coordinates
             center_x: X coordinate of balloon center
             top_y: Y coordinate of balloon top
         """
-        # Balloon envelope is a bulbous/rounded shape
-        # Tapered at top and bottom, widest in middle
-        envelope_bottom = top_y + self.balloon_height
+        # Balloon envelope is a perfect circle
+        # Radius determines the size - use half of balloon_height for radius
+        radius = self.balloon_height // 2  # 15 pixels radius
         
-        if y < top_y or y >= envelope_bottom:
-            return False
+        # Circle center is at (center_x, top_y + radius)
+        circle_center_y = top_y + radius
         
-        # Calculate relative Y position (0.0 at top, 1.0 at bottom)
-        relative_y = (y - top_y) / self.balloon_height
+        # Check if point is inside the circle using circle equation:
+        # (x - center_x)^2 + (y - circle_center_y)^2 <= radius^2
+        dx = x - center_x
+        dy = y - circle_center_y
+        distance_squared = dx * dx + dy * dy
         
-        # Bulbous shape: narrow at top, wide in middle, narrow at bottom
-        # Use a curve: width = balloon_width * (1 - 4*(y-0.5)^2)^0.5 for bulbous shape
-        # Simplified: widest at relative_y = 0.5
-        if relative_y < 0.5:
-            # Top half: expand from narrow to wide
-            width_factor = 0.3 + 1.4 * (relative_y / 0.5)
-        else:
-            # Bottom half: contract from wide to narrow
-            width_factor = 1.7 - 1.4 * ((relative_y - 0.5) / 0.5)
-        
-        width_at_y = int(self.balloon_width * width_factor)
-        
-        # Check if x is within the width
-        left_edge = center_x - width_at_y // 2
-        right_edge = center_x + width_at_y // 2
-        
-        return left_edge <= x <= right_edge
+        return distance_squared <= radius * radius
     
     def is_inside_basket_area(self, x, y, center_x, envelope_bottom):
         """Check if a point is inside the basket/transition area.
