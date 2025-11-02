@@ -77,6 +77,12 @@ class LEDDisplayApp:
         self.objects_animation_running = False
         
         # Animals animation system for Button 27
+        self.animals_animations = [
+            "animal_sequence_rotated",
+            "dog",
+            "rooster"
+        ]
+        self.current_animals_index = 0
         self.animals_animation_running = False
         
         # Initialize audio system
@@ -1264,7 +1270,7 @@ class LEDDisplayApp:
         print("🕐 Animation finished")
     
     def start_animals_animation(self):
-        """Start animals pastel animation."""
+        """Start animals animation - cycles through different animal animations."""
         print("🐾 Starting animals animation...")
         self.stop_current_pattern()
         
@@ -1276,6 +1282,15 @@ class LEDDisplayApp:
         # Small delay to ensure everything is stopped
         time.sleep(0.2)
         
+        # Cycle to next animals animation
+        self.current_animals_index = (self.current_animals_index + 1) % len(self.animals_animations)
+        animation_name = self.animals_animations[self.current_animals_index]
+        
+        animal_names = ["Animal Sequence (Rotated)", "Dog", "Rooster"]
+        animal_name = animal_names[self.current_animals_index]
+        
+        print(f"🐾 Starting {animal_name} animation...")
+        
         # Set the flag BEFORE starting the thread
         self.animals_animation_running = True
         
@@ -1284,15 +1299,29 @@ class LEDDisplayApp:
         self.current_pattern.daemon = False  # Don't use daemon threads
         self.current_pattern.start()
         
-        print("✅ Started animals animation")
+        print(f"✅ Started {animal_name} animation")
     
     def run_animals_animation(self):
-        """Run the animals pastel animation."""
+        """Run the current animals animation."""
         try:
-            from animals_pastel_animation import AnimalsPastelAnimation
-            animation = AnimalsPastelAnimation()
-            animation.run_animation()
-            animation.cleanup()
+            if self.current_animals_index == 0:
+                # Animal sequence rotated
+                from animal_sequence_rotated_animation import AnimalSequenceRotatedAnimation
+                animation = AnimalSequenceRotatedAnimation()
+                animation.display_animal_sequence_rotated()
+                animation.cleanup()
+            elif self.current_animals_index == 1:
+                # Dog animation
+                from dog_animation import DogAnimation
+                animation = DogAnimation()
+                animation.run_animation()
+                animation.cleanup()
+            elif self.current_animals_index == 2:
+                # Rooster animation
+                from rooster_animation import RoosterAnimation
+                animation = RoosterAnimation()
+                animation.run_animation()
+                animation.cleanup()
         except Exception as e:
             print(f"❌ Error running animals animation: {e}")
             import traceback
