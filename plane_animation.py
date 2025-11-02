@@ -20,18 +20,25 @@ class PlaneAnimation:
         
         # Colors
         self.plane_color = (255, 255, 255)  # White for plane body
+        self.smoke_colors = [
+            (200, 200, 200),  # Light gray
+            (150, 150, 150),  # Medium gray
+            (100, 100, 100),  # Dark gray
+            (60, 60, 60),     # Very dark gray
+        ]
         
     def safe_set_pixel(self, x, y, color):
         """Safely set a pixel if coordinates are within bounds."""
         if 0 <= x < self.width and 0 <= y < self.height:
             self.led.set_pixel(x, y, color)
     
-    def draw_plane(self, x_offset=0, y_offset=0):
-        """Draw the plane as a solid black silhouette (pointing up-right).
+    def draw_plane(self, x_offset=0, y_offset=0, frame=0):
+        """Draw the plane as a solid black silhouette (pointing up-right) with smoke.
         
         Args:
             x_offset: Horizontal offset for positioning
             y_offset: Vertical offset for positioning
+            frame: Animation frame number for smoke
         """
         self.led.clear()  # Black background
         
@@ -39,10 +46,10 @@ class PlaneAnimation:
         center_x = self.width // 2 + x_offset
         center_y = self.height // 2 + y_offset
         
-        # Plane dimensions (adjusted for 32x48 display)
-        fuselage_length = 16  # Main body length (diagonal)
-        nose_width = 5  # Wider at front
-        tail_width = 2  # Tapers to back
+        # Plane dimensions - smaller (adjusted for 32x48 display)
+        fuselage_length = 10  # Main body length (diagonal) - reduced from 16
+        nose_width = 3  # Wider at front - reduced from 5
+        tail_width = 1  # Tapers to back - reduced from 2
         
         # Draw fuselage (main body) - diagonal, tapering from front to back
         # Direction: from bottom-left (tail) to top-right (nose)
@@ -74,8 +81,8 @@ class PlaneAnimation:
         # Left wing points upper-left, right wing points lower-right
         wing_center_x = center_x
         wing_center_y = center_y
-        wing_length = 10
-        wing_width = 4
+        wing_length = 6  # Reduced from 10
+        wing_width = 2  # Reduced from 4
         
         # Left wing (upper-left direction)
         for i in range(wing_length):
@@ -114,32 +121,77 @@ class PlaneAnimation:
         tail_y = center_y + fuselage_length // 2
         
         # Horizontal stabilizer (wider, extends left-right)
-        horiz_stab_width = 8
+        horiz_stab_width = 5  # Reduced from 8
         for i in range(horiz_stab_width):
             hx = tail_x - horiz_stab_width // 2 + i
             hy = tail_y
-            for offset in range(-1, 2):
-                self.safe_set_pixel(hx, hy + offset, self.plane_color)
+            self.safe_set_pixel(hx, hy, self.plane_color)
+            self.safe_set_pixel(hx, hy + 1, self.plane_color)
         
         # Vertical stabilizer (shorter, points down)
-        vert_stab_height = 5
+        vert_stab_height = 3  # Reduced from 5
         for i in range(vert_stab_height):
             self.safe_set_pixel(tail_x, tail_y + i, self.plane_color)
             self.safe_set_pixel(tail_x - 1, tail_y + i, self.plane_color)
-            self.safe_set_pixel(tail_x + 1, tail_y + i, self.plane_color)
+        
+        # Draw smoke trailing from tail (opposite direction)
+        # Calculate absolute tail position for smoke
+        abs_tail_x = tail_x
+        abs_tail_y = tail_y
+        self.draw_smoke(abs_tail_x, abs_tail_y, frame)
         
         self.led.show()
     
+    def draw_smoke(self, tail_x, tail_y, frame):
+        """Draw smoke trailing from the plane's tail.
+        
+        Args:
+            tail_x, tail_y: Position of plane tail (where smoke originates)
+            frame: Animation frame number for smoke animation
+        """
+        # Smoke moves in opposite direction (down-left, opposite to plane's up-right movement)
+        # Smoke trail consists of particles that fade out
+        smoke_particles = 8  # Number of smoke particles in trail
+        
+        for i in range(smoke_particles):
+            # Each particle is offset in the opposite direction of plane movement (down-left)
+            offset_x = -(i * 2 + (frame % 3))  # Move left
+            offset_y = i * 2 + (frame % 3)  # Move down
+            
+            smoke_x = tail_x + offset_x
+            smoke_y = tail_y + offset_y
+            
+            # Fade out smoke as it gets further
+            if i < len(self.smoke_colors):
+                smoke_color = self.smoke_colors[i]
+            else:
+                smoke_color = (40, 40, 40)  # Very faint
+            
+            # Draw smoke particle with some spread
+            for dx in range(-1, 2):
+                for dy in range(-1, 2):
+                    if dx * dx + dy * dy <= 1:  # Small circular particles
+                        self.safe_set_pixel(smoke_x + dx, smoke_y + dy, smoke_color)
+    
     def run_animation(self, should_stop=None):
-        """Run the plane animation.
+        """Run the plane animation - flying across screen with smoke.
         
         Args:
             should_stop: Optional callback function that returns True if animation should stop.
         """
         duration = 20  # 20 seconds
         start_time = time.time()
+        frame = 0
         
         print("✈️ Starting plane animation...")
+        
+        # Animation path: plane flies from bottom-left to top-right diagonally
+        # Start position: bottom-left (off screen initially)
+        # End position: top-right (off screen)
+        start_x = -12  # Start off-screen left
+        start_y = self.height + 8  # Start off-screen bottom
+        end_x = self.width + 12  # End off-screen right
+        end_y = -8  # End off-screen top
         
         while time.time() - start_time < duration:
             # Check stop flag
@@ -147,9 +199,20 @@ class PlaneAnimation:
                 print("✈️ Plane animation stopped by user")
                 break
             
-            # Draw static plane for now (we'll add animation later)
-            self.draw_plane()  # Static plane pointing up-right
-            time.sleep(0.1)  # 10 FPS
+            elapsed = time.time() - start_time
+            progress = min(1.0, elapsed / duration)
+            
+            # Calculate plane position (diagonal movement)
+            current_x = start_x + (end_x - start_x) * progress
+            current_y = start_y + (end_y - start_y) * progress
+            
+            # Draw plane at current position with smoke
+            self.draw_plane(x_offset=int(current_x - self.width // 2), 
+                          y_offset=int(current_y - self.height // 2),
+                          frame=frame)
+            
+            frame += 1
+            time.sleep(0.05)  # 20 FPS for smoother animation
         
         print("✈️ Plane animation completed!")
         
