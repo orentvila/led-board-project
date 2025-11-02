@@ -172,9 +172,12 @@ class BalloonAnimation:
         print("🎈 Starting balloon animation...")
         
         # Animation: balloon starts at bottom, flies up once over 20 seconds
-        # Start from bottom (completely below screen) to top (completely above screen)
-        total_balloon_height = self.balloon_height + 4 + self.basket_height  # envelope + transition + basket
-        start_y_offset = self.height + total_balloon_height  # Start below screen
+        # Start just below visible area so it appears in 1-2 seconds
+        total_balloon_height = self.balloon_height + 4 + self.basket_height  # envelope + transition + basket = 40 pixels
+        # Start with bottom of balloon just below screen (y=48)
+        # If top_y = y_offset, bottom is at y_offset + total_balloon_height
+        # Want bottom at y=height (48), so: y_offset + 40 = 48, thus y_offset = 8
+        start_y_offset = self.height - total_balloon_height  # 48 - 40 = 8 (basket bottom just off screen)
         end_y_offset = -total_balloon_height  # End above screen
         total_distance = start_y_offset - end_y_offset
         

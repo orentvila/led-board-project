@@ -71,16 +71,13 @@ class LEDDisplayApp:
         
         # Objects animation system
         self.objects_animations = [
-            "house", "clock", "traffic_lights"
+            "house", "clock", "traffic_lights", "balloon"
         ]
         self.current_object_index = 0
         self.objects_animation_running = False
         
         # Animals animation system for Button 27
-        self.animals_animations = [
-            "elephant_silhouette",
-            "balloon"
-        ]
+        self.animals_animations = []
         self.current_animals_index = 0
         self.animals_animation_running = False
         
@@ -1281,12 +1278,16 @@ class LEDDisplayApp:
         # Small delay to ensure everything is stopped
         time.sleep(0.2)
         
+        # Animals animation system is now empty
+        if not self.animals_animations:
+            print("🐾 No animals animations available")
+            return
+        
         # Cycle to next animals animation
         self.current_animals_index = (self.current_animals_index + 1) % len(self.animals_animations)
         animation_name = self.animals_animations[self.current_animals_index]
         
-        animal_names = ["Elephant", "Balloon"]
-        animal_name = animal_names[self.current_animals_index]
+        animal_name = animation_name.capitalize()
         
         print(f"🐾 Starting {animal_name} animation...")
         
@@ -1307,18 +1308,8 @@ class LEDDisplayApp:
             def should_stop():
                 return not self.animals_animation_running or getattr(self, 'animation_stop_flag', False)
             
-            if self.current_animals_index == 0:
-                # Elephant silhouette animation
-                from elephant_silhouette_animation import ElephantSilhouetteAnimation
-                animation = ElephantSilhouetteAnimation()
-                animation.run_animation(should_stop)
-                animation.cleanup()
-            elif self.current_animals_index == 1:
-                # Balloon animation
-                from balloon_animation import BalloonAnimation
-                animation = BalloonAnimation()
-                animation.run_animation(should_stop)
-                animation.cleanup()
+            # No animals animations - just clear and return
+            print("🐾 No animals animations configured")
         except Exception as e:
             print(f"❌ Error running animals animation: {e}")
             import traceback
@@ -2155,7 +2146,7 @@ class LEDDisplayApp:
         # Cycle to next object with bounds checking
         self.current_object_index = (self.current_object_index + 1) % len(self.objects_animations)
         
-        object_names = ["House", "Clock", "Traffic Lights"]
+        object_names = ["House", "Clock", "Traffic Lights", "Balloon"]
         
         # Ensure index is within bounds
         if self.current_object_index >= len(object_names):
@@ -2194,6 +2185,14 @@ class LEDDisplayApp:
                 self.run_clock_objects_animation()
             elif self.current_object_index == 2:
                 self.run_traffic_lights_animation()
+            elif self.current_object_index == 3:
+                # Balloon animation
+                def should_stop():
+                    return not self.objects_animation_running or getattr(self, 'animation_stop_flag', False)
+                from balloon_animation import BalloonAnimation
+                animation = BalloonAnimation()
+                animation.run_animation(should_stop)
+                animation.cleanup()
             else:
                 print(f"⚠️ Unknown object index: {self.current_object_index}")
         finally:
