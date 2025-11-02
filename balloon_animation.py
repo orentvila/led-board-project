@@ -19,7 +19,9 @@ class BalloonAnimation:
         print(f"Display dimensions: {self.width}x{self.height}")
         
         # Balloon dimensions
-        self.balloon_width = 24  # Width of balloon at widest point
+        # Width_factor can reach 1.7 at middle, so balloon_width needs to be adjusted
+        # To get max rendered width of 30: 30 / 1.7 ≈ 18
+        self.balloon_width = 18  # Base width - renders to ~30 pixels at widest point
         self.balloon_height = 30  # Height of balloon envelope
         self.basket_height = 6  # Height of basket
         
