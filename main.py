@@ -78,7 +78,8 @@ class LEDDisplayApp:
         
         # Animals animation system for Button 27
         self.animals_animations = [
-            "elephant_silhouette"
+            "elephant_silhouette",
+            "plane"
         ]
         self.current_animals_index = 0
         self.animals_animation_running = False
@@ -1284,7 +1285,7 @@ class LEDDisplayApp:
         self.current_animals_index = (self.current_animals_index + 1) % len(self.animals_animations)
         animation_name = self.animals_animations[self.current_animals_index]
         
-        animal_names = ["Elephant"]
+        animal_names = ["Elephant", "Plane"]
         animal_name = animal_names[self.current_animals_index]
         
         print(f"🐾 Starting {animal_name} animation...")
@@ -1310,6 +1311,12 @@ class LEDDisplayApp:
                 # Elephant silhouette animation
                 from elephant_silhouette_animation import ElephantSilhouetteAnimation
                 animation = ElephantSilhouetteAnimation()
+                animation.run_animation(should_stop)
+                animation.cleanup()
+            elif self.current_animals_index == 1:
+                # Plane animation
+                from plane_animation import PlaneAnimation
+                animation = PlaneAnimation()
                 animation.run_animation(should_stop)
                 animation.cleanup()
         except Exception as e:
