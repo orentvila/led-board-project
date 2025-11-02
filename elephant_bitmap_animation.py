@@ -67,8 +67,15 @@ class ElephantBitmapAnimation:
         self.led.clear()  # Black background
         
         # Draw elephant - only draw pixels that are 1 in the bitmap
+        # Exclude: bottom row (y=47) and left 4 pixels (x < 4)
         for y in range(min(self.height, 48)):
+            # Skip the bottom row
+            if y >= 47:
+                continue
             for x in range(min(self.width, 32)):
+                # Skip the first 4 pixels on the left
+                if x < 4:
+                    continue
                 if self.elephant_pixels[y][x] == 1:
                     self.safe_set_pixel(x, y, self.elephant_color)
         
