@@ -76,10 +76,8 @@ class LEDDisplayApp:
         self.current_object_index = 0
         self.objects_animation_running = False
         
-        # Clock/House animation cycling for Button 27
-        self.show_clock_first = True
-        self.clock_animation_running = False
-        self.house_animation_running = False
+        # Animals animation system for Button 27
+        self.animals_animation_running = False
         
         # Initialize audio system
         self.audio_available = False
@@ -122,8 +120,8 @@ class LEDDisplayApp:
         self.button_controller.register_callback(0, self.start_shapes_animation)
         # Button 17 (index 1) - Nature animations
         self.button_controller.register_callback(1, self.start_nature_animation)
-        # Button 27 (index 2) - Clock/House animation (cycle between them)
-        self.button_controller.register_callback(2, self.start_clock_or_house_animation)
+        # Button 27 (index 2) - Animals animation
+        self.button_controller.register_callback(2, self.start_animals_animation)
         # Button 22 (index 3) - Objects animations
         self.button_controller.register_callback(3, self.start_objects_animation)
     
@@ -1265,14 +1263,43 @@ class LEDDisplayApp:
         self.led.show()
         print("🕐 Animation finished")
     
-    def start_clock_or_house_animation(self):
-        """Start clock or house animation based on cycling flag."""
-        if self.show_clock_first:
-            self.show_clock_first = False  # Next time show house
-            self.start_clock_animation()
-        else:
-            self.show_clock_first = True  # Next time show clock
-            self.start_house_animation()
+    def start_animals_animation(self):
+        """Start animals pastel animation."""
+        print("🐾 Starting animals animation...")
+        self.stop_current_pattern()
+        
+        # Clear display and ensure everything is stopped
+        if hasattr(self, 'led'):
+            self.led.clear()
+            self.led.show()
+        
+        # Small delay to ensure everything is stopped
+        time.sleep(0.2)
+        
+        # Set the flag BEFORE starting the thread
+        self.animals_animation_running = True
+        
+        # Start the animals animation as a thread
+        self.current_pattern = threading.Thread(target=self.run_animals_animation)
+        self.current_pattern.daemon = False  # Don't use daemon threads
+        self.current_pattern.start()
+        
+        print("✅ Started animals animation")
+    
+    def run_animals_animation(self):
+        """Run the animals pastel animation."""
+        try:
+            from animals_pastel_animation import AnimalsPastelAnimation
+            animation = AnimalsPastelAnimation()
+            animation.run_animation()
+            animation.cleanup()
+        except Exception as e:
+            print(f"❌ Error running animals animation: {e}")
+            import traceback
+            traceback.print_exc()
+        finally:
+            self.animals_animation_running = False
+            print("🐾 Animals animation finished")
     
     def start_lion_animation(self):
         """Start lion animation."""
@@ -2379,6 +2406,7 @@ class LEDDisplayApp:
         self.shape_animation_running = False
         self.nature_animation_running = False
         self.lion_animation_running = False
+        self.animals_animation_running = False
         
         # Stop audio
         self.stop_animation_audio()
@@ -2468,7 +2496,7 @@ class LEDDisplayApp:
         print("Button controls (when connected):")
         print("  Button 18: Shapes animation")
         print("  Button 17: Nature animations")
-        print("  Button 27: Lion animation")
+        print("  Button 27: Animals animation")
         print("  Button 22: Objects animation")
         
         try:
