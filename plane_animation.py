@@ -27,7 +27,7 @@ class PlaneAnimation:
             self.led.set_pixel(x, y, color)
     
     def draw_plane(self, x_offset=0, y_offset=0):
-        """Draw the plane from top-down angled perspective (pointing up-right).
+        """Draw the plane as a solid black silhouette (pointing up-right).
         
         Args:
             x_offset: Horizontal offset for positioning
@@ -35,86 +35,98 @@ class PlaneAnimation:
         """
         self.led.clear()  # Black background
         
-        # Plane positioned at center, angled up-right (diagonal)
+        # Plane positioned at center, angled diagonally (nose up-right, tail down-left)
         center_x = self.width // 2 + x_offset
         center_y = self.height // 2 + y_offset
         
         # Plane dimensions (adjusted for 32x48 display)
-        fuselage_length = 14  # Main body length (diagonal)
-        wing_span = 16  # Wing width
-        tail_height = 6  # Vertical stabilizer height
+        fuselage_length = 16  # Main body length (diagonal)
+        nose_width = 5  # Wider at front
+        tail_width = 2  # Tapers to back
         
-        # Draw fuselage (main body) - diagonal line from bottom-left to top-right
-        # Simplified: draw as diagonal line with width
+        # Draw fuselage (main body) - diagonal, tapering from front to back
+        # Direction: from bottom-left (tail) to top-right (nose)
         for i in range(fuselage_length):
-            # Diagonal direction (up-right)
+            # Position along diagonal
+            progress = i / fuselage_length  # 0.0 at tail, 1.0 at nose
             fx = center_x - fuselage_length // 2 + i
-            fy = center_y - fuselage_length // 4 + i // 2
-            # Draw fuselage with some width
-            for offset in range(-2, 3):
-                self.safe_set_pixel(fx + offset, fy, self.plane_color)
-                self.safe_set_pixel(fx, fy + offset, self.plane_color)
+            fy = center_y + fuselage_length // 2 - i
+            
+            # Width tapers from nose (wider) to tail (narrower)
+            width = int(nose_width * (1 - progress) + tail_width * progress)
+            
+            # Draw fuselage with varying width
+            for offset in range(-width // 2, width // 2 + 1):
+                # Draw as filled shape
+                for wy in range(fy - 1, fy + 2):
+                    self.safe_set_pixel(fx + offset, wy, self.plane_color)
         
-        # Draw wings - extending perpendicular to fuselage
+        # Draw rounded nose
+        nose_x = center_x + fuselage_length // 2
+        nose_y = center_y - fuselage_length // 2
+        nose_radius = nose_width // 2
+        for dx in range(-nose_radius, nose_radius + 1):
+            for dy in range(-nose_radius, nose_radius + 1):
+                if dx * dx + dy * dy <= nose_radius * nose_radius:
+                    self.safe_set_pixel(nose_x + dx, nose_y + dy, self.plane_color)
+        
+        # Draw wings - extending horizontally from fuselage
+        # Left wing points upper-left, right wing points lower-right
         wing_center_x = center_x
         wing_center_y = center_y
+        wing_length = 10
+        wing_width = 4
         
-        # Left wing (extends down-left)
-        for i in range(wing_span // 2):
+        # Left wing (upper-left direction)
+        for i in range(wing_length):
             wx = wing_center_x - i
-            wy = wing_center_y + i // 2
-            for offset in range(-1, 2):
+            wy = wing_center_y - i
+            for offset in range(-wing_width // 2, wing_width // 2 + 1):
+                self.safe_set_pixel(wx + offset, wy, self.plane_color)
                 self.safe_set_pixel(wx, wy + offset, self.plane_color)
         
-        # Right wing (extends up-right)
-        for i in range(wing_span // 2):
+        # Round left wing tip
+        left_wing_tip_x = wing_center_x - wing_length
+        left_wing_tip_y = wing_center_y - wing_length
+        for dx in range(-2, 3):
+            for dy in range(-2, 3):
+                if dx * dx + dy * dy <= 4:
+                    self.safe_set_pixel(left_wing_tip_x + dx, left_wing_tip_y + dy, self.plane_color)
+        
+        # Right wing (lower-right direction)
+        for i in range(wing_length):
             wx = wing_center_x + i
-            wy = wing_center_y - i // 2
-            for offset in range(-1, 2):
+            wy = wing_center_y + i
+            for offset in range(-wing_width // 2, wing_width // 2 + 1):
+                self.safe_set_pixel(wx + offset, wy, self.plane_color)
                 self.safe_set_pixel(wx, wy + offset, self.plane_color)
         
-        # Draw engines - small circles under wings
-        engine_size = 2
-        engine_positions = [
-            (center_x - wing_span // 4, center_y + 2),  # Left wing engine
-            (center_x + wing_span // 4, center_y - 2),  # Right wing engine
-        ]
+        # Round right wing tip
+        right_wing_tip_x = wing_center_x + wing_length
+        right_wing_tip_y = wing_center_y + wing_length
+        for dx in range(-2, 3):
+            for dy in range(-2, 3):
+                if dx * dx + dy * dy <= 4:
+                    self.safe_set_pixel(right_wing_tip_x + dx, right_wing_tip_y + dy, self.plane_color)
         
-        for ex, ey in engine_positions:
-            for dx in range(-engine_size, engine_size + 1):
-                for dy in range(-engine_size, engine_size + 1):
-                    if dx * dx + dy * dy <= engine_size * engine_size:
-                        self.safe_set_pixel(ex + dx, ey + dy, self.plane_color)
-        
-        # Draw tail - vertical stabilizer at back (bottom-left)
+        # Draw tail - T-shaped (horizontal stabilizer wider, vertical shorter pointing down)
         tail_x = center_x - fuselage_length // 2
-        tail_y = center_y - fuselage_length // 4
+        tail_y = center_y + fuselage_length // 2
         
-        for i in range(tail_height):
-            self.safe_set_pixel(tail_x - 1, tail_y - i, self.plane_color)
-            self.safe_set_pixel(tail_x, tail_y - i, self.plane_color)
-            self.safe_set_pixel(tail_x + 1, tail_y - i, self.plane_color)
+        # Horizontal stabilizer (wider, extends left-right)
+        horiz_stab_width = 8
+        for i in range(horiz_stab_width):
+            hx = tail_x - horiz_stab_width // 2 + i
+            hy = tail_y
+            for offset in range(-1, 2):
+                self.safe_set_pixel(hx, hy + offset, self.plane_color)
         
-        # Draw horizontal stabilizer
-        for i in range(4):
-            self.safe_set_pixel(tail_x - 2 + i, tail_y - 1, self.plane_color)
-        
-        # Draw motion lines trailing from wings (diagonal lines)
-        motion_line_length = 4
-        
-        # Left wing motion lines
-        for i in range(3):
-            start_x = center_x - wing_span // 2
-            start_y = center_y + i - 1
-            for j in range(motion_line_length):
-                self.safe_set_pixel(start_x - j, start_y + j // 2, self.plane_color)
-        
-        # Right wing motion lines
-        for i in range(3):
-            start_x = center_x + wing_span // 2
-            start_y = center_y - i + 1
-            for j in range(motion_line_length):
-                self.safe_set_pixel(start_x + j, start_y - j // 2, self.plane_color)
+        # Vertical stabilizer (shorter, points down)
+        vert_stab_height = 5
+        for i in range(vert_stab_height):
+            self.safe_set_pixel(tail_x, tail_y + i, self.plane_color)
+            self.safe_set_pixel(tail_x - 1, tail_y + i, self.plane_color)
+            self.safe_set_pixel(tail_x + 1, tail_y + i, self.plane_color)
         
         self.led.show()
     
