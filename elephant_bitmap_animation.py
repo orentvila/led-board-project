@@ -61,11 +61,27 @@ class ElephantBitmapAnimation:
         
         # Animation settings
         self.ground_height = 3
-        # Calculate where to position elephant vertically (feet just above ground)
-        # Elephant height from bitmap is up to y=46 (we exclude row 47)
         # Ground starts at y = height - ground_height = 48 - 3 = 45
-        # So elephant should be positioned so its bottom is above y=45
-        self.elephant_bottom_y = self.height - self.ground_height - 1  # y=44 (just above ground)
+        self.ground_y = self.height - self.ground_height  # y=45
+        
+        # Find the actual bottom row of the elephant in the bitmap
+        # (the lowest row that has any pixels)
+        self.elephant_bitmap_bottom = None
+        for y in range(46, -1, -1):  # Check from bottom up, excluding row 47
+            has_pixels = False
+            for x in range(4, 32):  # Skip first 4 pixels
+                if self.elephant_pixels[y][x] == 1:
+                    has_pixels = True
+                    break
+            if has_pixels:
+                self.elephant_bitmap_bottom = y
+                break
+        
+        if self.elephant_bitmap_bottom is None:
+            self.elephant_bitmap_bottom = 46  # Fallback
+        
+        print(f"Elephant bitmap bottom row: {self.elephant_bitmap_bottom}")
+        print(f"Ground level: y={self.ground_y}")
         
     def safe_set_pixel(self, x, y, color):
         """Safely set a pixel if coordinates are within bounds."""
@@ -86,22 +102,17 @@ class ElephantBitmapAnimation:
             for x in range(self.width):
                 self.safe_set_pixel(x, y, self.ground_color)
         
-        # Draw elephant - positioned above the ground with offsets
-        # Elephant bitmap rows: 0-46 (we exclude row 47)
-        # Position elephant so its bottom aligns with elephant_bottom_y
-        elephant_bitmap_height = 47  # Rows 0-46 (excluding row 47)
-        
-        for bitmap_y in range(elephant_bitmap_height):
-            # Skip the bottom row of bitmap (y=47)
-            if bitmap_y >= 47:
-                continue
-                
+        # Draw elephant - positioned so its bottom pixels sit on the ground
+        # Position the elephant's actual bottom row at ground level
+        for bitmap_y in range(47):  # Rows 0-46 (excluding row 47)
             # Calculate actual screen Y position
-            # Start from top of elephant and position bottom at elephant_bottom_y
-            screen_y = self.elephant_bottom_y - (elephant_bitmap_height - 1 - bitmap_y) + y_offset
+            # Position elephant's bottom row (elephant_bitmap_bottom) at ground level
+            # So: screen_y = ground_y - (elephant_bitmap_bottom - bitmap_y) + y_offset
+            screen_y = self.ground_y - (self.elephant_bitmap_bottom - bitmap_y) + y_offset
             
-            # Skip if outside screen bounds
-            if screen_y < 0 or screen_y >= self.height - self.ground_height:
+            # Skip if outside screen bounds (above screen)
+            # Allow pixels at ground level (y=45) so elephant sits on ground
+            if screen_y < 0 or screen_y >= self.height:
                 continue
             
             for bitmap_x in range(32):
@@ -119,8 +130,8 @@ class ElephantBitmapAnimation:
                     elif screen_x >= self.width:
                         screen_x = screen_x - self.width
                     
-                    # Only draw if pixel is above the ground
-                    if screen_y < self.height - self.ground_height:
+                    # Draw elephant pixel (can be at ground level, elephant drawn on top of ground)
+                    if screen_y >= 0 and screen_y < self.height:
                         self.safe_set_pixel(screen_x, screen_y, self.elephant_color)
         
         self.led.show()
