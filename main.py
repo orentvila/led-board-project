@@ -1304,23 +1304,27 @@ class LEDDisplayApp:
     def run_animals_animation(self):
         """Run the current animals animation."""
         try:
+            # Create stop callback function
+            def should_stop():
+                return not self.animals_animation_running or getattr(self, 'animation_stop_flag', False)
+            
             if self.current_animals_index == 0:
                 # Animal sequence rotated
                 from animal_sequence_rotated_animation import AnimalSequenceRotatedAnimation
                 animation = AnimalSequenceRotatedAnimation()
-                animation.display_animal_sequence_rotated()
+                animation.display_animal_sequence_rotated(should_stop)
                 animation.cleanup()
             elif self.current_animals_index == 1:
                 # Dog animation
                 from dog_animation import DogAnimation
                 animation = DogAnimation()
-                animation.run_animation()
+                animation.run_animation(should_stop)
                 animation.cleanup()
             elif self.current_animals_index == 2:
                 # Rooster animation
                 from rooster_animation import RoosterAnimation
                 animation = RoosterAnimation()
-                animation.run_animation()
+                animation.run_animation(should_stop)
                 animation.cleanup()
         except Exception as e:
             print(f"❌ Error running animals animation: {e}")

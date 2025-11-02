@@ -139,14 +139,23 @@ class RoosterAnimation:
         
         print("Rooster pattern created successfully")
     
-    def run_animation(self):
-        """Run the rooster animation."""
+    def run_animation(self, should_stop=None):
+        """Run the rooster animation.
+        
+        Args:
+            should_stop: Optional callback function that returns True if animation should stop.
+        """
         duration = 20  # 20 seconds
         start_time = time.time()
         
         print("🐓 Starting rooster animation...")
         
         while time.time() - start_time < duration:
+            # Check stop flag
+            if should_stop and should_stop():
+                print("🐓 Rooster animation stopped by user")
+                break
+            
             self.led.clear()
             self.create_rooster()
             self.led.show()

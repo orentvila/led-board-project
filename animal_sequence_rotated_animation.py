@@ -291,8 +291,12 @@ class AnimalSequenceRotatedAnimation:
             for x in range(max(0, center_x + 3), min(self.width, center_x + 6)):
                 self.safe_set_pixel_rotated(x, y, self.colors['elephant_gray'])
     
-    def display_animal_sequence_rotated(self):
-        """Display the sequence: cat -> dog -> elephant (rotated 180 degrees)."""
+    def display_animal_sequence_rotated(self, should_stop=None):
+        """Display the sequence: cat -> dog -> elephant (rotated 180 degrees).
+        
+        Args:
+            should_stop: Optional callback function that returns True if animation should stop.
+        """
         print("🐱🐶🐘 Animal Sequence Animation (Rotated 180°) 🐱🐶🐘")
         print("Sequence: Cat (5s) -> Dog (5s) -> Elephant (5s)")
         
@@ -301,32 +305,67 @@ class AnimalSequenceRotatedAnimation:
             print("Displaying rotated Cat...")
             start_time = time.time()
             while time.time() - start_time < 5:
+                # Check stop flag
+                if should_stop and should_stop():
+                    print("⚠️ Animal sequence interrupted by user")
+                    return
+                
                 self.led.clear()
                 self.create_cat_rotated()
                 self.led.show()
                 time.sleep(0.1)
             print("✅ Cat display completed!")
             
-            # Brief pause between animals
-            time.sleep(1)
+            # Check stop flag before continuing
+            if should_stop and should_stop():
+                print("⚠️ Animal sequence interrupted by user")
+                return
+            
+            # Brief pause between animals (interruptible)
+            pause_start = time.time()
+            while time.time() - pause_start < 1.0:
+                if should_stop and should_stop():
+                    print("⚠️ Animal sequence interrupted by user")
+                    return
+                time.sleep(0.1)
             
             # Display dog
             print("Displaying rotated Dog...")
             start_time = time.time()
             while time.time() - start_time < 5:
+                # Check stop flag
+                if should_stop and should_stop():
+                    print("⚠️ Animal sequence interrupted by user")
+                    return
+                
                 self.led.clear()
                 self.create_dog_rotated()
                 self.led.show()
                 time.sleep(0.1)
             print("✅ Dog display completed!")
             
-            # Brief pause between animals
-            time.sleep(1)
+            # Check stop flag before continuing
+            if should_stop and should_stop():
+                print("⚠️ Animal sequence interrupted by user")
+                return
+            
+            # Brief pause between animals (interruptible)
+            pause_start = time.time()
+            while time.time() - pause_start < 1.0:
+                if should_stop and should_stop():
+                    print("⚠️ Animal sequence interrupted by user")
+                    return
+                time.sleep(0.1)
             
             # Display elephant
             print("Displaying rotated Elephant...")
             start_time = time.time()
             while time.time() - start_time < 5:
+                # Check stop flag
+                if should_stop and should_stop():
+                    print("⚠️ Animal sequence interrupted by user")
+                    return
+                
                 self.led.clear()
                 self.create_elephant_rotated()
                 self.led.show()

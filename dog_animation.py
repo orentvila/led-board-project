@@ -124,14 +124,23 @@ class DogAnimation:
         
         print("Dog pattern created successfully")
     
-    def run_animation(self):
-        """Run the dog animation."""
+    def run_animation(self, should_stop=None):
+        """Run the dog animation.
+        
+        Args:
+            should_stop: Optional callback function that returns True if animation should stop.
+        """
         duration = 20  # 20 seconds
         start_time = time.time()
         
         print("🐶 Starting dog animation...")
         
         while time.time() - start_time < duration:
+            # Check stop flag
+            if should_stop and should_stop():
+                print("🐶 Dog animation stopped by user")
+                break
+            
             self.led.clear()
             self.create_dog()
             self.led.show()
