@@ -99,25 +99,15 @@ class BalloonAnimation:
             return self.ropes_color
     
     def draw_balloon(self, brightness=1.0, frame=0):
-        """Draw the balloon from the bitmap data with improved visuals.
+        """Draw the balloon from the bitmap data - no background.
         
         Args:
             brightness: Brightness multiplier (0.0 to 1.0)
             frame: Animation frame number for subtle effects
         """
-        self.led.clear()
+        self.led.clear()  # Black background
         
-        # Draw sky background with gradient
-        for y in range(self.height):
-            # Sky gradient: lighter at top (horizon effect)
-            gradient_factor = y / self.height
-            sky_r = int(self.sky_color[0] * (0.7 + gradient_factor * 0.3))
-            sky_g = int(self.sky_color[1] * (0.7 + gradient_factor * 0.3))
-            sky_b = int(self.sky_color[2] * (0.7 + gradient_factor * 0.3))
-            for x in range(self.width):
-                self.safe_set_pixel(x, y, (sky_r, sky_g, sky_b))
-        
-        # Draw balloon with enhanced appearance
+        # Draw only the balloon - no background
         for y in range(min(self.height, 48)):
             for x in range(min(self.width, 32)):
                 if self.balloon_pixels[y][x] == 1:
@@ -130,22 +120,6 @@ class BalloonAnimation:
                     b = int(color[2] * brightness)
                     
                     self.safe_set_pixel(x, y, (r, g, b))
-                    
-                    # Add subtle outline/glow effect for better visibility
-                    for dy in [-1, 0, 1]:
-                        for dx in [-1, 0, 1]:
-                            if dx == 0 and dy == 0:
-                                continue
-                            nx, ny = x + dx, y + dy
-                            if 0 <= nx < self.width and 0 <= ny < self.height:
-                                # Check if this is just outside the balloon
-                                if ny < 48 and nx < 32:
-                                    if self.balloon_pixels[ny][nx] == 0:
-                                        # This is sky next to balloon, add subtle glow
-                                        glow_r = min(255, int(self.sky_color[0] + r * 0.15))
-                                        glow_g = min(255, int(self.sky_color[1] + g * 0.15))
-                                        glow_b = min(255, int(self.sky_color[2] + b * 0.15))
-                                        self.safe_set_pixel(nx, ny, (glow_r, glow_g, glow_b))
         
         self.led.show()
     
