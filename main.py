@@ -78,9 +78,8 @@ class LEDDisplayApp:
         
         # Animals animation system for Button 27
         self.animals_animations = [
-            "animal_sequence_rotated",
-            "dog",
-            "rooster"
+            "cat",
+            "duck"
         ]
         self.current_animals_index = 0
         self.animals_animation_running = False
@@ -1286,7 +1285,7 @@ class LEDDisplayApp:
         self.current_animals_index = (self.current_animals_index + 1) % len(self.animals_animations)
         animation_name = self.animals_animations[self.current_animals_index]
         
-        animal_names = ["Animal Sequence (Rotated)", "Dog", "Rooster"]
+        animal_names = ["Cat", "Duck"]
         animal_name = animal_names[self.current_animals_index]
         
         print(f"🐾 Starting {animal_name} animation...")
@@ -1309,21 +1308,15 @@ class LEDDisplayApp:
                 return not self.animals_animation_running or getattr(self, 'animation_stop_flag', False)
             
             if self.current_animals_index == 0:
-                # Animal sequence rotated
-                from animal_sequence_rotated_animation import AnimalSequenceRotatedAnimation
-                animation = AnimalSequenceRotatedAnimation()
-                animation.display_animal_sequence_rotated(should_stop)
-                animation.cleanup()
-            elif self.current_animals_index == 1:
-                # Dog animation
-                from dog_animation import DogAnimation
-                animation = DogAnimation()
+                # Cat animation
+                from cat_animation import CatAnimation
+                animation = CatAnimation()
                 animation.run_animation(should_stop)
                 animation.cleanup()
-            elif self.current_animals_index == 2:
-                # Rooster animation
-                from rooster_animation import RoosterAnimation
-                animation = RoosterAnimation()
+            elif self.current_animals_index == 1:
+                # Duck animation
+                from duck_animation import DuckAnimation
+                animation = DuckAnimation()
                 animation.run_animation(should_stop)
                 animation.cleanup()
         except Exception as e:
