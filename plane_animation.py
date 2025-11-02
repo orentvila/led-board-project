@@ -33,7 +33,7 @@ class PlaneAnimation:
             self.led.set_pixel(x, y, color)
     
     def draw_plane(self, x_offset=0, y_offset=0, frame=0):
-        """Draw the plane as a solid black silhouette (pointing up-right) with smoke.
+        """Draw the plane as a horizontal silhouette (tail left, nose right) with smoke.
         
         Args:
             x_offset: Horizontal offset for positioning
@@ -42,103 +42,73 @@ class PlaneAnimation:
         """
         self.led.clear()  # Black background
         
-        # Plane positioned at center, angled diagonally (nose up-right, tail down-left)
+        # Plane positioned horizontally (tail on left, nose on right)
         center_x = self.width // 2 + x_offset
         center_y = self.height // 2 + y_offset
         
-        # Plane dimensions - smaller (adjusted for 32x48 display)
-        fuselage_length = 10  # Main body length (diagonal) - reduced from 16
-        nose_width = 3  # Wider at front - reduced from 5
-        tail_width = 1  # Tapers to back - reduced from 2
+        # Plane dimensions - smaller silhouette
+        fuselage_width = 4  # Width of fuselage (vertical oval)
+        fuselage_height = 12  # Height of fuselage
+        wing_length = 8  # Wings extend left and right
+        wing_thickness = 3  # Thickness of wing bar
+        tail_width = 2  # Tail fin width
+        tail_height = 6  # Tail fin height
         
-        # Draw fuselage (main body) - diagonal, tapering from front to back
-        # Direction: from bottom-left (tail) to top-right (nose)
-        for i in range(fuselage_length):
-            # Position along diagonal
-            progress = i / fuselage_length  # 0.0 at tail, 1.0 at nose
-            fx = center_x - fuselage_length // 2 + i
-            fy = center_y + fuselage_length // 2 - i
+        # Draw fuselage - vertical rounded rectangle/oval (thicker in middle)
+        fuselage_x = center_x
+        fuselage_start_y = center_y - fuselage_height // 2
+        fuselage_end_y = center_y + fuselage_height // 2
+        
+        for y in range(fuselage_start_y, fuselage_end_y):
+            # Width varies - wider in middle, narrower at ends
+            progress = (y - fuselage_start_y) / fuselage_height
+            # Create rounded ends
+            if progress < 0.2 or progress > 0.8:
+                width = int(fuselage_width * (1 - abs(progress * 2 - 1) * 2))
+            else:
+                width = fuselage_width
             
-            # Width tapers from nose (wider) to tail (narrower)
-            width = int(nose_width * (1 - progress) + tail_width * progress)
-            
-            # Draw fuselage with varying width
             for offset in range(-width // 2, width // 2 + 1):
-                # Draw as filled shape
-                for wy in range(fy - 1, fy + 2):
-                    self.safe_set_pixel(fx + offset, wy, self.plane_color)
+                self.safe_set_pixel(fuselage_x + offset, y, self.plane_color)
         
-        # Draw rounded nose
-        nose_x = center_x + fuselage_length // 2
-        nose_y = center_y - fuselage_length // 2
-        nose_radius = nose_width // 2
-        for dx in range(-nose_radius, nose_radius + 1):
-            for dy in range(-nose_radius, nose_radius + 1):
-                if dx * dx + dy * dy <= nose_radius * nose_radius:
-                    self.safe_set_pixel(nose_x + dx, nose_y + dy, self.plane_color)
+        # Draw wings - horizontal bar intersecting fuselage (middle)
+        wing_y = center_y
+        wing_start_x = fuselage_x - wing_length
+        wing_end_x = fuselage_x + wing_length
         
-        # Draw wings - extending horizontally from fuselage
-        # Left wing points upper-left, right wing points lower-right
-        wing_center_x = center_x
-        wing_center_y = center_y
-        wing_length = 6  # Reduced from 10
-        wing_width = 2  # Reduced from 4
+        for x in range(wing_start_x, wing_end_x):
+            for offset in range(-wing_thickness // 2, wing_thickness // 2 + 1):
+                self.safe_set_pixel(x, wing_y + offset, self.plane_color)
         
-        # Left wing (upper-left direction)
-        for i in range(wing_length):
-            wx = wing_center_x - i
-            wy = wing_center_y - i
-            for offset in range(-wing_width // 2, wing_width // 2 + 1):
-                self.safe_set_pixel(wx + offset, wy, self.plane_color)
-                self.safe_set_pixel(wx, wy + offset, self.plane_color)
+        # Round wing tips
+        for offset in range(-wing_thickness // 2, wing_thickness // 2 + 1):
+            for wy in range(wing_y - 1, wing_y + 2):
+                self.safe_set_pixel(wing_start_x, wy, self.plane_color)
+                self.safe_set_pixel(wing_end_x, wy, self.plane_color)
         
-        # Round left wing tip
-        left_wing_tip_x = wing_center_x - wing_length
-        left_wing_tip_y = wing_center_y - wing_length
-        for dx in range(-2, 3):
-            for dy in range(-2, 3):
-                if dx * dx + dy * dy <= 4:
-                    self.safe_set_pixel(left_wing_tip_x + dx, left_wing_tip_y + dy, self.plane_color)
+        # Draw tail fin - attached to left end of wing (vertical rounded rectangle)
+        tail_x = wing_start_x - 1
+        tail_start_y = wing_y
+        tail_end_y = wing_y + tail_height
         
-        # Right wing (lower-right direction)
-        for i in range(wing_length):
-            wx = wing_center_x + i
-            wy = wing_center_y + i
-            for offset in range(-wing_width // 2, wing_width // 2 + 1):
-                self.safe_set_pixel(wx + offset, wy, self.plane_color)
-                self.safe_set_pixel(wx, wy + offset, self.plane_color)
+        for y in range(tail_start_y, tail_end_y):
+            # Tail width varies slightly for rounded effect
+            if y == tail_start_y or y == tail_end_y - 1:
+                width = max(1, tail_width - 1)
+            else:
+                width = tail_width
+            
+            for offset in range(-width // 2, width // 2 + 1):
+                self.safe_set_pixel(tail_x + offset, y, self.plane_color)
         
-        # Round right wing tip
-        right_wing_tip_x = wing_center_x + wing_length
-        right_wing_tip_y = wing_center_y + wing_length
-        for dx in range(-2, 3):
-            for dy in range(-2, 3):
-                if dx * dx + dy * dy <= 4:
-                    self.safe_set_pixel(right_wing_tip_x + dx, right_wing_tip_y + dy, self.plane_color)
+        # Round tail fin top
+        for offset in range(-tail_width // 2, tail_width // 2 + 1):
+            self.safe_set_pixel(tail_x + offset, tail_start_y, self.plane_color)
         
-        # Draw tail - T-shaped (horizontal stabilizer wider, vertical shorter pointing down)
-        tail_x = center_x - fuselage_length // 2
-        tail_y = center_y + fuselage_length // 2
-        
-        # Horizontal stabilizer (wider, extends left-right)
-        horiz_stab_width = 5  # Reduced from 8
-        for i in range(horiz_stab_width):
-            hx = tail_x - horiz_stab_width // 2 + i
-            hy = tail_y
-            self.safe_set_pixel(hx, hy, self.plane_color)
-            self.safe_set_pixel(hx, hy + 1, self.plane_color)
-        
-        # Vertical stabilizer (shorter, points down)
-        vert_stab_height = 3  # Reduced from 5
-        for i in range(vert_stab_height):
-            self.safe_set_pixel(tail_x, tail_y + i, self.plane_color)
-            self.safe_set_pixel(tail_x - 1, tail_y + i, self.plane_color)
-        
-        # Draw smoke trailing from tail (opposite direction)
-        # Calculate absolute tail position for smoke
-        abs_tail_x = tail_x
-        abs_tail_y = tail_y
-        self.draw_smoke(abs_tail_x, abs_tail_y, frame)
+        # Draw smoke trailing from tail (to the left, opposite of plane direction)
+        smoke_x = tail_x - 2  # Smoke comes from back of tail
+        smoke_y = wing_y + 1
+        self.draw_smoke(smoke_x, smoke_y, frame)
         
         self.led.show()
     
@@ -149,28 +119,30 @@ class PlaneAnimation:
             tail_x, tail_y: Position of plane tail (where smoke originates)
             frame: Animation frame number for smoke animation
         """
-        # Smoke moves in opposite direction (down-left, opposite to plane's up-right movement)
+        # Smoke moves to the left (opposite to plane's rightward movement)
         # Smoke trail consists of particles that fade out
-        smoke_particles = 8  # Number of smoke particles in trail
+        smoke_particles = 10  # Number of smoke particles in trail
         
         for i in range(smoke_particles):
-            # Each particle is offset in the opposite direction of plane movement (down-left)
-            offset_x = -(i * 2 + (frame % 3))  # Move left
-            offset_y = i * 2 + (frame % 3)  # Move down
+            # Each particle is offset to the left (opposite direction)
+            offset_x = -(i * 2 + (frame % 4))  # Move left
+            # Add slight vertical spread for natural smoke effect
+            offset_y = (i % 3 - 1) + ((frame // 2) % 3 - 1)
             
             smoke_x = tail_x + offset_x
             smoke_y = tail_y + offset_y
             
             # Fade out smoke as it gets further
             if i < len(self.smoke_colors):
-                smoke_color = self.smoke_colors[i]
+                smoke_color = self.smoke_colors[min(i, len(self.smoke_colors) - 1)]
             else:
                 smoke_color = (40, 40, 40)  # Very faint
             
-            # Draw smoke particle with some spread
-            for dx in range(-1, 2):
-                for dy in range(-1, 2):
-                    if dx * dx + dy * dy <= 1:  # Small circular particles
+            # Draw smoke particle with some spread (larger particles for visibility)
+            particle_size = 2 if i < 3 else 1
+            for dx in range(-particle_size, particle_size + 1):
+                for dy in range(-particle_size, particle_size + 1):
+                    if dx * dx + dy * dy <= particle_size * particle_size:
                         self.safe_set_pixel(smoke_x + dx, smoke_y + dy, smoke_color)
     
     def run_animation(self, should_stop=None):
@@ -185,14 +157,13 @@ class PlaneAnimation:
         
         print("✈️ Starting plane animation...")
         
-        # Animation path: plane flies from bottom-left to top-right diagonally
-        # Start position: bottom-left (off screen initially)
-        # End position: top-right (off screen)
-        start_x = -12  # Start off-screen left
-        start_y = self.height + 8  # Start off-screen bottom
-        end_x = self.width + 12  # End off-screen right
-        end_y = -8  # End off-screen top
+        # Animation path: plane flies horizontally from left to right
+        # Smooth horizontal movement
+        start_x = -20  # Start off-screen left
+        end_x = self.width + 20  # End off-screen right
+        center_y = self.height // 2  # Stay in vertical center
         
+        # Use smooth easing for more natural movement
         while time.time() - start_time < duration:
             # Check stop flag
             if should_stop and should_stop():
@@ -202,9 +173,13 @@ class PlaneAnimation:
             elapsed = time.time() - start_time
             progress = min(1.0, elapsed / duration)
             
-            # Calculate plane position (diagonal movement)
-            current_x = start_x + (end_x - start_x) * progress
-            current_y = start_y + (end_y - start_y) * progress
+            # Smooth easing function for more natural motion
+            # Ease-in-out: slow at start and end, fast in middle
+            eased_progress = progress * progress * (3.0 - 2.0 * progress)
+            
+            # Calculate plane position (horizontal movement only)
+            current_x = start_x + (end_x - start_x) * eased_progress
+            current_y = center_y
             
             # Draw plane at current position with smoke
             self.draw_plane(x_offset=int(current_x - self.width // 2), 
@@ -212,7 +187,7 @@ class PlaneAnimation:
                           frame=frame)
             
             frame += 1
-            time.sleep(0.05)  # 20 FPS for smoother animation
+            time.sleep(0.03)  # ~33 FPS for smoother animation
         
         print("✈️ Plane animation completed!")
         
