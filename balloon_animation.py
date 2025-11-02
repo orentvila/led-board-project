@@ -108,10 +108,11 @@ class BalloonAnimation:
         # Calculate center position
         center_x = self.width // 2
         balloon_left = center_x - self.scaled_width // 2
-        balloon_right = center_x + self.scaled_width // 2
         
-        # Draw scaled balloon
-        # Scale down by drawing every Nth pixel based on scale_factor
+        # Track the actual maximum x coordinate we draw to
+        max_display_x = -1
+        
+        # Draw scaled balloon - only draw pixels that exist in the bitmap
         for orig_y in range(48):
             for orig_x in range(32):
                 if self.balloon_pixels[orig_y][orig_x] == 1:
@@ -123,8 +124,12 @@ class BalloonAnimation:
                     display_x = balloon_left + scaled_x
                     display_y = scaled_y + y_offset
                     
-                    # Strict bounds checking - only draw within balloon bounds
-                    if balloon_left <= display_x < balloon_right and 0 <= display_y < self.height:
+                    # Track maximum x for cleanup
+                    if display_x > max_display_x:
+                        max_display_x = display_x
+                    
+                    # Only draw if within screen bounds
+                    if 0 <= display_x < self.width and 0 <= display_y < self.height:
                         # Determine color based on position
                         # For basket/ropes area (rows 28-48), use pale yellow
                         if orig_y >= 28:
@@ -140,11 +145,19 @@ class BalloonAnimation:
                         
                         self.safe_set_pixel(display_x, display_y, (r, g, b))
         
-        # Explicitly turn off any pixels beyond the balloon width
+        # Explicitly turn off all pixels to the right of the balloon
+        # Use the maximum x we actually drew, plus a small margin for safety
+        right_boundary = max_display_x + 1 if max_display_x >= 0 else balloon_left + self.scaled_width
+        
+        # Clear everything to the right of the balloon
         for y in range(self.height):
-            for x in range(self.width):
-                if x < balloon_left or x >= balloon_right:
-                    self.safe_set_pixel(x, y, (0, 0, 0))
+            for x in range(right_boundary, self.width):
+                self.safe_set_pixel(x, y, (0, 0, 0))
+        
+        # Also clear everything to the left of the balloon
+        for y in range(self.height):
+            for x in range(balloon_left):
+                self.safe_set_pixel(x, y, (0, 0, 0))
         
         self.led.show()
     
