@@ -2260,9 +2260,12 @@ class LEDDisplayApp:
         self.led.clear()
         self.led.show()
         
-        # Reset stop flags
+        # Reset stop flags FIRST, before creating animation
         self.animation_stop_flag = False
         self.objects_animation_running = True
+        
+        # Small delay to ensure flags are properly set
+        time.sleep(0.1)
         
         try:
             # Ensure index is within bounds
@@ -2275,6 +2278,7 @@ class LEDDisplayApp:
             elif self.current_object_index == 1:
                 # Balloon animation
                 def should_stop():
+                    # Only stop if explicitly set to stop
                     return not self.objects_animation_running or getattr(self, 'animation_stop_flag', False)
                 from balloon_animation import BalloonAnimation
                 animation = BalloonAnimation()

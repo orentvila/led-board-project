@@ -180,11 +180,6 @@ class BalloonAnimation:
         total_distance = start_y_offset - end_y_offset
         
         while time.time() - start_time < duration:
-            # Check stop flag
-            if should_stop and should_stop():
-                print("🎈 Balloon animation stopped by user")
-                break
-            
             elapsed = time.time() - start_time
             
             # Calculate y_offset for flying up - single cycle over full duration
@@ -197,8 +192,15 @@ class BalloonAnimation:
             # Subtle brightness pulse
             pulse = 0.9 + 0.1 * (1.0 + math.sin(elapsed * 1.5)) / 2.0  # 0.9 to 1.0
             
+            # Draw the balloon first, then check stop flag
             self.draw_balloon(brightness=pulse, y_offset=y_offset)
             frame += 1
+            
+            # Check stop flag AFTER drawing, with a small sleep
+            if should_stop and should_stop():
+                print("🎈 Balloon animation stopped by user")
+                break
+            
             time.sleep(0.05)  # 20 FPS for smoother animation
         
         print("🎈 Balloon animation completed!")
