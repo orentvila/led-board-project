@@ -171,6 +171,14 @@ class BalloonAnimation:
         
         print("🎈 Starting balloon animation...")
         
+        # Check stop flag before starting (with debug info)
+        if should_stop:
+            stop_before_start = should_stop()
+            if stop_before_start:
+                print("🎈 Balloon animation stopped before starting (stop flag already set)")
+                print(f"🎈 Debug: should_stop() returned {stop_before_start}")
+                return
+        
         # Animation: balloon starts at bottom, flies up once over 20 seconds
         # Start from completely below the screen (original animals button version)
         total_balloon_height = self.balloon_height + 4 + self.basket_height  # envelope + transition + basket = 40 pixels
@@ -178,6 +186,10 @@ class BalloonAnimation:
         start_y_offset = self.height + total_balloon_height  # Start completely below screen
         end_y_offset = -total_balloon_height  # End above screen
         total_distance = start_y_offset - end_y_offset
+        
+        # Draw first frame immediately
+        self.draw_balloon(brightness=1.0, y_offset=start_y_offset)
+        time.sleep(0.05)  # Show first frame
         
         while time.time() - start_time < duration:
             elapsed = time.time() - start_time

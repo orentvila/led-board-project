@@ -2277,11 +2277,22 @@ class LEDDisplayApp:
                 self.run_house_animation()
             elif self.current_object_index == 1:
                 # Balloon animation
+                # Make sure flags are still set correctly after the delay
+                self.animation_stop_flag = False
+                self.objects_animation_running = True
+                
                 def should_stop():
-                    # Only stop if explicitly set to stop
-                    return not self.objects_animation_running or getattr(self, 'animation_stop_flag', False)
+                    # Check the flags - only stop if explicitly requested
+                    stop_requested = getattr(self, 'animation_stop_flag', False)
+                    running = getattr(self, 'objects_animation_running', False)
+                    result = stop_requested or not running
+                    if result:
+                        print(f"🎈 Stop check: stop_requested={stop_requested}, running={running}, result={result}")
+                    return result
+                
                 from balloon_animation import BalloonAnimation
                 animation = BalloonAnimation()
+                
                 animation.run_animation(should_stop)
                 animation.cleanup()
             else:
