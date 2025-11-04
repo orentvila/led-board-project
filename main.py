@@ -78,9 +78,8 @@ class LEDDisplayApp:
         
         # Animals animation system for Button 27
         self.animals_animations = [
-            "lion", "deer", "cat", "snail", "horse", "sheep", "jellyfish", "birds",
-            "lion_bitmap", "deer_bitmap", "cat_bitmap", "snail_bitmap", 
-            "horse_bitmap", "sheep_bitmap", "jellyfish_bitmap", "birds_bitmap"
+            "deer_bitmap", "cat_bitmap", "snail_bitmap", 
+            "horse_bitmap", "jellyfish_bitmap", "birds_bitmap"
         ]
         self.current_animals_index = 0
         self.animals_animation_running = False
@@ -1292,9 +1291,7 @@ class LEDDisplayApp:
         animation_name = self.animals_animations[self.current_animals_index]
         
         animal_names = [
-            "Lion", "Deer", "Cat", "Snail", "Horse", "Sheep", "Jellyfish", "Birds",
-            "Lion (Bitmap)", "Deer (Bitmap)", "Cat (Bitmap)", "Snail (Bitmap)",
-            "Horse (Bitmap)", "Sheep (Bitmap)", "Jellyfish (Bitmap)", "Birds (Bitmap)"
+            "Deer", "Cat", "Snail", "Horse", "Jellyfish", "Birds"
         ]
         animal_name = animal_names[self.current_animals_index]
         
@@ -1319,52 +1316,7 @@ class LEDDisplayApp:
             
             animation_name = self.animals_animations[self.current_animals_index]
             
-            if animation_name == "lion":
-                from lion_static_animation import LionStaticAnimation
-                animation = LionStaticAnimation()
-                animation.run_animation(should_stop)
-                animation.cleanup()
-            elif animation_name == "deer":
-                from deer_static_animation import DeerStaticAnimation
-                animation = DeerStaticAnimation()
-                animation.run_animation(should_stop)
-                animation.cleanup()
-            elif animation_name == "cat":
-                from cat_static_animation import CatStaticAnimation
-                animation = CatStaticAnimation()
-                animation.run_animation(should_stop)
-                animation.cleanup()
-            elif animation_name == "snail":
-                from snail_static_animation import SnailStaticAnimation
-                animation = SnailStaticAnimation()
-                animation.run_animation(should_stop)
-                animation.cleanup()
-            elif animation_name == "horse":
-                from horse_static_animation import HorseStaticAnimation
-                animation = HorseStaticAnimation()
-                animation.run_animation(should_stop)
-                animation.cleanup()
-            elif animation_name == "sheep":
-                from sheep_static_animation import SheepStaticAnimation
-                animation = SheepStaticAnimation()
-                animation.run_animation(should_stop)
-                animation.cleanup()
-            elif animation_name == "jellyfish":
-                from jellyfish_static_animation import JellyfishStaticAnimation
-                animation = JellyfishStaticAnimation()
-                animation.run_animation(should_stop)
-                animation.cleanup()
-            elif animation_name == "birds":
-                from birds_static_animation import BirdsStaticAnimation
-                animation = BirdsStaticAnimation()
-                animation.run_animation(should_stop)
-                animation.cleanup()
-            elif animation_name == "lion_bitmap":
-                from lion_static_animation_bitmap import LionStaticAnimationBitmap
-                animation = LionStaticAnimationBitmap()
-                animation.run_animation(should_stop)
-                animation.cleanup()
-            elif animation_name == "deer_bitmap":
+            if animation_name == "deer_bitmap":
                 from deer_static_animation_bitmap import DeerStaticAnimationBitmap
                 animation = DeerStaticAnimationBitmap()
                 animation.run_animation(should_stop)
@@ -1382,11 +1334,6 @@ class LEDDisplayApp:
             elif animation_name == "horse_bitmap":
                 from horse_static_animation_bitmap import HorseStaticAnimationBitmap
                 animation = HorseStaticAnimationBitmap()
-                animation.run_animation(should_stop)
-                animation.cleanup()
-            elif animation_name == "sheep_bitmap":
-                from sheep_static_animation_bitmap import SheepStaticAnimationBitmap
-                animation = SheepStaticAnimationBitmap()
                 animation.run_animation(should_stop)
                 animation.cleanup()
             elif animation_name == "jellyfish_bitmap":
