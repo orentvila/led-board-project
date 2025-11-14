@@ -15,10 +15,12 @@ class HorseStaticAnimationBitmap:
         self.width = config.TOTAL_WIDTH  # 32
         self.height = config.TOTAL_HEIGHT  # 48
         
-        # Horse bitmap data (32x48 pixels) - running pose
-        # Format: 0x00 = horse pixel (black), 0xff = background (white)
-        # We'll invert this so 1 = horse, 0 = background
-        bitmap_hex = [
+        # Horse bitmap data (32x48 pixels) - 3 frames for running animation
+        # Format: 0x00 = background, non-zero bits = horse pixels
+        # We convert so 1 = horse pixel, 0 = background
+        
+        # Frame 0: Original/base running pose
+        bitmap_frame0 = [
             0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
             0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
             0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -33,21 +35,57 @@ class HorseStaticAnimationBitmap:
             0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
         ]
         
-        # Convert bitmap to pixel array
-        # The bitmap uses 0x00 for background, non-zero bits for horse pixels
-        # We convert so 1 = horse pixel, 0 = background
-        self.horse_base_pixels = []
-        for row in range(48):
-            row_data = []
-            byte_start = row * 4
-            for col in range(32):
-                byte_index = byte_start + (col // 8)
-                bit_index = 7 - (col % 8)
-                byte_value = bitmap_hex[byte_index]
-                pixel = (byte_value >> bit_index) & 1
-                # 1 = horse pixel (black), 0 = background (white/transparent)
-                row_data.append(pixel)
-            self.horse_base_pixels.append(row_data)
+        # Frame 1: First running variation (leg movement)
+        bitmap_frame1 = [
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x40, 0x00, 0x00, 0x01, 0xe0, 0x00, 0x00, 0x03, 0xe0, 0x00, 0x00, 0x0f, 0xf0,
+            0x00, 0x00, 0x1f, 0xf8, 0x03, 0xff, 0xff, 0x98, 0x0f, 0xff, 0xff, 0x00, 0x1e, 0x7f, 0xfe, 0x00,
+            0x30, 0xff, 0xfe, 0x00, 0x00, 0xff, 0xfe, 0x00, 0x01, 0xf7, 0xff, 0xc0, 0x03, 0xe0, 0x07, 0x60,
+            0x06, 0xc0, 0x03, 0x30, 0x09, 0x80, 0x01, 0x08, 0x31, 0x00, 0x00, 0x80, 0x61, 0x00, 0x00, 0x40,
+            0x01, 0x00, 0x00, 0x20, 0x00, 0x80, 0x00, 0x30, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+        ]
+        
+        # Frame 2: Second running variation (leg movement)
+        bitmap_frame2 = [
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x40, 0x00, 0x00, 0x01, 0xe0, 0x00, 0x00, 0x03, 0xe0, 0x00, 0x00, 0x0f, 0xf0,
+            0x00, 0x00, 0x1f, 0xf8, 0x03, 0xff, 0xff, 0x98, 0x0f, 0xff, 0xff, 0x00, 0x1e, 0x7f, 0xfe, 0x00,
+            0x30, 0xff, 0xfe, 0x20, 0x00, 0xff, 0xfe, 0x00, 0x01, 0xf7, 0xff, 0xc0, 0x03, 0xe0, 0x07, 0x20,
+            0x06, 0xc0, 0x03, 0x10, 0x09, 0x80, 0x01, 0x0c, 0x31, 0x00, 0x00, 0x80, 0x61, 0x00, 0x00, 0x80,
+            0x01, 0x00, 0x00, 0x40, 0x00, 0x80, 0x00, 0x60, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+        ]
+        
+        # Convert all bitmaps to pixel arrays
+        self.horse_frames = []
+        for bitmap_hex in [bitmap_frame0, bitmap_frame1, bitmap_frame2]:
+            frame_pixels = []
+            for row in range(48):
+                row_data = []
+                byte_start = row * 4
+                for col in range(32):
+                    byte_index = byte_start + (col // 8)
+                    bit_index = 7 - (col % 8)
+                    byte_value = bitmap_hex[byte_index]
+                    pixel = (byte_value >> bit_index) & 1
+                    # 1 = horse pixel (black), 0 = background (white/transparent)
+                    row_data.append(pixel)
+                frame_pixels.append(row_data)
+            self.horse_frames.append(frame_pixels)
+        
+        # Use frame 0 as base for dimensions calculation
+        self.horse_base_pixels = self.horse_frames[0]
         
         # Colors
         self.horse_color = (139, 69, 19)  # Brown horse (saddle brown)
@@ -75,16 +113,8 @@ class HorseStaticAnimationBitmap:
         
         print(f"Horse dimensions: {self.horse_actual_width}x{self.horse_actual_height}, offset: ({self.horse_offset_x}, {self.horse_offset_y})")
         
-        # Identify leg regions for animation
-        # Legs are in the lower portion of the bitmap (rows ~30-47)
-        # Front legs are typically on the left (x < 16), back legs on right (x >= 16)
-        self.leg_y_start = 30  # Legs start around row 30
-        self.leg_y_end = 48    # Legs go to bottom
-        
-        # Separate legs: Front Left, Front Right, Back Left, Back Right
-        # We'll identify legs by their X position ranges
-        self.front_leg_x_range = (0, 15)   # Front legs on left side
-        self.back_leg_x_range = (16, 31)   # Back legs on right side
+        # We have 3 frames for the running animation
+        self.num_frames = 3
         
     def safe_set_pixel(self, x, y, color):
         """Safely set a pixel if coordinates are within bounds."""
@@ -98,62 +128,13 @@ class HorseStaticAnimationBitmap:
                 self.safe_set_pixel(x, y, self.ground_color)
     
     def get_running_frame(self, frame_index):
-        """Get horse frame with animated legs for running.
+        """Get horse frame from the 3-frame running animation.
         
-        The bitmap shows a horse in running pose. We'll create animation by:
-        - Using the base bitmap as one frame
-        - Creating variations by slightly shifting leg positions
-        - Creating a 4-phase running cycle
-        
-        Running pattern (4 phases):
-        Phase 0: Base running pose (as provided)
-        Phase 1: Legs shifted - front legs forward, back legs back
-        Phase 2: Legs in opposite position
-        Phase 3: Transition back to phase 0
+        Cycles through: frame0 -> frame1 -> frame2 -> frame0...
+        Each frame is a pre-rendered bitmap with leg variations.
         """
-        phase = frame_index % 4
-        
-        # For now, use the base bitmap directly since it's already a running pose
-        # We can create subtle variations by shifting leg pixels
-        frame_pixels = [row[:] for row in self.horse_base_pixels]
-        
-        # Create subtle leg movement by shifting leg pixels slightly
-        # Legs are in the lower portion (rows ~20-47 based on the bitmap)
-        leg_shift_y = 0
-        leg_shift_x = 0
-        
-        if phase == 1:
-            # Shift front legs forward, back legs back
-            leg_shift_x = 1
-        elif phase == 2:
-            # Shift front legs back, back legs forward
-            leg_shift_x = -1
-        elif phase == 3:
-            # Slight lift
-            leg_shift_y = -1
-        
-        # Apply shifts to leg region (lower portion of horse)
-        if leg_shift_x != 0 or leg_shift_y != 0:
-            leg_start_y = 20  # Legs start around here based on bitmap
-            modified_frame = [[0 for _ in range(32)] for _ in range(48)]
-            
-            # Copy body (upper portion stays the same)
-            for y in range(leg_start_y):
-                for x in range(32):
-                    modified_frame[y][x] = self.horse_base_pixels[y][x]
-            
-            # Shift leg pixels
-            for y in range(leg_start_y, 48):
-                for x in range(32):
-                    if self.horse_base_pixels[y][x] == 1:
-                        new_y = y + leg_shift_y
-                        new_x = x + leg_shift_x
-                        if 0 <= new_y < 48 and 0 <= new_x < 32:
-                            modified_frame[new_y][new_x] = 1
-            
-            frame_pixels = modified_frame
-        
-        return frame_pixels
+        frame_num = frame_index % self.num_frames
+        return self.horse_frames[frame_num]
     
     def draw_horse(self, x_pos, frame_index=0):
         """Draw the horse bitmap at position x_pos with running leg animation."""
@@ -201,8 +182,8 @@ class HorseStaticAnimationBitmap:
             total_distance = self.width + self.horse_actual_width
             x_pos = int((elapsed * speed) % total_distance) - self.horse_actual_width
             
-            # Calculate leg animation frame (4 phases for running)
-            frame_index = int((frame / leg_animation_fps) % 4)
+            # Calculate leg animation frame (3 frames for running cycle)
+            frame_index = int((frame / leg_animation_fps) % self.num_frames)
             
             # Clear and draw
             self.led.clear()
