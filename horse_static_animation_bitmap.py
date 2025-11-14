@@ -77,68 +77,79 @@ class HorseStaticAnimationBitmap:
             self.led.set_pixel(x, y, color)
     
     def get_gallop_frame(self, frame_index):
-        """Get horse pixels for a specific gallop frame with leg animation.
+        """Get horse pixels for a specific gallop frame with realistic leg animation.
         
-        Gallop cycle has 4 phases:
-        0: All legs extended (moment before push) - on ground
-        1: Front legs up, back legs pushing - rising
-        2: All legs in air (suspension) - peak bounce
-        3: Front legs landing, back legs forward - landing
+        Gallop cycle has 4 phases for realistic running:
+        0: Front legs extended forward, back legs pushing off ground - takeoff
+        1: Front legs up and forward, back legs extended backward - mid-air rising
+        2: All legs tucked up (suspension) - peak of jump
+        3: Front legs reaching down, back legs forward - landing preparation
         """
-        # Create a copy of base pixels
-        frame_pixels = [row[:] for row in self.horse_base_pixels]
-        
-        # Identify and modify leg positions
-        # Legs are in the lower portion of the horse bitmap
-        # We'll shift leg pixels vertically based on gallop phase
-        
         phase = frame_index % 4
-        
-        # Define leg areas (approximate Y positions in bitmap)
-        front_leg_y_start = 35  # Front legs start around here
-        back_leg_y_start = 38   # Back legs start around here
         
         # Create modified frame
         modified_frame = [[0 for _ in range(32)] for _ in range(48)]
         
-        # Copy body pixels (everything above legs)
+        # Copy body pixels (everything above legs) - body stays constant
         body_y_end = 32  # Body ends before legs
         for y in range(body_y_end):
             for x in range(32):
-                modified_frame[y][x] = frame_pixels[y][x]
+                modified_frame[y][x] = self.horse_base_pixels[y][x]
         
-        # Modify leg positions based on phase
-        if phase == 0:  # All legs down
-            leg_shift_front = 0
-            leg_shift_back = 0
+        # Define leg areas more precisely
+        leg_y_start = 30  # Legs start around row 30
+        leg_y_end = 48    # Legs go to bottom
+        
+        # Phase-specific leg movements (more pronounced and realistic)
+        if phase == 0:  # Takeoff: Front forward, back pushing
+            # Front legs: slightly forward and down
+            front_leg_shift_y = 0
+            front_leg_shift_x = 1  # Forward
+            # Back legs: extended back, pushing off
+            back_leg_shift_y = 0
+            back_leg_shift_x = -1  # Backward
             vertical_bounce = 0
-        elif phase == 1:  # Front up, back pushing
-            leg_shift_front = -3  # Front legs lifted
-            leg_shift_back = 0   # Back legs pushing off
-            vertical_bounce = -1  # Rising
-        elif phase == 2:  # All legs in air (suspension)
-            leg_shift_front = -4  # Front legs high
-            leg_shift_back = -4   # Back legs high
-            vertical_bounce = -2  # Peak bounce
-        else:  # phase == 3: Front landing, back forward
-            leg_shift_front = 0   # Front legs landing
-            leg_shift_back = -2   # Back legs forward
-            vertical_bounce = -1  # Landing
+        elif phase == 1:  # Rising: Front up and forward, back extended back
+            # Front legs: lifted and forward
+            front_leg_shift_y = -5  # Lifted high
+            front_leg_shift_x = 2   # Forward
+            # Back legs: extended backward
+            back_leg_shift_y = -2   # Slightly lifted
+            back_leg_shift_x = -2   # Backward
+            vertical_bounce = -1
+        elif phase == 2:  # Suspension: All legs tucked up
+            # Front legs: high and forward
+            front_leg_shift_y = -6  # Very high
+            front_leg_shift_x = 1   # Forward
+            # Back legs: high and forward
+            back_leg_shift_y = -6   # Very high
+            back_leg_shift_x = 1    # Forward
+            vertical_bounce = -3
+        else:  # phase == 3: Landing: Front reaching down, back forward
+            # Front legs: reaching down for landing
+            front_leg_shift_y = -1  # Slightly up
+            front_leg_shift_x = 0   # Neutral
+            # Back legs: forward and up
+            back_leg_shift_y = -4   # Lifted
+            back_leg_shift_x = 2    # Forward
+            vertical_bounce = -1
         
-        # Copy and shift leg pixels
-        for y in range(front_leg_y_start, 48):
+        # Copy and transform leg pixels with both vertical and horizontal shifts
+        for y in range(leg_y_start, leg_y_end):
             for x in range(32):
-                if frame_pixels[y][x] == 1:
-                    # Front leg area (left side)
-                    if x < 16:
-                        new_y = y + leg_shift_front
-                        if 0 <= new_y < 48:
-                            modified_frame[new_y][x] = 1
-                    # Back leg area (right side)
-                    else:
-                        new_y = y + leg_shift_back
-                        if 0 <= new_y < 48:
-                            modified_frame[new_y][x] = 1
+                if self.horse_base_pixels[y][x] == 1:
+                    # Determine if this is a front leg (left side) or back leg (right side)
+                    # Front legs are typically on the left (x < 16), back on right (x >= 16)
+                    if x < 16:  # Front leg area
+                        new_y = y + front_leg_shift_y
+                        new_x = x + front_leg_shift_x
+                    else:  # Back leg area
+                        new_y = y + back_leg_shift_y
+                        new_x = x + back_leg_shift_x
+                    
+                    # Only place pixel if within bounds
+                    if 0 <= new_y < 48 and 0 <= new_x < 32:
+                        modified_frame[new_y][new_x] = 1
         
         return modified_frame, vertical_bounce
     
