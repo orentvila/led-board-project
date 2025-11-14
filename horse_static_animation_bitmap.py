@@ -15,12 +15,9 @@ class HorseStaticAnimationBitmap:
         self.width = config.TOTAL_WIDTH  # 32
         self.height = config.TOTAL_HEIGHT  # 48
         
-        # Horse bitmap data (32x48 pixels) - 3 frames for running animation
+        # Horse bitmap data (32x48 pixels) - single frame
         # Format: 0x00 = background, non-zero bits = horse pixels
-        # We convert so 1 = horse pixel, 0 = background
-        
-        # Frame 0: Original/base running pose
-        bitmap_frame0 = [
+        bitmap_hex = [
             0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
             0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
             0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -35,82 +32,19 @@ class HorseStaticAnimationBitmap:
             0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
         ]
         
-        # Frame 1: First running variation (leg movement)
-        bitmap_frame1 = [
-            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-            0x00, 0x00, 0x00, 0x40, 0x00, 0x00, 0x01, 0xe0, 0x00, 0x00, 0x03, 0xe0, 0x00, 0x00, 0x0f, 0xf0,
-            0x00, 0x00, 0x1f, 0xf8, 0x03, 0xff, 0xff, 0x98, 0x0f, 0xff, 0xff, 0x00, 0x1e, 0x7f, 0xfe, 0x00,
-            0x30, 0xff, 0xfe, 0x00, 0x00, 0xff, 0xfe, 0x00, 0x01, 0xf7, 0xff, 0xc0, 0x03, 0xe0, 0x07, 0x60,
-            0x06, 0xc0, 0x03, 0x30, 0x09, 0x80, 0x01, 0x08, 0x31, 0x00, 0x00, 0x80, 0x61, 0x00, 0x00, 0x40,
-            0x01, 0x00, 0x00, 0x20, 0x00, 0x80, 0x00, 0x30, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
-        ]
-        
-        # Frame 2: Second running variation (leg movement)
-        bitmap_frame2 = [
-            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-            0x00, 0x00, 0x00, 0x40, 0x00, 0x00, 0x01, 0xe0, 0x00, 0x00, 0x03, 0xe0, 0x00, 0x00, 0x0f, 0xf0,
-            0x00, 0x00, 0x1f, 0xf8, 0x03, 0xff, 0xff, 0x98, 0x0f, 0xff, 0xff, 0x00, 0x1e, 0x7f, 0xfe, 0x00,
-            0x30, 0xff, 0xfe, 0x20, 0x00, 0xff, 0xfe, 0x00, 0x01, 0xf7, 0xff, 0xc0, 0x03, 0xe0, 0x07, 0x20,
-            0x06, 0xc0, 0x03, 0x10, 0x09, 0x80, 0x01, 0x0c, 0x31, 0x00, 0x00, 0x80, 0x61, 0x00, 0x00, 0x80,
-            0x01, 0x00, 0x00, 0x40, 0x00, 0x80, 0x00, 0x60, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
-        ]
-        
-        # Convert all bitmaps to pixel arrays
-        self.horse_frames = []
-        for frame_idx, bitmap_hex in enumerate([bitmap_frame0, bitmap_frame1, bitmap_frame2]):
-            frame_pixels = []
-            pixel_count = 0
-            for row in range(48):
-                row_data = []
-                byte_start = row * 4
-                for col in range(32):
-                    byte_index = byte_start + (col // 8)
-                    bit_index = 7 - (col % 8)
-                    byte_value = bitmap_hex[byte_index]
-                    pixel = (byte_value >> bit_index) & 1
-                    # 1 = horse pixel (black), 0 = background (white/transparent)
-                    row_data.append(pixel)
-                    if pixel == 1:
-                        pixel_count += 1
-                frame_pixels.append(row_data)
-            self.horse_frames.append(frame_pixels)
-            print(f"🐴 Loaded frame {frame_idx}: {pixel_count} horse pixels")
-        
-        # Use frame 0 as base for dimensions calculation
-        self.horse_base_pixels = self.horse_frames[0]
-        
-        # Verify frames are different and show where differences are
-        if len(self.horse_frames) >= 2:
-            diff_count = 0
-            diff_locations = []
-            for y in range(48):
-                for x in range(32):
-                    if self.horse_frames[0][y][x] != self.horse_frames[1][y][x]:
-                        diff_count += 1
-                        diff_locations.append((x, y))
-            print(f"🐴 Frame 0 vs Frame 1: {diff_count} pixels differ")
-            if diff_locations:
-                print(f"🐴 Differences at: {diff_locations[:10]}...")  # Show first 10 differences
-                
-            # Also check Frame 1 vs Frame 2
-            diff_count_12 = 0
-            for y in range(48):
-                for x in range(32):
-                    if self.horse_frames[1][y][x] != self.horse_frames[2][y][x]:
-                        diff_count_12 += 1
-            print(f"🐴 Frame 1 vs Frame 2: {diff_count_12} pixels differ")
+        # Convert bitmap to pixel array
+        # 1 = horse pixel (black), 0 = background (white/transparent)
+        self.horse_pixels = []
+        for row in range(48):
+            row_data = []
+            byte_start = row * 4
+            for col in range(32):
+                byte_index = byte_start + (col // 8)
+                bit_index = 7 - (col % 8)
+                byte_value = bitmap_hex[byte_index]
+                pixel = (byte_value >> bit_index) & 1
+                row_data.append(pixel)
+            self.horse_pixels.append(row_data)
         
         # Colors
         self.horse_color = (139, 69, 19)  # Brown horse (saddle brown)
@@ -118,14 +52,10 @@ class HorseStaticAnimationBitmap:
         self.ground_height = 4  # Height of ground at bottom
         
         # Find horse dimensions
-        self.horse_width = 32
-        self.horse_height = 48
-        
-        # Find actual horse bounds (non-empty pixels)
         min_x, max_x, min_y, max_y = 32, 0, 48, 0
         for y in range(48):
             for x in range(32):
-                if self.horse_base_pixels[y][x] == 1:
+                if self.horse_pixels[y][x] == 1:
                     min_x = min(min_x, x)
                     max_x = max(max_x, x)
                     min_y = min(min_y, y)
@@ -136,10 +66,7 @@ class HorseStaticAnimationBitmap:
         self.horse_offset_x = min_x
         self.horse_offset_y = min_y
         
-        print(f"Horse dimensions: {self.horse_actual_width}x{self.horse_actual_height}, offset: ({self.horse_offset_x}, {self.horse_offset_y})")
-        
-        # We have 3 frames for the running animation
-        self.num_frames = 3
+        print(f"🐴 Horse dimensions: {self.horse_actual_width}x{self.horse_actual_height}, offset: ({self.horse_offset_x}, {self.horse_offset_y})")
         
     def safe_set_pixel(self, x, y, color):
         """Safely set a pixel if coordinates are within bounds."""
@@ -152,32 +79,17 @@ class HorseStaticAnimationBitmap:
             for x in range(self.width):
                 self.safe_set_pixel(x, y, self.ground_color)
     
-    def get_running_frame(self, frame_index):
-        """Get horse frame from the 3-frame running animation.
-        
-        Cycles through: frame0 -> frame1 -> frame2 -> frame0...
-        Each frame is a pre-rendered bitmap with leg variations.
-        """
-        frame_num = frame_index % self.num_frames
-        if frame_num < 0 or frame_num >= len(self.horse_frames):
-            print(f"⚠️ Invalid frame_index {frame_index}, frame_num {frame_num}, using frame 0")
-            frame_num = 0
-        return self.horse_frames[frame_num]
-    
-    def draw_horse(self, x_pos, frame_index=0):
-        """Draw the horse bitmap at position x_pos with running leg animation."""
+    def draw_horse(self, x_pos):
+        """Draw the horse bitmap at position x_pos."""
         # Position horse vertically (feet on ground)
         ground_y = self.height - self.ground_height
         horse_bottom_y = ground_y - 1  # Feet just above ground
         vertical_offset = horse_bottom_y - (self.horse_offset_y + self.horse_actual_height)
         
-        # Get animated frame with leg movement
-        frame_pixels = self.get_running_frame(frame_index)
-        
-        # Draw horse pixels from animated frame
+        # Draw horse pixels
         for y in range(48):
             for x in range(32):
-                if frame_pixels[y][x] == 1:  # Horse pixel
+                if self.horse_pixels[y][x] == 1:  # Horse pixel
                     screen_x = x + x_pos - self.horse_offset_x
                     screen_y = y + vertical_offset
                     
@@ -186,18 +98,14 @@ class HorseStaticAnimationBitmap:
                         self.safe_set_pixel(screen_x, screen_y, self.horse_color)
     
     def run_animation(self, should_stop=None):
-        """Run the horse animation - moves from left to right with running leg animation."""
+        """Run the horse animation - moves from left to right across the screen."""
         duration = 30  # 30 seconds
         start_time = time.time()
-        frame = 0
         
-        print("🐴 Starting horse running animation...")
+        print("🐴 Starting horse animation...")
         
         # Animation parameters
         speed = 8.0  # pixels per second (horizontal speed)
-        leg_animation_speed = 3.0  # Cycles per second (how fast to cycle through the 3 frames)
-        # With 3 frames at 3 cycles/sec, each frame displays for ~0.33 seconds
-        # Slower speed makes subtle differences more visible
         
         while time.time() - start_time < duration:
             elapsed = time.time() - start_time
@@ -212,21 +120,10 @@ class HorseStaticAnimationBitmap:
             total_distance = self.width + self.horse_actual_width
             x_pos = int((elapsed * speed) % total_distance) - self.horse_actual_width
             
-            # Calculate leg animation frame (3 frames for running cycle)
-            # Cycle through frames based on time, not frame count
-            frame_index = int((elapsed * leg_animation_speed)) % self.num_frames
-            
-            # Debug: Print frame info frequently to verify cycling
-            if not hasattr(self, '_debug_counter'):
-                self._debug_counter = 0
-            self._debug_counter += 1
-            if self._debug_counter % 10 == 0:  # Print every 10 frames
-                print(f"🐴 Frame {frame_index} at {elapsed:.2f}s (speed={leg_animation_speed}, elapsed*speed={elapsed * leg_animation_speed:.2f})")
-            
             # Clear and draw
             self.led.clear()
             self.draw_ground()
-            self.draw_horse(x_pos, frame_index)
+            self.draw_horse(x_pos)
             self.led.show()
             
             time.sleep(0.05)  # 20 FPS for smooth animation
