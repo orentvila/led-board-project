@@ -48,8 +48,8 @@ class SnailStaticAnimationBitmap:
         # Colors
         # Snail color: #384247 = RGB(56, 66, 71)
         self.snail_color = (56, 66, 71)
-        # Ground: light green
-        self.ground_color = (144, 238, 144)  # Light green
+        # Ground: green
+        self.ground_color = (0, 255, 0)  # Green
         self.ground_height = 7  # Height of ground at bottom
         
         # Find snail dimensions
