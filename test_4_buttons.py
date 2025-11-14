@@ -9,19 +9,29 @@ import sys
 from button_controller import ButtonController
 import config
 
+# Button functions mapping
+BUTTON_FUNCTIONS = {
+    0: "Shapes",
+    1: "Nature Animations",
+    2: "Animals Animation",
+    3: "Objects Animations"
+}
+
 def button_pressed(button_id):
     """Called when a button is pressed."""
     pin_number = config.BUTTON_PINS[button_id]
-    print(f"🎉 Button {button_id + 1} pressed! Pin: {pin_number}")
+    function = BUTTON_FUNCTIONS.get(button_id, "Unknown")
+    print(f"🎉 Button {button_id + 1} pressed! Pin: {pin_number} ({function})")
 
 def main():
     """Test all 4 buttons."""
     print("🧪 4-Button Test Started")
-    print("=" * 40)
+    print("=" * 50)
     print("Button Configuration:")
     for i, pin in enumerate(config.BUTTON_PINS):
-        print(f"  Button {i + 1}: GPIO Pin {pin}")
-    print("=" * 40)
+        function = BUTTON_FUNCTIONS.get(i, "Unknown")
+        print(f"  Button {i + 1}: GPIO Pin {pin} - {function}")
+    print("=" * 50)
     print()
     print("🎯 Press any of the 4 buttons to test...")
     print("Press Ctrl+C to exit")

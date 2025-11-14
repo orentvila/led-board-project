@@ -81,7 +81,7 @@ class LEDDisplayApp:
             "horse_bitmap", "deer_bitmap", "cat_bitmap", "snail_bitmap", 
             "jellyfish_bitmap", "birds_bitmap"
         ]
-        self.current_animals_index = 0
+        self.current_animals_index = -1  # Start at -1 so first click shows horse (index 0)
         self.animals_animation_running = False
         
         # Initialize audio system
@@ -1286,8 +1286,14 @@ class LEDDisplayApp:
             print("🐾 No animals animations available")
             return
         
-        # Cycle to next animals animation
-        self.current_animals_index = (self.current_animals_index + 1) % len(self.animals_animations)
+        # First click always shows horse (index 0), then cycle through others
+        if self.current_animals_index == -1:
+            # First time - start with horse
+            self.current_animals_index = 0
+        else:
+            # Cycle to next animals animation
+            self.current_animals_index = (self.current_animals_index + 1) % len(self.animals_animations)
+        
         animation_name = self.animals_animations[self.current_animals_index]
         
         animal_names = [
@@ -1315,8 +1321,15 @@ class LEDDisplayApp:
                 return not self.animals_animation_running or getattr(self, 'animation_stop_flag', False)
             
             animation_name = self.animals_animations[self.current_animals_index]
+            print(f"🐾 DEBUG: Running animation '{animation_name}' at index {self.current_animals_index}")
             
-            if animation_name == "deer_bitmap":
+            # Check horse first since it should be the default
+            if animation_name == "horse_bitmap":
+                from horse_static_animation_bitmap import HorseStaticAnimationBitmap
+                animation = HorseStaticAnimationBitmap()
+                animation.run_animation(should_stop)
+                animation.cleanup()
+            elif animation_name == "deer_bitmap":
                 from deer_static_animation_bitmap import DeerStaticAnimationBitmap
                 animation = DeerStaticAnimationBitmap()
                 animation.run_animation(should_stop)
@@ -1329,11 +1342,6 @@ class LEDDisplayApp:
             elif animation_name == "snail_bitmap":
                 from snail_static_animation_bitmap import SnailStaticAnimationBitmap
                 animation = SnailStaticAnimationBitmap()
-                animation.run_animation(should_stop)
-                animation.cleanup()
-            elif animation_name == "horse_bitmap":
-                from horse_static_animation_bitmap import HorseStaticAnimationBitmap
-                animation = HorseStaticAnimationBitmap()
                 animation.run_animation(should_stop)
                 animation.cleanup()
             elif animation_name == "jellyfish_bitmap":
