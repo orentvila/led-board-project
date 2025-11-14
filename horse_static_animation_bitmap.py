@@ -69,8 +69,9 @@ class HorseStaticAnimationBitmap:
         
         # Convert all bitmaps to pixel arrays
         self.horse_frames = []
-        for bitmap_hex in [bitmap_frame0, bitmap_frame1, bitmap_frame2]:
+        for frame_idx, bitmap_hex in enumerate([bitmap_frame0, bitmap_frame1, bitmap_frame2]):
             frame_pixels = []
+            pixel_count = 0
             for row in range(48):
                 row_data = []
                 byte_start = row * 4
@@ -81,11 +82,23 @@ class HorseStaticAnimationBitmap:
                     pixel = (byte_value >> bit_index) & 1
                     # 1 = horse pixel (black), 0 = background (white/transparent)
                     row_data.append(pixel)
+                    if pixel == 1:
+                        pixel_count += 1
                 frame_pixels.append(row_data)
             self.horse_frames.append(frame_pixels)
+            print(f"🐴 Loaded frame {frame_idx}: {pixel_count} horse pixels")
         
         # Use frame 0 as base for dimensions calculation
         self.horse_base_pixels = self.horse_frames[0]
+        
+        # Verify frames are different
+        if len(self.horse_frames) >= 2:
+            diff_count = 0
+            for y in range(48):
+                for x in range(32):
+                    if self.horse_frames[0][y][x] != self.horse_frames[1][y][x]:
+                        diff_count += 1
+            print(f"🐴 Frame 0 vs Frame 1: {diff_count} pixels differ")
         
         # Colors
         self.horse_color = (139, 69, 19)  # Brown horse (saddle brown)
@@ -134,6 +147,9 @@ class HorseStaticAnimationBitmap:
         Each frame is a pre-rendered bitmap with leg variations.
         """
         frame_num = frame_index % self.num_frames
+        if frame_num < 0 or frame_num >= len(self.horse_frames):
+            print(f"⚠️ Invalid frame_index {frame_index}, frame_num {frame_num}, using frame 0")
+            frame_num = 0
         return self.horse_frames[frame_num]
     
     def draw_horse(self, x_pos, frame_index=0):
@@ -186,13 +202,12 @@ class HorseStaticAnimationBitmap:
             # Cycle through frames based on time, not frame count
             frame_index = int((elapsed * leg_animation_speed)) % self.num_frames
             
-            # Debug: Print when frame changes (to verify cycling is working)
-            current_frame_cycle = int(elapsed * leg_animation_speed)
-            if not hasattr(self, '_last_frame_cycle'):
-                self._last_frame_cycle = -1
-            if current_frame_cycle != self._last_frame_cycle:
-                print(f"🐴 Frame {frame_index} (cycle {current_frame_cycle}) at {elapsed:.2f}s")
-                self._last_frame_cycle = current_frame_cycle
+            # Debug: Print frame info frequently to verify cycling
+            if not hasattr(self, '_debug_counter'):
+                self._debug_counter = 0
+            self._debug_counter += 1
+            if self._debug_counter % 10 == 0:  # Print every 10 frames
+                print(f"🐴 Frame {frame_index} at {elapsed:.2f}s (speed={leg_animation_speed}, elapsed*speed={elapsed * leg_animation_speed:.2f})")
             
             # Clear and draw
             self.led.clear()
