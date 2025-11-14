@@ -85,9 +85,9 @@ class HorseStaticAnimationBitmap:
         center_x = self.width // 2
         x_pos = center_x - (self.horse_actual_width // 2) - self.horse_offset_x
         
-        # Position horse vertically (feet on ground)
+        # Position horse vertically (feet touching ground)
         ground_y = self.height - self.ground_height
-        horse_bottom_y = ground_y - 1  # Feet just above ground
+        horse_bottom_y = ground_y  # Feet on ground line
         vertical_offset = horse_bottom_y - (self.horse_offset_y + self.horse_actual_height)
         
         # Draw horse pixels
@@ -98,7 +98,9 @@ class HorseStaticAnimationBitmap:
                     screen_y = y + vertical_offset
                     
                     # Only draw if horse is on or above ground and within screen bounds
-                    if 0 <= screen_x < self.width and screen_y < self.height - self.ground_height:
+                    # Allow drawing at ground level (screen_y <= ground_y) so horse touches ground
+                    ground_y = self.height - self.ground_height
+                    if 0 <= screen_x < self.width and 0 <= screen_y <= ground_y:
                         self.safe_set_pixel(screen_x, screen_y, self.horse_color)
     
     def run_animation(self, should_stop=None):
