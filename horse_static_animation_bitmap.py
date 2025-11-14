@@ -5,7 +5,6 @@ Displays a brown horse galloping on green ground
 """
 
 import time
-import math
 from led_controller_exact import LEDControllerExact
 import config
 
@@ -101,6 +100,7 @@ class HorseStaticAnimationBitmap:
         leg_y_end = 48    # Legs go to bottom
         
         # Phase-specific leg movements (more pronounced and realistic)
+        # No vertical bounce - horse stays on ground
         if phase == 0:  # Takeoff: Front forward, back pushing
             # Front legs: slightly forward and down
             front_leg_shift_y = 0
@@ -109,22 +109,22 @@ class HorseStaticAnimationBitmap:
             back_leg_shift_y = 0
             back_leg_shift_x = -1  # Backward
             vertical_bounce = 0
-        elif phase == 1:  # Rising: Front up and forward, back extended back
+        elif phase == 1:  # Running: Front up and forward, back extended back
             # Front legs: lifted and forward
             front_leg_shift_y = -5  # Lifted high
             front_leg_shift_x = 2   # Forward
             # Back legs: extended backward
             back_leg_shift_y = -2   # Slightly lifted
             back_leg_shift_x = -2   # Backward
-            vertical_bounce = -1
-        elif phase == 2:  # Suspension: All legs tucked up
+            vertical_bounce = 0  # No bounce - stay on ground
+        elif phase == 2:  # Mid-stride: All legs in motion
             # Front legs: high and forward
             front_leg_shift_y = -6  # Very high
             front_leg_shift_x = 1   # Forward
             # Back legs: high and forward
             back_leg_shift_y = -6   # Very high
             back_leg_shift_x = 1    # Forward
-            vertical_bounce = -3
+            vertical_bounce = 0  # No bounce - stay on ground
         else:  # phase == 3: Landing: Front reaching down, back forward
             # Front legs: reaching down for landing
             front_leg_shift_y = -1  # Slightly up
@@ -132,7 +132,7 @@ class HorseStaticAnimationBitmap:
             # Back legs: forward and up
             back_leg_shift_y = -4   # Lifted
             back_leg_shift_x = 2    # Forward
-            vertical_bounce = -1
+            vertical_bounce = 0  # No bounce - stay on ground
         
         # Copy and transform leg pixels with both vertical and horizontal shifts
         for y in range(leg_y_start, leg_y_end):
@@ -205,13 +205,10 @@ class HorseStaticAnimationBitmap:
             # Get gallop frame with leg animation
             frame_pixels, frame_bounce = self.get_gallop_frame(frame_index)
             
-            # Additional smooth bounce for realism
-            smooth_bounce = -0.5 * math.sin((frame / gallop_fps) * 2 * math.pi)
-            total_bounce = frame_bounce + int(smooth_bounce)
-            
+            # No bounce - horse stays on ground surface
             # Position horse vertically (feet on ground)
             horse_bottom_y = ground_y - 1  # Feet just above ground
-            vertical_offset = horse_bottom_y - (self.horse_offset_y + self.horse_actual_height) + total_bounce
+            vertical_offset = horse_bottom_y - (self.horse_offset_y + self.horse_actual_height)
             
             # Clear and draw
             self.led.clear()
