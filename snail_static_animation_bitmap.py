@@ -48,8 +48,8 @@ class SnailStaticAnimationBitmap:
         # Colors
         # Snail color: #384247 = RGB(56, 66, 71)
         self.snail_color = (56, 66, 71)
-        # Ground: green
-        self.ground_color = (0, 255, 0)  # Green
+        # Ground: same as horse (forest green)
+        self.ground_color = (34, 139, 34)  # Forest green ground
         self.ground_height = 7  # Height of ground at bottom
         
         # Find snail dimensions
@@ -75,17 +75,13 @@ class SnailStaticAnimationBitmap:
             self.led.set_pixel(x, y, color)
     
     def draw_ground(self):
-        """Draw light green ground at the bottom."""
+        """Draw forest green ground at the bottom."""
         for y in range(self.height - self.ground_height, self.height):
             for x in range(self.width):
                 self.safe_set_pixel(x, y, self.ground_color)
     
-    def draw_snail(self):
-        """Draw the snail bitmap centered on the screen, positioned on ground."""
-        # Center the snail horizontally
-        center_x = self.width // 2
-        x_pos = center_x - (self.snail_actual_width // 2) - self.snail_offset_x
-        
+    def draw_snail(self, x_pos):
+        """Draw the snail bitmap at position x_pos, positioned on ground."""
         # Position snail vertically (bottom on ground)
         ground_y = self.height - self.ground_height
         snail_bottom_y = ground_y  # Snail bottom on ground line
@@ -95,7 +91,7 @@ class SnailStaticAnimationBitmap:
         for y in range(48):
             for x in range(32):
                 if self.snail_pixels[y][x] == 1:  # Snail pixel
-                    screen_x = x + x_pos
+                    screen_x = x + x_pos - self.snail_offset_x
                     screen_y = y + vertical_offset
                     
                     # Only draw if snail is on or above ground and within screen bounds
@@ -103,25 +99,35 @@ class SnailStaticAnimationBitmap:
                         self.safe_set_pixel(screen_x, screen_y, self.snail_color)
     
     def run_animation(self, should_stop=None):
-        """Display the snail as a static image centered on the screen."""
+        """Run the snail animation - moves from left to right across the screen."""
         duration = 30  # 30 seconds
         start_time = time.time()
         
         print("🐌 Starting snail animation...")
         
+        # Animation parameters
+        speed = 4.0  # pixels per second (slower than horse - snails are slow!)
+        
         while time.time() - start_time < duration:
+            elapsed = time.time() - start_time
+            
             # Check stop flag
             if should_stop and should_stop():
                 print("🐌 Snail animation stopped by user")
                 break
             
-            # Draw static snail centered on screen
+            # Calculate horizontal position (snail moves from left to right, looping)
+            # Start off-screen left, move across, then loop
+            total_distance = self.width + self.snail_actual_width
+            x_pos = int((elapsed * speed) % total_distance) - self.snail_actual_width
+            
+            # Clear and draw
             self.led.clear()
             self.draw_ground()
-            self.draw_snail()
+            self.draw_snail(x_pos)
             self.led.show()
             
-            time.sleep(0.1)  # Update every 0.1 seconds (static display)
+            time.sleep(0.05)  # 20 FPS for smooth animation
         
         print("🐌 Snail animation completed!")
         
