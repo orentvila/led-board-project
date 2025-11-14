@@ -167,7 +167,7 @@ class HorseStaticAnimationBitmap:
         
         # Animation parameters
         speed = 8.0  # pixels per second (horizontal speed)
-        leg_animation_fps = 10  # Frames per leg cycle (faster leg movement)
+        leg_animation_speed = 8.0  # Cycles per second (how fast to cycle through the 3 frames) - increased for visibility
         
         while time.time() - start_time < duration:
             elapsed = time.time() - start_time
@@ -183,7 +183,16 @@ class HorseStaticAnimationBitmap:
             x_pos = int((elapsed * speed) % total_distance) - self.horse_actual_width
             
             # Calculate leg animation frame (3 frames for running cycle)
-            frame_index = int((frame / leg_animation_fps) % self.num_frames)
+            # Cycle through frames based on time, not frame count
+            frame_index = int((elapsed * leg_animation_speed)) % self.num_frames
+            
+            # Debug: Print when frame changes (to verify cycling is working)
+            current_frame_cycle = int(elapsed * leg_animation_speed)
+            if not hasattr(self, '_last_frame_cycle'):
+                self._last_frame_cycle = -1
+            if current_frame_cycle != self._last_frame_cycle:
+                print(f"🐴 Frame {frame_index} (cycle {current_frame_cycle}) at {elapsed:.2f}s")
+                self._last_frame_cycle = current_frame_cycle
             
             # Clear and draw
             self.led.clear()
@@ -191,7 +200,6 @@ class HorseStaticAnimationBitmap:
             self.draw_horse(x_pos, frame_index)
             self.led.show()
             
-            frame += 1
             time.sleep(0.05)  # 20 FPS for smooth animation
         
         print("🐴 Horse animation completed!")
