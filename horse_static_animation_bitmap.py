@@ -91,14 +91,26 @@ class HorseStaticAnimationBitmap:
         # Use frame 0 as base for dimensions calculation
         self.horse_base_pixels = self.horse_frames[0]
         
-        # Verify frames are different
+        # Verify frames are different and show where differences are
         if len(self.horse_frames) >= 2:
             diff_count = 0
+            diff_locations = []
             for y in range(48):
                 for x in range(32):
                     if self.horse_frames[0][y][x] != self.horse_frames[1][y][x]:
                         diff_count += 1
+                        diff_locations.append((x, y))
             print(f"🐴 Frame 0 vs Frame 1: {diff_count} pixels differ")
+            if diff_locations:
+                print(f"🐴 Differences at: {diff_locations[:10]}...")  # Show first 10 differences
+                
+            # Also check Frame 1 vs Frame 2
+            diff_count_12 = 0
+            for y in range(48):
+                for x in range(32):
+                    if self.horse_frames[1][y][x] != self.horse_frames[2][y][x]:
+                        diff_count_12 += 1
+            print(f"🐴 Frame 1 vs Frame 2: {diff_count_12} pixels differ")
         
         # Colors
         self.horse_color = (139, 69, 19)  # Brown horse (saddle brown)
@@ -183,8 +195,9 @@ class HorseStaticAnimationBitmap:
         
         # Animation parameters
         speed = 8.0  # pixels per second (horizontal speed)
-        leg_animation_speed = 15.0  # Cycles per second (how fast to cycle through the 3 frames)
-        # With 3 frames at 15 cycles/sec, each frame displays for ~0.067 seconds (very fast running animation)
+        leg_animation_speed = 3.0  # Cycles per second (how fast to cycle through the 3 frames)
+        # With 3 frames at 3 cycles/sec, each frame displays for ~0.33 seconds
+        # Slower speed makes subtle differences more visible
         
         while time.time() - start_time < duration:
             elapsed = time.time() - start_time
