@@ -183,7 +183,8 @@ class HorseStaticAnimationBitmap:
         
         # Animation parameters
         speed = 8.0  # pixels per second (horizontal speed)
-        leg_animation_speed = 8.0  # Cycles per second (how fast to cycle through the 3 frames) - increased for visibility
+        leg_animation_speed = 15.0  # Cycles per second (how fast to cycle through the 3 frames)
+        # With 3 frames at 15 cycles/sec, each frame displays for ~0.067 seconds (very fast running animation)
         
         while time.time() - start_time < duration:
             elapsed = time.time() - start_time
