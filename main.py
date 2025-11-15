@@ -297,10 +297,10 @@ class LEDDisplayApp:
         # Play audio for this animation
         self.play_animation_audio('floating_clouds')
         
-        duration = 30
+        duration = 30  # 30 seconds duration
         start_time = time.time()
         
-        print(f"🌤️ Floating clouds animation started (flag: {self.nature_animation_running})")
+        print(f"🌤️ Floating clouds animation started (flag: {self.nature_animation_running}, duration: {duration}s)")
         
         # Double-check the flag is still True
         if not self.nature_animation_running:
@@ -401,6 +401,10 @@ class LEDDisplayApp:
             # Show the frame after all clouds are drawn
             self.led.show()
             time.sleep(0.1)  # 10 FPS for gentle movement
+        
+        # Animation completed
+        elapsed = time.time() - start_time
+        print(f"🌤️ Floating clouds animation completed (ran for {elapsed:.1f} seconds)")
     
     def run_rain_animation(self):
         """Run rain animation with gentle drops and soft colors."""
