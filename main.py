@@ -511,12 +511,13 @@ class LEDDisplayApp:
         
         # Create three flowers: left, center, right
         # Staggered start times: left starts immediately, middle after 2 LEDs, right after 6 LEDs (2+4)
+        # Different heights: left tallest, center medium, right shortest
         flowers = [
             {
                 'x': 7,  # Left side, positioned at pixel 7 (stem spans pixels 7-8)
                 'y': height - 8,  # Start from ground
                 'stem_height': 0,  # Will grow
-                'max_stem_height': 20,  # Same size as others
+                'max_stem_height': 25,  # Tallest - opens highest
                 'petal_size': 0,  # Will grow
                 'max_petal_size': 5,  # Fixed size
                 'color': (245, 230, 104),  # #F5E668 - Yellow
@@ -529,7 +530,7 @@ class LEDDisplayApp:
                 'x': width // 2,  # Center of display
                 'y': height - 8,  # Start from ground
                 'stem_height': 0,  # Will grow
-                'max_stem_height': 20,  # Original height
+                'max_stem_height': 20,  # Medium height
                 'petal_size': 0,  # Will grow
                 'max_petal_size': 5,  # Fixed size
                 'color': random.choice(flower_colors),
@@ -542,7 +543,7 @@ class LEDDisplayApp:
                 'x': 3 * width // 4,  # Right side
                 'y': height - 8,  # Start from ground
                 'stem_height': 0,  # Will grow
-                'max_stem_height': 20,  # Same size as others
+                'max_stem_height': 18,  # Shortest - opens lowest
                 'petal_size': 0,  # Will grow
                 'max_petal_size': 5,  # Fixed size
                 'color': (230, 92, 88),  # #E65C58 - Red/Pink
@@ -554,11 +555,11 @@ class LEDDisplayApp:
         ]
         
         # Calculate when last flower will finish blooming
-        # Right flower starts at 6s, stem grows to 20 in ~20s (at 0.1 per frame, 0.1s per frame = 1s per pixel)
-        # Blooming starts at 80% stem = 16s, takes ~5s to fully bloom (0.02 progress per frame, 50 frames = 5s)
-        # So last flower finishes around: 6 + 20 = 26s for full stem, blooming completes around 27s
-        last_flower_finish_time = 6 + 20 + 5  # start delay + stem growth + bloom time = 31 seconds
-        duration = last_flower_finish_time + 5  # Add 5 seconds after last flower opens = 36 seconds total
+        # Right flower starts at 6s, stem grows to 18 in ~18s (at 0.1 per frame, 0.1s per frame = 1s per pixel)
+        # Blooming starts at 80% stem = 14.4s, takes ~5s to fully bloom (0.02 progress per frame, 50 frames = 5s)
+        # So last flower finishes around: 6 + 18 = 24s for full stem, blooming completes around 25s
+        last_flower_finish_time = 6 + 18 + 5  # start delay + stem growth + bloom time = 29 seconds
+        duration = last_flower_finish_time + 5  # Add 5 seconds after last flower opens = 34 seconds total
         
         while time.time() - start_time < duration and self.nature_animation_running and not getattr(self, 'animation_stop_flag', False):
             # Clear display (dark background)
