@@ -78,10 +78,10 @@ class LEDDisplayApp:
         
         # Animals animation system for Button 27
         self.animals_animations = [
-            "horse_bitmap", "snail_bitmap", "deer_bitmap", "cat_bitmap", 
+            "butterfly", "horse_bitmap", "snail_bitmap", "deer_bitmap", "cat_bitmap", 
             "jellyfish_bitmap", "birds_bitmap"
         ]
-        self.current_animals_index = -1  # Start at -1 so first click shows horse (index 0)
+        self.current_animals_index = -1  # Start at -1 so first click shows butterfly (index 0)
         self.animals_animation_running = False
         
         # Initialize audio system
@@ -1422,9 +1422,9 @@ class LEDDisplayApp:
             print("🐾 No animals animations available")
             return
         
-        # First click always shows horse (index 0), then cycle through others
+        # First click always shows butterfly (index 0), then cycle through others
         if self.current_animals_index == -1:
-            # First time - start with horse
+            # First time - start with butterfly
             self.current_animals_index = 0
         else:
             # Cycle to next animals animation
@@ -1433,7 +1433,7 @@ class LEDDisplayApp:
         animation_name = self.animals_animations[self.current_animals_index]
         
         animal_names = [
-            "Horse", "Snail", "Deer", "Cat", "Jellyfish", "Birds"
+            "Butterfly", "Horse", "Snail", "Deer", "Cat", "Jellyfish", "Birds"
         ]
         animal_name = animal_names[self.current_animals_index]
         
@@ -1459,8 +1459,13 @@ class LEDDisplayApp:
             animation_name = self.animals_animations[self.current_animals_index]
             print(f"🐾 DEBUG: Running animation '{animation_name}' at index {self.current_animals_index}")
             
-            # Check horse first since it should be the default
-            if animation_name == "horse_bitmap":
+            # Check butterfly first since it's the first animation
+            if animation_name == "butterfly":
+                from butterfly_animation import ButterflyAnimation
+                animation = ButterflyAnimation()
+                animation.run_animation(should_stop)
+                animation.cleanup()
+            elif animation_name == "horse_bitmap":
                 from horse_static_animation_bitmap import HorseStaticAnimationBitmap
                 animation = HorseStaticAnimationBitmap()
                 animation.run_animation(should_stop)
