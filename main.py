@@ -563,13 +563,18 @@ class LEDDisplayApp:
         # Blooming starts at 80% stem = 14.4s, takes ~5s to fully bloom (0.02 progress per frame, 50 frames = 5s)
         # So last flower finishes around: 6 + 18 = 24s for full stem, blooming completes around 25s
         last_flower_finish_time = 6 + 18 + 5  # start delay + stem growth + bloom time = 29 seconds
-        duration = last_flower_finish_time + 5  # Add 5 seconds after last flower opens = 34 seconds total
+        duration = last_flower_finish_time + 5 + 5  # Add 5 seconds after last flower opens + 5 more seconds = 39 seconds total
         
         while time.time() - start_time < duration and self.nature_animation_running and not getattr(self, 'animation_stop_flag', False):
-            # Clear display (dark background)
+            # Clear display
             self.led.clear()
             
-            # Background is now dark (black) - no sky gradient
+            # Draw very dim light blue sky background
+            # Very dim light blue - subtle background
+            dim_sky_color = (10, 15, 25)  # Very dim light blue-gray
+            for y in range(height):
+                for x in range(width):
+                    self.led.set_pixel(x, y, dim_sky_color)
             
             # Draw ground
             for x in range(width):
