@@ -482,7 +482,6 @@ class LEDDisplayApp:
         # Play audio for this animation
         self.play_animation_audio('growing_flowers')
         
-        duration = 30
         start_time = time.time()
         
         print(f"🌸 Growing flowers animation started (flag: {self.nature_animation_running})")
@@ -550,6 +549,13 @@ class LEDDisplayApp:
                 'start_delay': 6  # Start after 6 LEDs (2 after middle + 4 after left = 6 total)
             }
         ]
+        
+        # Calculate when last flower will finish blooming
+        # Right flower starts at 6s, stem grows to 20 in ~20s (at 0.1 per frame, 0.1s per frame = 1s per pixel)
+        # Blooming starts at 80% stem = 16s, takes ~5s to fully bloom (0.02 progress per frame, 50 frames = 5s)
+        # So last flower finishes around: 6 + 20 = 26s for full stem, blooming completes around 27s
+        last_flower_finish_time = 6 + 20 + 5  # start delay + stem growth + bloom time = 31 seconds
+        duration = last_flower_finish_time + 5  # Add 5 seconds after last flower opens = 36 seconds total
         
         while time.time() - start_time < duration and self.nature_animation_running and not getattr(self, 'animation_stop_flag', False):
             # Clear display (dark background)
