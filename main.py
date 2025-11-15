@@ -586,6 +586,29 @@ class LEDDisplayApp:
                 for x in range(width):
                     self.led.set_pixel(x, y, dim_sky_color)
             
+            # Draw small sun in the top part of the screen
+            sun_x = width - 8  # Position sun on the right side, near top
+            sun_y = 5  # Near the top
+            sun_color = (255, 200, 50)  # Bright yellow sun
+            sun_size = 3  # Small sun radius
+            
+            # Draw sun as a circle
+            for dy in range(-sun_size, sun_size + 1):
+                for dx in range(-sun_size, sun_size + 1):
+                    distance = math.sqrt(dx*dx + dy*dy)
+                    if distance <= sun_size:
+                        x = sun_x + dx
+                        y = sun_y + dy
+                        if 0 <= x < width and 0 <= y < height:
+                            # Fade edges for soft sun
+                            intensity = 1.0 - (distance / sun_size) * 0.3
+                            sun_pixel_color = (
+                                int(sun_color[0] * intensity),
+                                int(sun_color[1] * intensity),
+                                int(sun_color[2] * intensity)
+                            )
+                            self.led.set_pixel(x, y, sun_pixel_color)
+            
             # Draw ground
             for x in range(width):
                 for y in range(height - 3, height):
@@ -619,7 +642,8 @@ class LEDDisplayApp:
                         for dy in range(-petal_size, petal_size + 1):
                             for dx in range(-petal_size, petal_size + 1):
                                 distance = math.sqrt(dx*dx + dy*dy)
-                                if distance <= petal_size:
+                                # Leave center LED off (distance == 0 means center)
+                                if distance <= petal_size and distance > 0:
                                     x = petal_x + dx
                                     y = flower_y + dy
                                     if 0 <= x < width and 0 <= y < height:
