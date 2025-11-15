@@ -155,15 +155,23 @@ class LEDDisplayApp:
             print(f"⚠️ No audio mapped for animation: {animation_name}")
     
     def stop_animation_audio(self):
-        """Stop any currently playing animation audio."""
-        if not self.audio_available:
-            return
+        """Stop any currently playing animation audio and clear the screen."""
+        # Stop audio
+        if self.audio_available:
+            try:
+                pygame.mixer.music.stop()
+                print("🔇 Stopped animation audio")
+            except Exception as e:
+                print(f"⚠️ Error stopping audio: {e}")
         
+        # Clear screen (turn off all LEDs)
         try:
-            pygame.mixer.music.stop()
-            print("🔇 Stopped animation audio")
+            if hasattr(self, 'led'):
+                self.led.clear()
+                self.led.show()
+                print("🖥️ Cleared screen (all LEDs turned off)")
         except Exception as e:
-            print(f"⚠️ Error stopping audio: {e}")
+            print(f"⚠️ Error clearing screen: {e}")
     
     def signal_handler(self, signum, frame):
         """Handle shutdown signals."""
@@ -500,18 +508,20 @@ class LEDDisplayApp:
         ]
         
         # Create three flowers: left, center, right
+        # Staggered start times: left starts immediately, middle after 2 LEDs, right after 6 LEDs (2+4)
         flowers = [
             {
                 'x': width // 4,  # Left side
                 'y': height - 8,  # Start from ground
                 'stem_height': 0,  # Will grow
-                'max_stem_height': 25,  # 5 pixels higher than center (20 + 5)
+                'max_stem_height': 20,  # Same size as others
                 'petal_size': 0,  # Will grow
                 'max_petal_size': 5,  # Fixed size
                 'color': (245, 230, 104),  # #F5E668 - Yellow
                 'bloom_progress': 0,  # 0 to 1
                 'sway_phase': 0,  # Start phase
-                'sway_amount': 1.0  # Gentle sway
+                'sway_amount': 1.0,  # Gentle sway
+                'start_delay': 0  # Start immediately
             },
             {
                 'x': width // 2,  # Center of display
@@ -523,19 +533,21 @@ class LEDDisplayApp:
                 'color': random.choice(flower_colors),
                 'bloom_progress': 0,  # 0 to 1
                 'sway_phase': 0,  # Start phase
-                'sway_amount': 1.0  # Gentle sway
+                'sway_amount': 1.0,  # Gentle sway
+                'start_delay': 2  # Start after 2 LEDs (2 seconds)
             },
             {
                 'x': 3 * width // 4,  # Right side
                 'y': height - 8,  # Start from ground
                 'stem_height': 0,  # Will grow
-                'max_stem_height': 22,  # 2 pixels higher than center (20 + 2)
+                'max_stem_height': 20,  # Same size as others
                 'petal_size': 0,  # Will grow
                 'max_petal_size': 5,  # Fixed size
-                'color': (172, 109, 188),  # #AC6DBC - Purple
+                'color': (230, 92, 88),  # #E65C58 - Red/Pink
                 'bloom_progress': 0,  # 0 to 1
                 'sway_phase': 0,  # Start phase
-                'sway_amount': 1.0  # Gentle sway
+                'sway_amount': 1.0,  # Gentle sway
+                'start_delay': 6  # Start after 6 LEDs (2 after middle + 4 after left = 6 total)
             }
         ]
         
@@ -591,18 +603,21 @@ class LEDDisplayApp:
                                         )
                                         self.led.set_pixel(x, y, petal_color)
             
-            # Update all flowers growth
+            # Update all flowers growth (with staggered start times)
+            elapsed_time = time.time() - start_time
             for flower in flowers:
-                # Grow stem
-                if flower['stem_height'] < flower['max_stem_height']:
-                    flower['stem_height'] += 0.1
+                # Only grow if enough time has passed (staggered start)
+                if elapsed_time >= flower['start_delay']:
+                    # Grow stem
+                    if flower['stem_height'] < flower['max_stem_height']:
+                        flower['stem_height'] += 0.1
+                    
+                    # Start blooming when stem is ready
+                    if flower['stem_height'] >= flower['max_stem_height'] * 0.8:
+                        flower['bloom_progress'] = min(1.0, flower['bloom_progress'] + 0.02)
+                        flower['petal_size'] = flower['max_petal_size'] * flower['bloom_progress']
                 
-                # Start blooming when stem is ready
-                if flower['stem_height'] >= flower['max_stem_height'] * 0.8:
-                    flower['bloom_progress'] = min(1.0, flower['bloom_progress'] + 0.02)
-                    flower['petal_size'] = flower['max_petal_size'] * flower['bloom_progress']
-                
-                # Update sway phase for petals only
+                # Update sway phase for petals only (always update for smooth animation)
                 flower['sway_phase'] += 0.05
             
             self.led.show()
