@@ -1040,10 +1040,12 @@ class LEDDisplayApp:
         blue_window = (0, 100, 200)   # Bright blue window panes
         white_smoke = (255, 255, 255) # White smoke
         light_smoke = (240, 240, 240) # Light gray smoke
+        ground_color = (34, 139, 34)  # Forest green ground (same as horse)
+        ground_height = 4  # Height of ground at bottom
         
         # House dimensions and position
         house_x = 8   # Left edge of house
-        house_y = 40  # Bottom of house
+        house_y = height - ground_height  # Bottom of house sits on ground
         house_width = 16
         house_height = 20
         
@@ -1200,11 +1202,20 @@ class LEDDisplayApp:
                                 random.random() < 0.6):  # Random smoke texture
                                 self.led.set_pixel(smoke_x, smoke_y, color)
         
+        def draw_ground():
+            """Draw forest green ground at the bottom."""
+            for x in range(width):
+                for y in range(height - ground_height, height):
+                    self.led.set_pixel(x, y, ground_color)
+        
         while time.time() - start_time < duration and (self.objects_animation_running or self.house_animation_running) and not getattr(self, 'animation_stop_flag', False):
             elapsed = time.time() - start_time
             
             # Clear display
             self.led.clear()
+            
+            # Draw ground first (so house sits on top)
+            draw_ground()
             
             # Draw house components
             draw_house_body()
