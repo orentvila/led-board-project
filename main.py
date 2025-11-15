@@ -242,6 +242,9 @@ class LEDDisplayApp:
         # Small delay to ensure everything is stopped
         time.sleep(0.2)
         
+        # Reset animation stop flag so new animation can run
+        self.animation_stop_flag = False
+        
         # Cycle to next nature animation
         self.current_nature_index = (self.current_nature_index + 1) % len(self.nature_animations)
         nature_file = self.nature_animations[self.current_nature_index]
@@ -324,7 +327,14 @@ class LEDDisplayApp:
             }
             clouds.append(cloud)
         
-        while time.time() - start_time < duration and self.nature_animation_running and not getattr(self, 'animation_stop_flag', False):
+        # Run for the full duration - only stop if explicitly requested via animation_stop_flag
+        while time.time() - start_time < duration and not getattr(self, 'animation_stop_flag', False):
+            # Only check nature_animation_running flag if animation_stop_flag is not set
+            # This allows the animation to complete its full duration
+            if getattr(self, 'animation_stop_flag', False):
+                print("🌤️ Cloud animation stopped by stop flag")
+                break
+            
             # Clear display
             self.led.clear()
             
