@@ -322,7 +322,7 @@ class LEDDisplayApp:
                 'x': random.randint(-width, width),  # Can start off-screen left or on-screen
                 'y': random.randint(10, height - 10),
                 'size': random.randint(8, 15),
-                'speed': random.uniform(0.3, 0.8),
+                'speed': random.uniform(0.15, 0.4),  # Slower speed (was 0.3-0.8)
                 'drift_phase': random.uniform(0, 2 * math.pi)
             }
             clouds.append(cloud)
