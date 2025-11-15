@@ -1208,6 +1208,30 @@ class LEDDisplayApp:
                 for y in range(height - ground_height, height):
                     self.led.set_pixel(x, y, ground_color)
         
+        def draw_sun():
+            """Draw small sun in the top left part of the screen (same as flowers animation)."""
+            sun_x = 8  # Position sun on the left side, near top
+            sun_y = 5  # Near the top
+            sun_color = (255, 200, 50)  # Bright yellow sun
+            sun_size = 3  # Small sun radius
+            
+            # Draw sun as a circle
+            for dy in range(-sun_size, sun_size + 1):
+                for dx in range(-sun_size, sun_size + 1):
+                    distance = math.sqrt(dx*dx + dy*dy)
+                    if distance <= sun_size:
+                        x = sun_x + dx
+                        y = sun_y + dy
+                        if 0 <= x < width and 0 <= y < height:
+                            # Fade edges for soft sun
+                            intensity = 1.0 - (distance / sun_size) * 0.3
+                            sun_pixel_color = (
+                                int(sun_color[0] * intensity),
+                                int(sun_color[1] * intensity),
+                                int(sun_color[2] * intensity)
+                            )
+                            self.led.set_pixel(x, y, sun_pixel_color)
+        
         while time.time() - start_time < duration and (self.objects_animation_running or self.house_animation_running) and not getattr(self, 'animation_stop_flag', False):
             elapsed = time.time() - start_time
             
@@ -1216,6 +1240,9 @@ class LEDDisplayApp:
             
             # Draw ground first (so house sits on top)
             draw_ground()
+            
+            # Draw sun in top left
+            draw_sun()
             
             # Draw house components
             draw_house_body()
