@@ -2286,7 +2286,11 @@ class LEDDisplayApp:
             self.led.show()
         
         # Small delay to ensure everything is stopped
-        time.sleep(0.2)
+        time.sleep(0.1)
+        
+        # Reset flags BEFORE starting new animation
+        self.animation_stop_flag = False
+        self.objects_animation_running = True
         
         # Ensure we have animations available
         if not self.objects_animations:
@@ -2319,12 +2323,9 @@ class LEDDisplayApp:
         self.led.clear()
         self.led.show()
         
-        # Reset stop flags FIRST, before creating animation
+        # Ensure flags are set (they should already be set by start_objects_animation, but double-check)
         self.animation_stop_flag = False
         self.objects_animation_running = True
-        
-        # Small delay to ensure flags are properly set
-        time.sleep(0.1)
         
         try:
             # Ensure index is within bounds
@@ -2336,10 +2337,6 @@ class LEDDisplayApp:
                 self.run_house_animation()
             elif self.current_object_index == 1:
                 # Balloon animation
-                # Make sure flags are still set correctly after the delay
-                self.animation_stop_flag = False
-                self.objects_animation_running = True
-                
                 def should_stop():
                     # Check the flags - only stop if explicitly requested
                     stop_requested = getattr(self, 'animation_stop_flag', False)
