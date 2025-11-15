@@ -311,11 +311,12 @@ class LEDDisplayApp:
         width = 32
         height = 48
         
-        # Initialize clouds
+        # Initialize clouds - ensure they start in visible positions
         clouds = []
-        for _ in range(4):
+        for i in range(4):
+            # Stagger cloud starting positions across the screen
             cloud = {
-                'x': random.randint(-10, width + 10),
+                'x': random.randint(-width, width),  # Can start off-screen left or on-screen
                 'y': random.randint(10, height - 10),
                 'size': random.randint(8, 15),
                 'speed': random.uniform(0.3, 0.8),
@@ -392,12 +393,14 @@ class LEDDisplayApp:
                 cloud['x'] += cloud['speed']
                 cloud['y'] += math.sin((time.time() - start_time) * 0.01 + cloud['drift_phase']) * 0.2
                 
+                # Reset cloud when it goes off screen
                 if cloud['x'] > width + 20:
                     cloud['x'] = -20
                     cloud['y'] = random.randint(10, height - 10)
             
-                self.led.show()
-                time.sleep(0.1)  # 10 FPS for gentle movement
+            # Show the frame after all clouds are drawn
+            self.led.show()
+            time.sleep(0.1)  # 10 FPS for gentle movement
     
     def run_rain_animation(self):
         """Run rain animation with gentle drops and soft colors."""
