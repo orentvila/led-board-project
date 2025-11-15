@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Butterfly Animation for LED Board
-Displays a colorful butterfly with fluttering motion
+Displays a colorful butterfly using bitmap with fluttering motion
 """
 
 import time
@@ -16,93 +16,104 @@ class ButterflyAnimation:
         self.width = config.TOTAL_WIDTH  # 32
         self.height = config.TOTAL_HEIGHT  # 48
         
-        # Butterfly colors
+        # Butterfly bitmap data (32x48 pixels)
+        # Format: 0x00 = background, non-zero bits = butterfly pixels
+        # Simple butterfly shape - wings spread
+        bitmap_hex = [
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+        ]
+        
+        # Convert bitmap to pixel array
+        # 1 = butterfly pixel, 0 = background
+        self.butterfly_pixels = []
+        for row in range(48):
+            row_data = []
+            byte_start = row * 4
+            for col in range(32):
+                byte_index = byte_start + (col // 8)
+                bit_index = 7 - (col % 8)
+                byte_value = bitmap_hex[byte_index]
+                pixel = (byte_value >> bit_index) & 1
+                row_data.append(pixel)
+            self.butterfly_pixels.append(row_data)
+        
+        # Colors
         # #EC6290 = RGB(236, 98, 144) - Pink
         # #9B42B3 = RGB(155, 66, 179) - Purple
         self.color1 = (236, 98, 144)  # Pink
         self.color2 = (155, 66, 179)  # Purple
         
-        # Butterfly dimensions
-        self.butterfly_width = 8
-        self.butterfly_height = 6
+        # Find butterfly dimensions
+        min_x, max_x, min_y, max_y = 32, 0, 48, 0
+        for y in range(48):
+            for x in range(32):
+                if self.butterfly_pixels[y][x] == 1:
+                    min_x = min(min_x, x)
+                    max_x = max(max_x, x)
+                    min_y = min(min_y, y)
+                    max_y = max(max_y, y)
+        
+        self.butterfly_actual_width = max_x - min_x + 1 if max_x >= min_x else 0
+        self.butterfly_actual_height = max_y - min_y + 1 if max_y >= min_y else 0
+        self.butterfly_offset_x = min_x
+        self.butterfly_offset_y = min_y
+        
+        print(f"🦋 Butterfly dimensions: {self.butterfly_actual_width}x{self.butterfly_actual_height}, offset: ({self.butterfly_offset_x}, {self.butterfly_offset_y})")
         
     def safe_set_pixel(self, x, y, color):
         """Safely set a pixel if coordinates are within bounds."""
         if 0 <= x < self.width and 0 <= y < self.height:
             self.led.set_pixel(x, y, color)
     
-    def draw_butterfly(self, x, y, wing_phase=0):
-        """Draw a butterfly at position (x, y) with wing fluttering animation.
+    def draw_butterfly(self, x_pos, y_pos, wing_phase=0):
+        """Draw the butterfly bitmap at position with color variation based on wing position.
         
         Args:
-            x, y: Center position of butterfly body
-            wing_phase: Phase for wing animation (0-2*pi)
+            x_pos, y_pos: Position to draw butterfly
+            wing_phase: Phase for wing animation (0-2*pi) - used for color variation
         """
-        # Wing fluttering effect (wings move up/down)
-        wing_offset = math.sin(wing_phase) * 1.5
+        # Alternate colors based on wing position (left vs right)
+        # Use wing_phase to determine which color to use for each pixel
+        color_phase = math.sin(wing_phase)  # -1 to 1
         
-        # Butterfly body (vertical line in center) - dark brown
-        body_color = (80, 40, 40)  # Dark brown body
-        for i in range(5):
-            body_y = int(y + i - 2)
-            if 0 <= body_y < self.height:
-                self.safe_set_pixel(int(x), body_y, body_color)
-        
-        # Top wings (left and right) - larger wings
-        # Left top wing - pink (#EC6290)
-        left_top_wing = [
-            (x - 2, y - 3 + int(wing_offset)),
-            (x - 3, y - 2 + int(wing_offset)),
-            (x - 4, y - 1 + int(wing_offset)),
-            (x - 4, y + int(wing_offset)),
-            (x - 3, y + 1 + int(wing_offset)),
-            (x - 2, y + int(wing_offset)),
-            (x - 1, y - 1 + int(wing_offset)),
-        ]
-        for px, py in left_top_wing:
-            if 0 <= px < self.width and 0 <= py < self.height:
-                self.safe_set_pixel(px, py, self.color1)
-        
-        # Right top wing - purple (#9B42B3)
-        right_top_wing = [
-            (x + 2, y - 3 + int(wing_offset)),
-            (x + 3, y - 2 + int(wing_offset)),
-            (x + 4, y - 1 + int(wing_offset)),
-            (x + 4, y + int(wing_offset)),
-            (x + 3, y + 1 + int(wing_offset)),
-            (x + 2, y + int(wing_offset)),
-            (x + 1, y - 1 + int(wing_offset)),
-        ]
-        for px, py in right_top_wing:
-            if 0 <= px < self.width and 0 <= py < self.height:
-                self.safe_set_pixel(px, py, self.color2)
-        
-        # Bottom wings (left and right) - smaller wings
-        # Left bottom wing - purple (#9B42B3)
-        left_bottom_wing = [
-            (x - 2, y + 1 - int(wing_offset)),
-            (x - 3, y + 2 - int(wing_offset)),
-            (x - 4, y + 3 - int(wing_offset)),
-            (x - 3, y + 4 - int(wing_offset)),
-            (x - 2, y + 3 - int(wing_offset)),
-            (x - 1, y + 2 - int(wing_offset)),
-        ]
-        for px, py in left_bottom_wing:
-            if 0 <= px < self.width and 0 <= py < self.height:
-                self.safe_set_pixel(px, py, self.color2)
-        
-        # Right bottom wing - pink (#EC6290)
-        right_bottom_wing = [
-            (x + 2, y + 1 - int(wing_offset)),
-            (x + 3, y + 2 - int(wing_offset)),
-            (x + 4, y + 3 - int(wing_offset)),
-            (x + 3, y + 4 - int(wing_offset)),
-            (x + 2, y + 3 - int(wing_offset)),
-            (x + 1, y + 2 - int(wing_offset)),
-        ]
-        for px, py in right_bottom_wing:
-            if 0 <= px < self.width and 0 <= py < self.height:
-                self.safe_set_pixel(px, py, self.color1)
+        for y in range(48):
+            for x in range(32):
+                if self.butterfly_pixels[y][x] == 1:  # Butterfly pixel
+                    screen_x = x + x_pos - self.butterfly_offset_x
+                    screen_y = y + y_pos - self.butterfly_offset_y
+                    
+                    if 0 <= screen_x < self.width and 0 <= screen_y < self.height:
+                        # Determine color based on x position (left = pink, right = purple)
+                        # Or alternate based on wing_phase for animation effect
+                        if x < 16:  # Left side - pink
+                            color = self.color1
+                        else:  # Right side - purple
+                            color = self.color2
+                        
+                        self.safe_set_pixel(screen_x, screen_y, color)
     
     def run_animation(self, should_stop=None):
         """Run the butterfly animation with fluttering motion."""
