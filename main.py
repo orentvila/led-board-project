@@ -155,7 +155,7 @@ class LEDDisplayApp:
             print(f"⚠️ No audio mapped for animation: {animation_name}")
     
     def stop_animation_audio(self):
-        """Stop any currently playing animation audio and clear the screen."""
+        """Stop any currently playing animation audio."""
         # Stop audio
         if self.audio_available:
             try:
@@ -163,8 +163,9 @@ class LEDDisplayApp:
                 print("🔇 Stopped animation audio")
             except Exception as e:
                 print(f"⚠️ Error stopping audio: {e}")
-        
-        # Clear screen (turn off all LEDs)
+    
+    def clear_screen(self):
+        """Clear the screen (turn off all LEDs)."""
         try:
             if hasattr(self, 'led'):
                 self.led.clear()
@@ -234,13 +235,8 @@ class LEDDisplayApp:
         # Stop any current animation and wait for it to fully stop
         self.stop_current_pattern()
         
-        # Clear display and ensure everything is stopped
-        if hasattr(self, 'led'):
-            self.led.clear()
-            self.led.show()
-        
-        # Small delay to ensure everything is stopped
-        time.sleep(0.2)
+        # Small delay to ensure everything is stopped (animation will clear screen when it starts)
+        time.sleep(0.1)
         
         # Reset animation stop flag so new animation can run
         self.animation_stop_flag = False
@@ -322,7 +318,7 @@ class LEDDisplayApp:
                 'x': random.randint(-width, width),  # Can start off-screen left or on-screen
                 'y': random.randint(10, height - 10),
                 'size': random.randint(8, 15),
-                'speed': random.uniform(0.15, 0.4),  # Slower speed (was 0.3-0.8)
+                'speed': random.uniform(0.075, 0.2),  # Much slower speed (2x slower than previous)
                 'drift_phase': random.uniform(0, 2 * math.pi)
             }
             clouds.append(cloud)
@@ -2620,13 +2616,9 @@ class LEDDisplayApp:
         # Stop shape animations
         self.stop_current_shape_animation()
         
-        # Clear the display to prevent overlapping animations
-        if hasattr(self, 'led'):
-            self.led.clear()
-            self.led.show()
-        
+        # Don't clear display here - new animation will handle it to avoid blinking
         # Small delay to ensure everything is stopped
-        time.sleep(0.2)
+        time.sleep(0.1)
         
         # Reset the flag after clearing
         self.animation_stop_flag = False
