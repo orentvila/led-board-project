@@ -511,7 +511,7 @@ class LEDDisplayApp:
         # Staggered start times: left starts immediately, middle after 2 LEDs, right after 6 LEDs (2+4)
         flowers = [
             {
-                'x': width // 4,  # Left side
+                'x': 7,  # Left side, positioned at pixel 7 (stem spans pixels 7-8)
                 'y': height - 8,  # Start from ground
                 'stem_height': 0,  # Will grow
                 'max_stem_height': 20,  # Same size as others
