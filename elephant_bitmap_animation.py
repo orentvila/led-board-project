@@ -54,7 +54,7 @@ class ElephantBitmapAnimation:
         # Colors
         self.elephant_color = (150, 150, 150)  # Grey for elephant
         self.ground_color = (34, 139, 34)  # Forest green ground (same as horse)
-        self.sky_color = (135, 206, 250)  # Light blue sky
+        self.sky_color = (5, 8, 12)  # Dramatically dimmed dark blue sky
         self.sun_color = (255, 200, 50)  # Bright yellow sun
         self.cloud_color = (255, 255, 255)  # White clouds
         
