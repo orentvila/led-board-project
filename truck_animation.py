@@ -5,6 +5,7 @@ Displays a truck bitmap on ground
 """
 
 import time
+import math
 from led_controller_exact import LEDControllerExact
 import config
 
@@ -56,6 +57,8 @@ class TruckAnimation:
         self.box_color = (231, 77, 73)  # #E74D49 - Red box
         self.front_color = (248, 147, 18)  # #F89312 - Orange front
         self.ground_color = (34, 139, 34)  # Forest green ground
+        self.sky_color = (10, 15, 25)  # Dimmed blue sky
+        self.sun_color = (255, 200, 50)  # Bright yellow sun
         self.ground_height = 4  # Height of ground at bottom
         
         # Identify truck parts based on vertical position
@@ -87,6 +90,35 @@ class TruckAnimation:
         if 0 <= x < self.width and 0 <= y < self.height:
             self.led.set_pixel(x, y, color)
     
+    def draw_sky(self):
+        """Draw dimmed blue sky background."""
+        for y in range(self.height - self.ground_height):
+            for x in range(self.width):
+                self.safe_set_pixel(x, y, self.sky_color)
+    
+    def draw_sun(self):
+        """Draw small sun in the sky."""
+        sun_x = self.width - 8  # Position sun on the right side, near top
+        sun_y = 5  # Near the top
+        sun_size = 3  # Small sun radius
+        
+        # Draw sun as a circle
+        for dy in range(-sun_size, sun_size + 1):
+            for dx in range(-sun_size, sun_size + 1):
+                distance = math.sqrt(dx*dx + dy*dy)
+                if distance <= sun_size:
+                    x = sun_x + dx
+                    y = sun_y + dy
+                    if 0 <= x < self.width and 0 <= y < self.height - self.ground_height:
+                        # Fade edges for soft sun
+                        intensity = 1.0 - (distance / sun_size) * 0.3
+                        sun_pixel_color = (
+                            int(self.sun_color[0] * intensity),
+                            int(self.sun_color[1] * intensity),
+                            int(self.sun_color[2] * intensity)
+                        )
+                        self.safe_set_pixel(x, y, sun_pixel_color)
+    
     def draw_ground(self):
         """Draw green ground at the bottom."""
         for y in range(self.height - self.ground_height, self.height):
@@ -106,12 +138,8 @@ class TruckAnimation:
         # Box is the rest (middle/right area)
         return self.box_color
     
-    def draw_truck(self):
-        """Draw the truck bitmap centered on the screen."""
-        # Center the truck horizontally
-        center_x = self.width // 2
-        x_pos = center_x - (self.truck_actual_width // 2) - self.truck_offset_x
-        
+    def draw_truck(self, x_pos):
+        """Draw the truck bitmap at horizontal position x_pos."""
         # Position truck vertically (wheels touching ground) - same logic as horse
         ground_y = self.height - self.ground_height
         truck_bottom_y = ground_y  # Wheels on ground line
@@ -121,7 +149,7 @@ class TruckAnimation:
         for y in range(48):
             for x in range(32):
                 if self.truck_pixels[y][x] == 1:  # Truck pixel
-                    screen_x = x + x_pos
+                    screen_x = x + x_pos - self.truck_offset_x
                     screen_y = y + vertical_offset
                     
                     # Only draw if truck is on or above ground and within screen bounds
@@ -132,27 +160,38 @@ class TruckAnimation:
                         self.safe_set_pixel(screen_x, screen_y, color)
     
     def run_animation(self, should_stop=None):
-        """Display the truck as a static image centered on the screen."""
-        duration = 15  # 15 seconds
+        """Display the truck moving from left to right across the screen."""
+        duration = 20  # 20 seconds
         start_time = time.time()
         
-        print("🚚 Starting truck display...")
+        print("🚚 Starting truck animation...")
+        
+        # Animation parameters
+        speed = (self.width + self.truck_actual_width) / duration  # pixels per second
         
         while time.time() - start_time < duration:
+            elapsed = time.time() - start_time
+            
             # Check stop flag
             if should_stop and should_stop():
                 print("🚚 Truck animation stopped by user")
                 break
             
-            # Draw static truck centered on screen
+            # Calculate horizontal position (truck moves from left to right)
+            # Start off-screen left, move across, exit off-screen right
+            x_pos = int(elapsed * speed) - self.truck_actual_width
+            
+            # Draw frame
             self.led.clear()
+            self.draw_sky()
+            self.draw_sun()
             self.draw_ground()
-            self.draw_truck()
+            self.draw_truck(x_pos)
             self.led.show()
             
-            time.sleep(0.1)  # Update every 0.1 seconds (static display)
+            time.sleep(0.05)  # 20 FPS for smooth animation
         
-        print("🚚 Truck display completed!")
+        print("🚚 Truck animation completed!")
         
         # Clear display
         self.led.clear()
