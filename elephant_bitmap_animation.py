@@ -5,7 +5,6 @@ Displays an elephant image from binary bitmap data
 """
 
 import time
-import math
 from led_controller_exact import LEDControllerExact
 import config
 
@@ -57,123 +56,96 @@ class ElephantBitmapAnimation:
         
         # Colors
         self.elephant_color = (150, 150, 150)  # Grey for elephant
-        self.ground_color = (139, 90, 43)  # Brown soil color
+        self.ground_color = (34, 139, 34)  # Forest green ground (same as horse)
         
         # Animation settings
-        self.ground_height = 3
-        # Ground starts at y = height - ground_height = 48 - 3 = 45
-        self.ground_y = self.height - self.ground_height  # y=45
+        self.ground_height = 4  # Height of ground at bottom (same as horse)
+        self.ground_y = self.height - self.ground_height
         
-        # Find the actual bottom row of the elephant in the bitmap
-        # (the lowest row that has any pixels)
-        self.elephant_bitmap_bottom = None
-        for y in range(46, -1, -1):  # Check from bottom up, excluding row 47
-            has_pixels = False
-            for x in range(4, 32):  # Skip first 4 pixels
+        # Find elephant dimensions for proper positioning
+        min_x, max_x, min_y, max_y = 32, 0, 48, 0
+        for y in range(48):
+            for x in range(32):
                 if self.elephant_pixels[y][x] == 1:
-                    has_pixels = True
-                    break
-            if has_pixels:
-                self.elephant_bitmap_bottom = y
-                break
+                    min_x = min(min_x, x)
+                    max_x = max(max_x, x)
+                    min_y = min(min_y, y)
+                    max_y = max(max_y, y)
         
-        if self.elephant_bitmap_bottom is None:
-            self.elephant_bitmap_bottom = 46  # Fallback
+        self.elephant_actual_width = max_x - min_x + 1
+        self.elephant_actual_height = max_y - min_y + 1
+        self.elephant_offset_x = min_x
+        self.elephant_offset_y = min_y
         
-        print(f"Elephant bitmap bottom row: {self.elephant_bitmap_bottom}")
-        print(f"Ground level: y={self.ground_y}")
+        print(f"🐘 Elephant dimensions: {self.elephant_actual_width}x{self.elephant_actual_height}, offset: ({self.elephant_offset_x}, {self.elephant_offset_y})")
         
     def safe_set_pixel(self, x, y, color):
         """Safely set a pixel if coordinates are within bounds."""
         if 0 <= x < self.width and 0 <= y < self.height:
             self.led.set_pixel(x, y, color)
     
-    def draw_elephant(self, x_offset=0, y_offset=0):
-        """Draw the elephant from the bitmap data with grey color and brown ground.
-        
-        Args:
-            x_offset: Horizontal offset for walking animation
-            y_offset: Vertical offset for walking bounce effect
-        """
-        self.led.clear()  # Black background
-        
-        # Draw ground/soil at the bottom
+    def draw_ground(self):
+        """Draw green ground at the bottom."""
         for y in range(self.height - self.ground_height, self.height):
             for x in range(self.width):
                 self.safe_set_pixel(x, y, self.ground_color)
+    
+    def draw_elephant(self, x_pos):
+        """Draw the elephant bitmap at horizontal position x_pos."""
+        # Position elephant vertically (feet touching ground) - same logic as horse
+        ground_y = self.height - self.ground_height
+        elephant_bottom_y = ground_y  # Feet on ground line
+        vertical_offset = elephant_bottom_y - (self.elephant_offset_y + self.elephant_actual_height)
         
-        # Draw elephant - positioned so its bottom pixels sit on the ground
-        # Position the elephant's actual bottom row at ground level
-        for bitmap_y in range(47):  # Rows 0-46 (excluding row 47)
-            # Calculate actual screen Y position
-            # Position elephant's bottom row (elephant_bitmap_bottom) at ground level
-            # So: screen_y = ground_y - (elephant_bitmap_bottom - bitmap_y) + y_offset
-            screen_y = self.ground_y - (self.elephant_bitmap_bottom - bitmap_y) + y_offset
-            
-            # Skip if outside screen bounds (above screen)
-            # Allow pixels at ground level (y=45) so elephant sits on ground
-            if screen_y < 0 or screen_y >= self.height:
-                continue
-            
-            for bitmap_x in range(32):
-                # Skip the first 4 pixels on the left (x < 4)
-                if bitmap_x < 4:
-                    continue
+        # Draw elephant pixels
+        for y in range(48):
+            for x in range(32):
+                if self.elephant_pixels[y][x] == 1:  # Elephant pixel
+                    screen_x = x + x_pos - self.elephant_offset_x
+                    screen_y = y + vertical_offset
                     
-                if self.elephant_pixels[bitmap_y][bitmap_x] == 1:
-                    # Calculate actual screen X position
-                    screen_x = bitmap_x - 4 + x_offset  # -4 because we skip first 4 pixels
-                    
-                    # Wrap around horizontally for continuous walking
-                    if screen_x < 0:
-                        screen_x = screen_x + self.width
-                    elif screen_x >= self.width:
-                        screen_x = screen_x - self.width
-                    
-                    # Draw elephant pixel (can be at ground level, elephant drawn on top of ground)
-                    if screen_y >= 0 and screen_y < self.height:
+                    # Only draw if elephant is on or above ground and within screen bounds
+                    # Allow drawing at ground level (screen_y <= ground_y) so elephant touches ground
+                    if 0 <= screen_x < self.width and 0 <= screen_y <= ground_y:
                         self.safe_set_pixel(screen_x, screen_y, self.elephant_color)
-        
-        self.led.show()
     
     def run_animation(self, should_stop=None):
-        """Run the elephant walking animation.
-        
-        Args:
-            should_stop: Optional callback function that returns True if animation should stop.
-        """
-        duration = 30  # 30 seconds
+        """Run the elephant animation - moves from left to right in a straight line."""
+        duration = 20  # 20 seconds
         start_time = time.time()
         
-        print("🐘 Starting elephant walking animation...")
+        print("🐘 Starting elephant animation...")
         
         # Animation parameters
-        walk_speed = 8.0  # pixels per second (horizontal movement speed)
-        bounce_amplitude = 0.8  # pixels (reduced for smoother vertical bounce)
-        bounce_frequency = 1.5  # cycles per second (slower for smoother motion)
+        speed = (self.width + self.elephant_actual_width) / duration  # pixels per second
+        
+        # Draw first frame immediately to prevent blinking
+        elapsed = 0
+        x_pos = int(elapsed * speed) - self.elephant_actual_width
+        self.led.clear()
+        self.draw_ground()
+        self.draw_elephant(x_pos)
+        self.led.show()
         
         while time.time() - start_time < duration:
+            elapsed = time.time() - start_time
+            
             # Check stop flag
             if should_stop and should_stop():
                 print("🐘 Elephant animation stopped by user")
                 break
             
-            elapsed = time.time() - start_time
+            # Calculate horizontal position (elephant moves from left to right)
+            # Start off-screen left, move across, exit off-screen right
+            x_pos = int(elapsed * speed) - self.elephant_actual_width
             
-            # Calculate horizontal position using time-based smooth movement
-            # Walk from left to right, looping continuously
-            total_distance = self.width + 8  # +8 for smooth looping
-            x_offset_float = (elapsed * walk_speed) % total_distance
-            x_offset = round(x_offset_float)  # Use round instead of int for smoother motion
+            # Draw frame
+            self.led.clear()
+            self.draw_ground()
+            self.draw_elephant(x_pos)
+            self.led.show()
             
-            # Calculate vertical bounce (subtle up/down motion for walking effect)
-            # Use smoother sine wave with smaller amplitude
-            y_offset_float = math.sin(elapsed * bounce_frequency * 2 * math.pi) * bounce_amplitude
-            y_offset = round(y_offset_float)  # Use round instead of int for smoother motion
-            
-            self.draw_elephant(x_offset=x_offset, y_offset=y_offset)
-            
-            time.sleep(0.05)  # 20 FPS for smoother animation
+            time.sleep(0.05)  # 20 FPS for smooth animation
         
         print("🐘 Elephant animation completed!")
         
