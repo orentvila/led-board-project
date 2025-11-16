@@ -71,7 +71,7 @@ class LEDDisplayApp:
         
         # Objects animation system
         self.objects_animations = [
-            "house", "balloon", "saturn"
+            "truck", "house", "balloon", "saturn"
         ]
         self.current_object_index = 0
         self.objects_animation_running = False
@@ -2338,7 +2338,7 @@ class LEDDisplayApp:
         # Cycle to next object with bounds checking
         self.current_object_index = (self.current_object_index + 1) % len(self.objects_animations)
         
-        object_names = ["House", "Balloon", "Saturn"]
+        object_names = ["Truck", "House", "Balloon", "Saturn"]
         
         # Ensure index is within bounds
         if self.current_object_index >= len(object_names):
@@ -2372,8 +2372,27 @@ class LEDDisplayApp:
                 print("⚠️ Object index out of bounds, resetting to 0")
             
             if self.current_object_index == 0:
-                self.run_house_animation()
+                # Truck animation
+                # Ensure flags are set before starting truck
+                self.animation_stop_flag = False
+                self.objects_animation_running = True
+                
+                def should_stop():
+                    # Only check animation_stop_flag - don't check objects_animation_running
+                    # because it might be False from previous animation finishing
+                    stop_requested = getattr(self, 'animation_stop_flag', False)
+                    if stop_requested:
+                        print(f"🚚 Stop check: stop_requested={stop_requested}")
+                    return stop_requested
+                
+                from truck_animation import TruckAnimation
+                animation = TruckAnimation()
+                
+                animation.run_animation(should_stop)
+                animation.cleanup()
             elif self.current_object_index == 1:
+                self.run_house_animation()
+            elif self.current_object_index == 2:
                 # Balloon animation
                 # Ensure flags are set before starting balloon
                 self.animation_stop_flag = False
@@ -2392,7 +2411,7 @@ class LEDDisplayApp:
                 
                 animation.run_animation(should_stop)
                 animation.cleanup()
-            elif self.current_object_index == 2:
+            elif self.current_object_index == 3:
                 # Saturn animation
                 # Ensure flags are set before starting Saturn
                 self.animation_stop_flag = False
