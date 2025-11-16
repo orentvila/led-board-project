@@ -53,10 +53,8 @@ class TruckAnimation:
             self.truck_pixels.append(row_data)
         
         # Colors
-        self.wheel_color = (255, 255, 255)  # White wheels
-        self.box_color = (231, 77, 73)  # #E74D49 - Red box
-        self.front_color = (248, 147, 18)  # #F89312 - Orange front
-        self.ground_color = (34, 139, 34)  # Forest green ground
+        self.truck_color = (231, 77, 73)  # #E74D49 - Entire truck in this color
+        self.ground_color = (123, 123, 123)  # #7B7B7B - Gray ground
         self.sky_color = (10, 15, 25)  # Dimmed blue sky
         self.sun_color = (255, 200, 50)  # Bright yellow sun
         self.ground_height = 4  # Height of ground at bottom
@@ -126,17 +124,8 @@ class TruckAnimation:
                 self.safe_set_pixel(x, y, self.ground_color)
     
     def get_truck_color(self, x, y):
-        """Determine the color for a truck pixel based on its position."""
-        # Wheels are at the bottom row (row 47)
-        if y == 47:  # Bottom row is wheels
-            return self.wheel_color
-        
-        # Front of truck is on the left side (lower x values)
-        if x < self.front_x_max:
-            return self.front_color
-        
-        # Box is the rest (middle/right area)
-        return self.box_color
+        """Return the truck color - entire truck uses same color."""
+        return self.truck_color
     
     def draw_truck(self, x_pos):
         """Draw the truck bitmap at horizontal position x_pos."""
