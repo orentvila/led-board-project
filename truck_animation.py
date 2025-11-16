@@ -107,13 +107,10 @@ class TruckAnimation:
         center_x = self.width // 2
         x_pos = center_x - (self.truck_actual_width // 2) - self.truck_offset_x
         
-        # Position truck vertically (on the ground)
+        # Position truck vertically (wheels touching ground) - same logic as horse
         ground_y = self.height - self.ground_height
-        # Move truck down by 16 LEDs from previous position
-        # Previous was 1 pixel above ground, so now it's 15 pixels into the ground area
-        # But we want wheels to touch ground, so position bottom at ground line
-        truck_bottom_y = ground_y
-        vertical_offset = truck_bottom_y - (self.truck_offset_y + self.truck_actual_height) - 16
+        truck_bottom_y = ground_y  # Wheels on ground line
+        vertical_offset = truck_bottom_y - (self.truck_offset_y + self.truck_actual_height)
         
         # Draw truck pixels
         for y in range(48):
@@ -122,8 +119,9 @@ class TruckAnimation:
                     screen_x = x + x_pos
                     screen_y = y + vertical_offset
                     
-                    # Draw truck pixels, allowing them to be on or above ground
-                    if 0 <= screen_x < self.width and 0 <= screen_y < self.height:
+                    # Only draw if truck is on or above ground and within screen bounds
+                    # Allow drawing at ground level (screen_y <= ground_y) so truck touches ground
+                    if 0 <= screen_x < self.width and 0 <= screen_y <= ground_y:
                         # Get appropriate color for this pixel
                         color = self.get_truck_color(x, y)
                         self.safe_set_pixel(screen_x, screen_y, color)
