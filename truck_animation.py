@@ -34,17 +34,23 @@ class TruckAnimation:
         
         # Convert bitmap to pixel array
         # 1 = truck pixel, 0 = background
+        # Skip rows 0-7 (not part of truck), start from row 8
         self.truck_pixels = []
         for row in range(48):
-            row_data = []
-            byte_start = row * 4
-            for col in range(32):
-                byte_index = byte_start + (col // 8)
-                bit_index = 7 - (col % 8)
-                byte_value = bitmap_hex[byte_index]
-                pixel = (byte_value >> bit_index) & 1
-                row_data.append(pixel)
-            self.truck_pixels.append(row_data)
+            # Skip rows 0-7
+            if row < 8:
+                # Add empty row for skipped rows
+                self.truck_pixels.append([0] * 32)
+            else:
+                row_data = []
+                byte_start = row * 4
+                for col in range(32):
+                    byte_index = byte_start + (col // 8)
+                    bit_index = 7 - (col % 8)
+                    byte_value = bitmap_hex[byte_index]
+                    pixel = (byte_value >> bit_index) & 1
+                    row_data.append(pixel)
+                self.truck_pixels.append(row_data)
         
         # Colors
         self.wheel_color = (255, 255, 255)  # White wheels
@@ -60,9 +66,9 @@ class TruckAnimation:
         self.wheel_row_start = 47  # Last row is wheels
         self.front_x_max = 12  # Front part is roughly x < 12
         
-        # Find truck dimensions (exclude bottom row 47 which is not part of truck)
+        # Find truck dimensions (exclude rows 0-7 and bottom row 47)
         min_x, max_x, min_y, max_y = 32, 0, 48, 0
-        for y in range(47):  # Only check rows 0-46, exclude row 47
+        for y in range(8, 47):  # Only check rows 8-46, exclude rows 0-7 and row 47
             for x in range(32):
                 if self.truck_pixels[y][x] == 1:
                     min_x = min(min_x, x)
@@ -91,9 +97,8 @@ class TruckAnimation:
     def get_truck_color(self, x, y):
         """Determine the color for a truck pixel based on its position."""
         # Wheels are at the bottom row of actual truck (row 46, not 47)
-        # Find the actual bottom row by checking which row has wheels
-        # Since we exclude row 47, the bottom row is now row 46
-        if y == 46:  # Bottom row of actual truck (was row 47, but we exclude that)
+        # Since we exclude rows 0-7 and row 47, the bottom row is row 46
+        if y == 46:  # Bottom row of actual truck
             return self.wheel_color
         
         # Front of truck is on the left side (lower x values)
@@ -114,8 +119,8 @@ class TruckAnimation:
         truck_bottom_y = ground_y  # Wheels on ground line
         vertical_offset = truck_bottom_y - (self.truck_offset_y + self.truck_actual_height)
         
-        # Draw truck pixels (exclude bottom row 47 which is not part of truck)
-        for y in range(47):  # Only draw rows 0-46, exclude row 47
+        # Draw truck pixels (exclude rows 0-7 and bottom row 47)
+        for y in range(8, 47):  # Only draw rows 8-46, exclude rows 0-7 and row 47
             for x in range(32):
                 if self.truck_pixels[y][x] == 1:  # Truck pixel
                     screen_x = x + x_pos
