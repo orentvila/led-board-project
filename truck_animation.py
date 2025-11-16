@@ -47,9 +47,18 @@ class TruckAnimation:
             self.truck_pixels.append(row_data)
         
         # Colors
-        self.truck_color = (255, 140, 0)  # Orange truck (or you can change to red, blue, etc.)
+        self.wheel_color = (255, 255, 255)  # White wheels
+        self.box_color = (231, 77, 73)  # #E74D49 - Red box
+        self.front_color = (248, 147, 18)  # #F89312 - Orange front
         self.ground_color = (34, 139, 34)  # Forest green ground
         self.ground_height = 4  # Height of ground at bottom
+        
+        # Identify truck parts based on vertical position
+        # Wheels are at the bottom (last row)
+        # Front is on the left side (lower x values)
+        # Box is the main body (middle/right area)
+        self.wheel_row_start = 47  # Last row is wheels
+        self.front_x_max = 12  # Front part is roughly x < 12
         
         # Find truck dimensions
         min_x, max_x, min_y, max_y = 32, 0, 48, 0
@@ -79,15 +88,29 @@ class TruckAnimation:
             for x in range(self.width):
                 self.safe_set_pixel(x, y, self.ground_color)
     
+    def get_truck_color(self, x, y):
+        """Determine the color for a truck pixel based on its position."""
+        # Wheels are at the bottom row
+        if y == self.wheel_row_start:
+            return self.wheel_color
+        
+        # Front of truck is on the left side (lower x values)
+        if x < self.front_x_max:
+            return self.front_color
+        
+        # Box is the rest (middle/right area)
+        return self.box_color
+    
     def draw_truck(self):
         """Draw the truck bitmap centered on the screen."""
         # Center the truck horizontally
         center_x = self.width // 2
         x_pos = center_x - (self.truck_actual_width // 2) - self.truck_offset_x
         
-        # Position truck vertically (wheels touching ground)
+        # Position truck vertically (on top of ground, not touching)
         ground_y = self.height - self.ground_height
-        truck_bottom_y = ground_y  # Wheels on ground line
+        # Place truck bottom 1 pixel above ground
+        truck_bottom_y = ground_y - 1
         vertical_offset = truck_bottom_y - (self.truck_offset_y + self.truck_actual_height)
         
         # Draw truck pixels
@@ -97,10 +120,12 @@ class TruckAnimation:
                     screen_x = x + x_pos
                     screen_y = y + vertical_offset
                     
-                    # Only draw if truck is on or above ground and within screen bounds
-                    # Allow drawing at ground level (screen_y <= ground_y) so truck touches ground
-                    if 0 <= screen_x < self.width and 0 <= screen_y <= ground_y:
-                        self.safe_set_pixel(screen_x, screen_y, self.truck_color)
+                    # Only draw if truck is above ground and within screen bounds
+                    # Truck sits on top of ground (screen_y < ground_y)
+                    if 0 <= screen_x < self.width and 0 <= screen_y < ground_y:
+                        # Get appropriate color for this pixel
+                        color = self.get_truck_color(x, y)
+                        self.safe_set_pixel(screen_x, screen_y, color)
     
     def run_animation(self, should_stop=None):
         """Display the truck as a static image centered on the screen."""
