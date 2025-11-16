@@ -180,11 +180,25 @@ class BalloonAnimation:
                 return
         
         # Animation: balloon starts at bottom, flies up once over 20 seconds
-        # Start from completely below the screen (original animals button version)
+        # Start position adjusted so balloon appears on screen in ~2 seconds
         total_balloon_height = self.balloon_height + 4 + self.basket_height  # envelope + transition + basket = 40 pixels
-        # Start completely below screen - balloon top starts well below visible area
-        start_y_offset = self.height + total_balloon_height  # Start completely below screen
+        
         end_y_offset = -total_balloon_height  # End above screen
+        
+        # Calculate start position so balloon bottom enters screen (y = height) in 2 seconds
+        # Balloon bottom enters screen when: top_y + total_balloon_height = height
+        # So: top_y = height - total_balloon_height when bottom enters
+        # Speed = (start_y_offset - end_y_offset) / duration
+        # Distance traveled in 2 seconds = (start_y_offset - end_y_offset) * (2 / duration)
+        # We want: start_y_offset - distance_in_2_seconds = height - total_balloon_height
+        # So: start_y_offset - (start_y_offset - end_y_offset) * (2/20) = height - total_balloon_height
+        # Simplifying: start_y_offset * (1 - 0.1) + end_y_offset * 0.1 = height - total_balloon_height
+        # start_y_offset * 0.9 = height - total_balloon_height - end_y_offset * 0.1
+        # start_y_offset = (height - total_balloon_height - end_y_offset * 0.1) / 0.9
+        
+        entry_y = self.height - total_balloon_height  # Top y when bottom enters screen
+        start_y_offset = (entry_y - end_y_offset * 0.1) / 0.9
+        start_y_offset = int(start_y_offset)
         total_distance = start_y_offset - end_y_offset
         
         # Draw first frame immediately
