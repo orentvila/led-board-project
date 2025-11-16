@@ -5,6 +5,7 @@ Displays an elephant image from binary bitmap data
 """
 
 import time
+import math
 from led_controller_exact import LEDControllerExact
 import config
 
@@ -53,6 +54,9 @@ class ElephantBitmapAnimation:
         # Colors
         self.elephant_color = (150, 150, 150)  # Grey for elephant
         self.ground_color = (34, 139, 34)  # Forest green ground (same as horse)
+        self.sky_color = (135, 206, 250)  # Light blue sky
+        self.sun_color = (255, 200, 50)  # Bright yellow sun
+        self.cloud_color = (255, 255, 255)  # White clouds
         
         # Animation settings
         self.ground_height = 4  # Height of ground at bottom (same as horse)
@@ -79,6 +83,59 @@ class ElephantBitmapAnimation:
         """Safely set a pixel if coordinates are within bounds."""
         if 0 <= x < self.width and 0 <= y < self.height:
             self.led.set_pixel(x, y, color)
+    
+    def draw_sky(self):
+        """Draw light blue sky background."""
+        for y in range(self.height - self.ground_height):
+            for x in range(self.width):
+                self.safe_set_pixel(x, y, self.sky_color)
+    
+    def draw_sun(self):
+        """Draw sun in the sky."""
+        sun_x = self.width - 8  # Position sun on the right side, near top
+        sun_y = 5  # Near the top
+        sun_size = 3  # Small sun radius
+        
+        # Draw sun as a circle
+        for dy in range(-sun_size, sun_size + 1):
+            for dx in range(-sun_size, sun_size + 1):
+                distance = math.sqrt(dx*dx + dy*dy)
+                if distance <= sun_size:
+                    x = sun_x + dx
+                    y = sun_y + dy
+                    if 0 <= x < self.width and 0 <= y < self.height - self.ground_height:
+                        # Fade edges for soft sun
+                        intensity = 1.0 - (distance / sun_size) * 0.3
+                        sun_pixel_color = (
+                            int(self.sun_color[0] * intensity),
+                            int(self.sun_color[1] * intensity),
+                            int(self.sun_color[2] * intensity)
+                        )
+                        self.safe_set_pixel(x, y, sun_pixel_color)
+    
+    def draw_clouds(self, phase=0):
+        """Draw clouds in the sky."""
+        # Create a few clouds at different positions
+        cloud_positions = [
+            (5 + phase * 0.5, 8),   # Cloud 1 - left side
+            (15 + phase * 0.3, 6),  # Cloud 2 - middle-left
+            (22 + phase * 0.4, 9),  # Cloud 3 - middle-right
+        ]
+        
+        for cloud_x, cloud_y in cloud_positions:
+            cloud_x = int(cloud_x) % (self.width + 10) - 5
+            
+            if 0 <= cloud_x < self.width:
+                # Draw cloud shape (simple puffy cloud)
+                for dy in range(-1, 2):
+                    for dx in range(-3, 4):
+                        x = cloud_x + dx
+                        y = cloud_y + dy
+                        
+                        if 0 <= x < self.width and 0 <= y < self.height - self.ground_height:
+                            # Create cloud effect - make it puffy
+                            if abs(dx) + abs(dy) <= 2:
+                                self.safe_set_pixel(x, y, self.cloud_color)
     
     def draw_ground(self):
         """Draw green ground at the bottom."""
@@ -134,7 +191,11 @@ class ElephantBitmapAnimation:
         else:
             x_pos = target_x_pos
         
+        cloud_phase = 0
         self.led.clear()
+        self.draw_sky()
+        self.draw_sun()
+        self.draw_clouds(cloud_phase)
         self.draw_ground()
         self.draw_elephant(x_pos)
         self.led.show()
@@ -160,8 +221,14 @@ class ElephantBitmapAnimation:
                 # Stopped phase: stay at center
                 x_pos = target_x_pos
             
+            # Animate clouds slowly drifting
+            cloud_phase = elapsed * 0.1  # Slow cloud movement
+            
             # Draw frame
             self.led.clear()
+            self.draw_sky()
+            self.draw_sun()
+            self.draw_clouds(cloud_phase)
             self.draw_ground()
             self.draw_elephant(x_pos)
             self.led.show()
