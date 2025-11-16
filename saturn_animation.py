@@ -5,15 +5,14 @@ Features rotating rings, planet details, and sparkle effects
 """
 
 import time
-import numpy as np
 import math
-from led_controller_fixed import LEDControllerFixed
+from led_controller_exact import LEDControllerExact
 import config
 
 class SaturnAnimation:
     def __init__(self):
         """Initialize the Saturn animation."""
-        self.led = LEDControllerFixed()
+        self.led = LEDControllerExact()
         self.width = config.TOTAL_WIDTH  # 32
         self.height = config.TOTAL_HEIGHT  # 48
         
@@ -35,10 +34,13 @@ class SaturnAnimation:
         self.sparkle_timer = 0
         self.star_timer = 0
         
-    def create_saturn_frame(self, ring_angle=0):
-        """Create a single frame of Saturn with rotating rings."""
-        frame = np.full((self.height, self.width, 3), self.colors['space'], dtype=np.uint8)
-        
+    def safe_set_pixel(self, x, y, color):
+        """Safely set a pixel if coordinates are within bounds."""
+        if 0 <= x < self.width and 0 <= y < self.height:
+            self.led.set_pixel(x, y, color)
+    
+    def draw_saturn(self, ring_angle=0):
+        """Draw Saturn with rotating rings."""
         # Saturn position (centered)
         center_x = self.width // 2
         center_y = self.height // 2
@@ -47,6 +49,7 @@ class SaturnAnimation:
         planet_radius_x = 8
         planet_radius_y = 6
         
+        # Draw planet body
         for y in range(self.height):
             for x in range(self.width):
                 dx = (x - center_x) / planet_radius_x
@@ -54,9 +57,9 @@ class SaturnAnimation:
                 if dx*dx + dy*dy <= 1:
                     # Add some banding to Saturn
                     if abs(dy) < 0.3:
-                        frame[y, x] = self.colors['saturn_dark']  # Dark band
+                        self.safe_set_pixel(x, y, self.colors['saturn_dark'])  # Dark band
                     else:
-                        frame[y, x] = self.colors['saturn_body']
+                        self.safe_set_pixel(x, y, self.colors['saturn_body'])
         
         # Saturn rings (elliptical)
         ring_outer_x = 14
@@ -68,6 +71,7 @@ class SaturnAnimation:
         cos_a = math.cos(ring_angle)
         sin_a = math.sin(ring_angle)
         
+        # Draw rings
         for y in range(self.height):
             for x in range(self.width):
                 # Transform coordinates for rotation
@@ -88,13 +92,13 @@ class SaturnAnimation:
                     section = int((angle + math.pi) / (math.pi / 6)) % 12
                     
                     if section < 6:
-                        frame[y, x] = self.colors['rings_gold']
+                        self.safe_set_pixel(x, y, self.colors['rings_gold'])
                     else:
-                        frame[y, x] = self.colors['rings_dark']
+                        self.safe_set_pixel(x, y, self.colors['rings_dark'])
                     
                     # Add some variation
                     if abs(rx) < ring_inner_x * 0.8:
-                        frame[y, x] = self.colors['rings_light']
+                        self.safe_set_pixel(x, y, self.colors['rings_light'])
         
         # Ring shadow on planet
         for y in range(self.height):
@@ -112,15 +116,19 @@ class SaturnAnimation:
                     
                     shadow_dist = (rx / ring_outer_x)**2 + (ry / ring_outer_y)**2
                     if 0.8 <= shadow_dist <= 1.2:
+                        # Get current pixel color (should be Saturn body color)
                         # Blend with shadow color
-                        original = frame[y, x]
+                        if abs(dy) < 0.3:
+                            original = self.colors['saturn_dark']
+                        else:
+                            original = self.colors['saturn_body']
                         shadow = self.colors['shadow']
-                        frame[y, x] = tuple(int(0.7 * o + 0.3 * s) for o, s in zip(original, shadow))
-        
-        return frame
+                        blended = tuple(int(0.7 * o + 0.3 * s) for o, s in zip(original, shadow))
+                        self.safe_set_pixel(x, y, blended)
     
-    def add_stars(self, frame):
-        """Add twinkling stars to the background."""
+    def draw_stars(self):
+        """Draw twinkling stars in the background."""
+        import random
         # Static stars
         star_positions = [
             (5, 5), (25, 8), (8, 15), (28, 12), (3, 25),
@@ -132,35 +140,37 @@ class SaturnAnimation:
                 # Twinkling effect
                 twinkle = abs(math.sin(self.star_timer * 0.1 + x + y)) * 0.5 + 0.5
                 star_color = tuple(int(c * twinkle) for c in self.colors['stars'])
-                frame[y, x] = star_color
+                self.safe_set_pixel(x, y, star_color)
         
         # Random sparkles
         if self.sparkle_timer % 20 == 0:
-            sparkle_x = np.random.randint(0, self.width)
-            sparkle_y = np.random.randint(0, self.height)
-            if 0 <= sparkle_x < self.width and 0 <= sparkle_y < self.height:
-                frame[sparkle_y, sparkle_x] = self.colors['sparkle']
+            sparkle_x = random.randint(0, self.width - 1)
+            sparkle_y = random.randint(0, self.height - 1)
+            self.safe_set_pixel(sparkle_x, sparkle_y, self.colors['sparkle'])
     
-    def display_saturn_animation(self, duration=15):
-        """Display the Saturn animation."""
-        print("🪐 Saturn Animation 🪐")
-        print(f"Displaying for {duration} seconds...")
-        
+    def run_animation(self, should_stop=None):
+        """Run the Saturn animation with stop callback support."""
+        duration = 30  # 30 seconds
         start_time = time.time()
         
+        print("🪐 Starting Saturn animation...")
+        
         while time.time() - start_time < duration:
-            # Create Saturn frame with rotating rings
-            frame = self.create_saturn_frame(self.ring_rotation)
+            # Check stop flag
+            if should_stop and should_stop():
+                print("🪐 Saturn animation stopped by user")
+                break
+            
+            # Clear display
+            self.led.clear()
+            
+            # Draw Saturn with rotating rings
+            self.draw_saturn(self.ring_rotation)
             
             # Add stars and sparkles
-            self.add_stars(frame)
+            self.draw_stars()
             
-            # Display the frame
-            for y in range(self.height):
-                for x in range(self.width):
-                    color = frame[y, x]
-                    self.led.set_pixel(x, y, color)
-            
+            # Update display
             self.led.show()
             
             # Update animation parameters
@@ -170,7 +180,11 @@ class SaturnAnimation:
             
             time.sleep(0.1)  # 10 FPS
         
-        print("Saturn animation completed!")
+        print("🪐 Saturn animation completed!")
+        
+        # Clear display
+        self.led.clear()
+        self.led.show()
     
     def cleanup(self):
         """Clean up resources."""
@@ -180,7 +194,7 @@ def main():
     """Main function to run Saturn animation."""
     try:
         saturn = SaturnAnimation()
-        saturn.display_saturn_animation(15)
+        saturn.run_animation()
         saturn.cleanup()
         
     except KeyboardInterrupt:

@@ -71,7 +71,7 @@ class LEDDisplayApp:
         
         # Objects animation system
         self.objects_animations = [
-            "house", "balloon"
+            "house", "balloon", "saturn"
         ]
         self.current_object_index = 0
         self.objects_animation_running = False
@@ -2338,7 +2338,7 @@ class LEDDisplayApp:
         # Cycle to next object with bounds checking
         self.current_object_index = (self.current_object_index + 1) % len(self.objects_animations)
         
-        object_names = ["House", "Balloon"]
+        object_names = ["House", "Balloon", "Saturn"]
         
         # Ensure index is within bounds
         if self.current_object_index >= len(object_names):
@@ -2389,6 +2389,25 @@ class LEDDisplayApp:
                 
                 from balloon_animation import BalloonAnimation
                 animation = BalloonAnimation()
+                
+                animation.run_animation(should_stop)
+                animation.cleanup()
+            elif self.current_object_index == 2:
+                # Saturn animation
+                # Ensure flags are set before starting Saturn
+                self.animation_stop_flag = False
+                self.objects_animation_running = True
+                
+                def should_stop():
+                    # Only check animation_stop_flag - don't check objects_animation_running
+                    # because it might be False from previous animation finishing
+                    stop_requested = getattr(self, 'animation_stop_flag', False)
+                    if stop_requested:
+                        print(f"🪐 Stop check: stop_requested={stop_requested}")
+                    return stop_requested
+                
+                from saturn_animation import SaturnAnimation
+                animation = SaturnAnimation()
                 
                 animation.run_animation(should_stop)
                 animation.cleanup()
