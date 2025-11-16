@@ -2318,11 +2318,6 @@ class LEDDisplayApp:
         print("🎯 Starting objects animation...")
         self.stop_current_pattern()
         
-        # Clear display and ensure everything is stopped
-        if hasattr(self, 'led'):
-            self.led.clear()
-            self.led.show()
-        
         # Small delay to ensure everything is stopped
         time.sleep(0.1)
         
@@ -2357,10 +2352,6 @@ class LEDDisplayApp:
     
     def run_objects_animation(self):
         """Run the current object animation."""
-        # Clear display before starting
-        self.led.clear()
-        self.led.show()
-        
         # Ensure flags are set (they should already be set by start_objects_animation, but double-check)
         self.animation_stop_flag = False
         self.objects_animation_running = True

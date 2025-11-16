@@ -158,6 +158,16 @@ class TruckAnimation:
         # Animation parameters
         speed = (self.width + self.truck_actual_width) / duration  # pixels per second
         
+        # Draw first frame immediately to prevent blinking
+        elapsed = 0
+        x_pos = int(elapsed * speed) - self.truck_actual_width
+        self.led.clear()
+        self.draw_sky()
+        self.draw_sun()
+        self.draw_ground()
+        self.draw_truck(x_pos)
+        self.led.show()
+        
         while time.time() - start_time < duration:
             elapsed = time.time() - start_time
             
