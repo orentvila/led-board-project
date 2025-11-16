@@ -110,6 +110,7 @@ class LEDDisplayApp:
             'house': 'house.wav',
             'clock': 'clock.wav',
             'traffic_lights': 'traffic_lights.wav',
+            'truck': 'truck.wav',
         }
         
         # Setup signal handlers for graceful shutdown
@@ -2372,6 +2373,9 @@ class LEDDisplayApp:
                 # Ensure flags are set before starting truck
                 self.animation_stop_flag = False
                 self.objects_animation_running = True
+                
+                # Play audio for this animation
+                self.play_animation_audio('truck')
                 
                 def should_stop():
                     # Only check animation_stop_flag - don't check objects_animation_running

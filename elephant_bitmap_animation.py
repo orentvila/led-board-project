@@ -106,18 +106,34 @@ class ElephantBitmapAnimation:
                         self.safe_set_pixel(screen_x, screen_y, self.elephant_color)
     
     def run_animation(self, should_stop=None):
-        """Run the elephant animation - moves from left to right in a straight line."""
+        """Run the elephant animation - moves from left to center, then stops."""
         duration = 20  # 20 seconds
         start_time = time.time()
         
         print("🐘 Starting elephant animation...")
         
         # Animation parameters
-        speed = (self.width + self.elephant_actual_width) / duration  # pixels per second
+        # Calculate center position: elephant should be centered when its center is at screen center
+        center_x = self.width // 2
+        target_x_pos = center_x - (self.elephant_actual_width // 2) - self.elephant_offset_x
+        
+        # Start position: off-screen left
+        start_x_pos = -self.elephant_actual_width
+        
+        # Distance to travel to reach center
+        travel_distance = target_x_pos - start_x_pos
+        
+        # Time to reach center (use first 8 seconds to move, then stay for remaining 12 seconds)
+        move_duration = 8.0  # seconds to reach center
+        speed = travel_distance / move_duration  # pixels per second
         
         # Draw first frame immediately to prevent blinking
         elapsed = 0
-        x_pos = int(elapsed * speed) - self.elephant_actual_width
+        if elapsed < move_duration:
+            x_pos = int(start_x_pos + elapsed * speed)
+        else:
+            x_pos = target_x_pos
+        
         self.led.clear()
         self.draw_ground()
         self.draw_elephant(x_pos)
@@ -131,9 +147,18 @@ class ElephantBitmapAnimation:
                 print("🐘 Elephant animation stopped by user")
                 break
             
-            # Calculate horizontal position (elephant moves from left to right)
-            # Start off-screen left, move across, exit off-screen right
-            x_pos = int(elapsed * speed) - self.elephant_actual_width
+            # Calculate horizontal position
+            # Move from left to center during first move_duration seconds
+            # Then stay at center for the rest of the duration
+            if elapsed < move_duration:
+                # Moving phase: calculate position based on elapsed time
+                x_pos = int(start_x_pos + elapsed * speed)
+                # Clamp to target position to ensure we don't overshoot
+                if x_pos > target_x_pos:
+                    x_pos = target_x_pos
+            else:
+                # Stopped phase: stay at center
+                x_pos = target_x_pos
             
             # Draw frame
             self.led.clear()
