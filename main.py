@@ -692,19 +692,33 @@ class LEDDisplayApp:
                     if 0 <= y_pos < height and 0 <= flower['x'] + 1 < width:
                         self.led.set_pixel(flower['x'] + 1, y_pos, stem_color)
                 
-                # Draw 2 leaves on each stem
+                # Draw 2 leaves on each stem (each leaf made of 3 LEDs)
                 if flower['stem_height'] > 5:  # Only draw leaves if stem is tall enough
-                    # First leaf at 30% of stem height
+                    # First leaf at 30% of stem height (left side)
                     leaf1_y = height - 1 - int(flower['stem_height'] * 0.3)
                     leaf1_x = flower['x'] - 1  # Left side of stem
-                    if 0 <= leaf1_x < width and 0 <= leaf1_y < height:
-                        self.led.set_pixel(leaf1_x, leaf1_y, leaf_color)
+                    # Draw 3 LEDs in a small triangle shape for the leaf
+                    leaf_positions = [
+                        (leaf1_x, leaf1_y),      # Center of leaf
+                        (leaf1_x - 1, leaf1_y),  # Left of leaf
+                        (leaf1_x, leaf1_y - 1),  # Top of leaf
+                    ]
+                    for lx, ly in leaf_positions:
+                        if 0 <= lx < width and 0 <= ly < height:
+                            self.led.set_pixel(lx, ly, leaf_color)
                     
-                    # Second leaf at 60% of stem height
+                    # Second leaf at 60% of stem height (right side)
                     leaf2_y = height - 1 - int(flower['stem_height'] * 0.6)
                     leaf2_x = flower['x'] + 2  # Right side of stem
-                    if 0 <= leaf2_x < width and 0 <= leaf2_y < height:
-                        self.led.set_pixel(leaf2_x, leaf2_y, leaf_color)
+                    # Draw 3 LEDs in a small triangle shape for the leaf
+                    leaf_positions = [
+                        (leaf2_x, leaf2_y),      # Center of leaf
+                        (leaf2_x + 1, leaf2_y),  # Right of leaf
+                        (leaf2_x, leaf2_y - 1),  # Top of leaf
+                    ]
+                    for lx, ly in leaf_positions:
+                        if 0 <= lx < width and 0 <= ly < height:
+                            self.led.set_pixel(lx, ly, leaf_color)
                 
                 # Draw flower petals if bloomed (with gentle sway)
                 # Start showing flowers when stem is at 70% of its size
@@ -813,17 +827,31 @@ class LEDDisplayApp:
                     if 0 <= y_pos < height and 0 <= flower['x'] + 1 < width:
                         self.led.set_pixel(flower['x'] + 1, y_pos, stem_color)
                 
-                # Draw leaves with fade-out
+                # Draw leaves with fade-out (each leaf made of 3 LEDs)
                 if flower['stem_height'] > 5:
+                    # First leaf at 30% of stem height (left side)
                     leaf1_y = height - 1 - int(flower['stem_height'] * 0.3)
                     leaf1_x = flower['x'] - 1
-                    if 0 <= leaf1_x < width and 0 <= leaf1_y < height:
-                        self.led.set_pixel(leaf1_x, leaf1_y, leaf_color)
+                    leaf_positions = [
+                        (leaf1_x, leaf1_y),      # Center of leaf
+                        (leaf1_x - 1, leaf1_y),  # Left of leaf
+                        (leaf1_x, leaf1_y - 1),  # Top of leaf
+                    ]
+                    for lx, ly in leaf_positions:
+                        if 0 <= lx < width and 0 <= ly < height:
+                            self.led.set_pixel(lx, ly, leaf_color)
                     
+                    # Second leaf at 60% of stem height (right side)
                     leaf2_y = height - 1 - int(flower['stem_height'] * 0.6)
                     leaf2_x = flower['x'] + 2
-                    if 0 <= leaf2_x < width and 0 <= leaf2_y < height:
-                        self.led.set_pixel(leaf2_x, leaf2_y, leaf_color)
+                    leaf_positions = [
+                        (leaf2_x, leaf2_y),      # Center of leaf
+                        (leaf2_x + 1, leaf2_y),  # Right of leaf
+                        (leaf2_x, leaf2_y - 1),  # Top of leaf
+                    ]
+                    for lx, ly in leaf_positions:
+                        if 0 <= lx < width and 0 <= ly < height:
+                            self.led.set_pixel(lx, ly, leaf_color)
                 
                 # Draw flower petals with fade-out
                 if flower['bloom_progress'] > 0.3:
