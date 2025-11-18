@@ -244,11 +244,13 @@ class LEDDisplayApp:
         # Stop any current animation and wait for it to fully stop
         self.stop_current_pattern()
         
-        # Small delay to ensure everything is stopped (animation will clear screen when it starts)
+        # Small delay to ensure everything is stopped
         time.sleep(0.1)
         
         # Reset animation stop flag so new animation can run
         self.animation_stop_flag = False
+        # Ensure nature animation flag is set
+        self.nature_animation_running = True
         
         # Cycle to next nature animation
         self.current_nature_index = (self.current_nature_index + 1) % len(self.nature_animations)
@@ -302,13 +304,15 @@ class LEDDisplayApp:
     def run_floating_clouds(self):
         """Run floating clouds animation."""
         import math
-        # Play audio for this animation
-        self.play_animation_audio('floating_clouds')
+        import random
         
         duration = 45  # 45 seconds duration
         start_time = time.time()
         
         print(f"🌤️ Floating clouds animation started (flag: {self.nature_animation_running}, duration: {duration}s)")
+        
+        # Play audio for this animation (after ensuring flag is set)
+        self.play_animation_audio('floating_clouds')
         
         # Double-check the flag is still True
         if not self.nature_animation_running:
@@ -332,9 +336,11 @@ class LEDDisplayApp:
             }
             clouds.append(cloud)
         
-        # Draw first frame immediately to prevent blinking
-        self.led.clear()
+        # Draw first frame immediately to prevent blinking (before entering loop)
+        # Don't clear here - let the first loop iteration handle it
         sky_color = (10, 15, 25)  # Dimmed blue sky (same as truck animation)
+        
+        # Draw sky background first
         for y in range(height):
             for x in range(width):
                 self.led.set_pixel(x, y, sky_color)
@@ -346,14 +352,14 @@ class LEDDisplayApp:
             size = cloud['size']
             
             # Draw cloud with image-style colors and shape
-            for y in range(max(0, center_y - size), min(height, center_y + size)):
-                for x in range(max(0, center_x - size), min(width, center_x + size)):
-                    dx = x - center_x
-                    dy = y - center_y
+            for cloud_y in range(max(0, center_y - size), min(height, center_y + size)):
+                for cloud_x in range(max(0, center_x - size), min(width, center_x + size)):
+                    dx = cloud_x - center_x
+                    dy = cloud_y - center_y
                     distance = math.sqrt(dx*dx + dy*dy)
                     
                     # Create organic cloud shape (not perfect circle)
-                    cloud_radius = size * (0.7 + math.sin(x * 0.3 + y * 0.2) * 0.3)
+                    cloud_radius = size * (0.7 + math.sin(cloud_x * 0.3 + cloud_y * 0.2) * 0.3)
                     
                     if distance <= cloud_radius:
                         # Calculate position within cloud for color variation
@@ -380,10 +386,10 @@ class LEDDisplayApp:
                         edge_fade = 1.0 - cloud_progress * 0.3
                         cloud_color = tuple(int(c * edge_fade) for c in cloud_color)
                         
-                        self.led.set_pixel(x, y, cloud_color)
+                        self.led.set_pixel(cloud_x, cloud_y, cloud_color)
         
+        # Show first frame immediately
         self.led.show()
-        time.sleep(0.05)  # Small delay before starting animation loop
         
         # Run for the full duration - only stop if explicitly requested via animation_stop_flag
         while time.time() - start_time < duration and not getattr(self, 'animation_stop_flag', False):
