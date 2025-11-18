@@ -53,7 +53,7 @@ class TruckAnimation:
             self.truck_pixels.append(row_data)
         
         # Colors
-        self.truck_color = (231, 77, 73)  # #E74D49 - Entire truck in this color
+        self.truck_color = (96, 172, 99)  # #60AC63 - Green truck color
         self.ground_color = (123, 123, 123)  # #7B7B7B - Gray ground
         self.sky_color = (10, 15, 25)  # Dimmed blue sky
         self.sun_color = (255, 200, 50)  # Bright yellow sun
@@ -190,9 +190,79 @@ class TruckAnimation:
             
             time.sleep(0.05)  # 20 FPS for smooth animation
         
+        # Fade out the truck animation smoothly
+        print("🚚 Fading out truck animation...")
+        fade_out_duration = 2  # 2 seconds fade-out
+        fade_out_start = time.time()
+        
+        while time.time() - fade_out_start < fade_out_duration:
+            # Check stop flag
+            if should_stop and should_stop():
+                print("🚚 Truck animation stopped during fade-out")
+                break
+            
+            elapsed_fade = time.time() - fade_out_start
+            fade_progress = elapsed_fade / fade_out_duration
+            fade_intensity = 1.0 - fade_progress  # Fade from 1.0 to 0.0
+            
+            # Calculate truck position (continue moving during fade-out)
+            elapsed_total = time.time() - start_time
+            x_pos = int(elapsed_total * speed) - self.truck_actual_width
+            
+            # Clear display
+            self.led.clear()
+            
+            # Draw sky with fade-out
+            sky_color_fade = tuple(int(c * fade_intensity) for c in self.sky_color)
+            for y in range(self.height - self.ground_height):
+                for x in range(self.width):
+                    self.safe_set_pixel(x, y, sky_color_fade)
+            
+            # Draw sun with fade-out
+            sun_x = self.width - 8
+            sun_y = 5
+            sun_size = 3
+            for dy in range(-sun_size, sun_size + 1):
+                for dx in range(-sun_size, sun_size + 1):
+                    distance = math.sqrt(dx*dx + dy*dy)
+                    if distance <= sun_size:
+                        x = sun_x + dx
+                        y = sun_y + dy
+                        if 0 <= x < self.width and 0 <= y < self.height - self.ground_height:
+                            intensity = (1.0 - (distance / sun_size) * 0.3) * fade_intensity
+                            sun_pixel_color = (
+                                int(self.sun_color[0] * intensity),
+                                int(self.sun_color[1] * intensity),
+                                int(self.sun_color[2] * intensity)
+                            )
+                            self.safe_set_pixel(x, y, sun_pixel_color)
+            
+            # Draw ground with fade-out
+            ground_color_fade = tuple(int(c * fade_intensity) for c in self.ground_color)
+            for y in range(self.height - self.ground_height, self.height):
+                for x in range(self.width):
+                    self.safe_set_pixel(x, y, ground_color_fade)
+            
+            # Draw truck with fade-out
+            ground_y = self.height - self.ground_height
+            truck_bottom_y = ground_y
+            vertical_offset = truck_bottom_y - (self.truck_offset_y + self.truck_actual_height)
+            
+            truck_color_fade = tuple(int(c * fade_intensity) for c in self.truck_color)
+            for y in range(48):
+                for x in range(32):
+                    if self.truck_pixels[y][x] == 1:
+                        screen_x = x + x_pos - self.truck_offset_x
+                        screen_y = y + vertical_offset
+                        if 0 <= screen_x < self.width and 0 <= screen_y <= ground_y:
+                            self.safe_set_pixel(screen_x, screen_y, truck_color_fade)
+            
+            self.led.show()
+            time.sleep(0.05)  # 20 FPS for smooth fade-out
+        
         print("🚚 Truck animation completed!")
         
-        # Clear display
+        # Clear display completely
         self.led.clear()
         self.led.show()
     
