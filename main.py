@@ -343,14 +343,9 @@ class LEDDisplayApp:
             # Clear display
             self.led.clear()
             
-            # Create sky background with gradient blue (like the image)
+            # Create sky background - use same dark sky color as truck animation
+            sky_color = (10, 15, 25)  # Dimmed blue sky (same as truck animation)
             for y in range(height):
-                # Gradient from darker blue at top to lighter blue at bottom
-                sky_intensity = 1.0 - (y / height) * 0.3
-                # Sky blue gradient: darker at top, lighter at bottom (30% darker than original for better cloud contrast)
-                # Original: (80, 120, 180), 30% darker: (56, 84, 126)
-                sky_color = (int(56 * sky_intensity), int(84 * sky_intensity), int(126 * sky_intensity))
-                
                 for x in range(width):
                     self.led.set_pixel(x, y, sky_color)
             
