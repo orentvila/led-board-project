@@ -112,6 +112,7 @@ class LEDDisplayApp:
             'traffic_lights': 'traffic_lights.wav',
             'truck': 'truck.wav',
             'saturn': 'saturn.wav',
+            'elephant': 'elephant.wav',
         }
         
         # Setup signal handlers for graceful shutdown
@@ -1469,6 +1470,9 @@ class LEDDisplayApp:
             
             # Check elephant first since it should be the default
             if animation_name == "elephant_bitmap":
+                # Play audio for this animation
+                self.play_animation_audio('elephant')
+                
                 from elephant_bitmap_animation import ElephantBitmapAnimation
                 animation = ElephantBitmapAnimation()
                 animation.run_animation(should_stop)
