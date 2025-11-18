@@ -180,9 +180,120 @@ class SaturnAnimation:
             
             time.sleep(0.1)  # 10 FPS
         
+        # Fade out the Saturn animation smoothly
+        print("🪐 Fading out Saturn animation...")
+        fade_out_duration = 2  # 2 seconds fade-out
+        fade_out_start = time.time()
+        
+        while time.time() - fade_out_start < fade_out_duration:
+            # Check stop flag
+            if should_stop and should_stop():
+                print("🪐 Saturn animation stopped during fade-out")
+                break
+            
+            elapsed_fade = time.time() - fade_out_start
+            fade_progress = elapsed_fade / fade_out_duration
+            fade_intensity = 1.0 - fade_progress  # Fade from 1.0 to 0.0
+            
+            # Clear display
+            self.led.clear()
+            
+            # Draw Saturn with rotating rings (with fade-out)
+            center_x = self.width // 2
+            center_y = self.height // 2
+            planet_radius_x = 8
+            planet_radius_y = 6
+            
+            # Draw planet body with fade-out
+            for y in range(self.height):
+                for x in range(self.width):
+                    dx = (x - center_x) / planet_radius_x
+                    dy = (y - center_y) / planet_radius_y
+                    if dx*dx + dy*dy <= 1:
+                        if abs(dy) < 0.3:
+                            color = tuple(int(c * fade_intensity) for c in self.colors['saturn_dark'])
+                        else:
+                            color = tuple(int(c * fade_intensity) for c in self.colors['saturn_body'])
+                        self.safe_set_pixel(x, y, color)
+            
+            # Draw rings with fade-out
+            ring_outer_x = 14
+            ring_outer_y = 4
+            ring_inner_x = 10
+            ring_inner_y = 2
+            
+            cos_a = math.cos(self.ring_rotation)
+            sin_a = math.sin(self.ring_rotation)
+            
+            for y in range(self.height):
+                for x in range(self.width):
+                    dx = x - center_x
+                    dy = y - center_y
+                    rx = dx * cos_a - dy * sin_a
+                    ry = dx * sin_a + dy * cos_a
+                    
+                    outer_dist = (rx / ring_outer_x)**2 + (ry / ring_outer_y)**2
+                    inner_dist = (rx / ring_inner_x)**2 + (ry / ring_inner_y)**2
+                    
+                    if 0.8 <= outer_dist <= 1.2 and inner_dist >= 0.8:
+                        angle = math.atan2(ry, rx)
+                        section = int((angle + math.pi) / (math.pi / 6)) % 12
+                        
+                        if section < 6:
+                            color = tuple(int(c * fade_intensity) for c in self.colors['rings_gold'])
+                        else:
+                            color = tuple(int(c * fade_intensity) for c in self.colors['rings_dark'])
+                        
+                        if abs(rx) < ring_inner_x * 0.8:
+                            color = tuple(int(c * fade_intensity) for c in self.colors['rings_light'])
+                        
+                        self.safe_set_pixel(x, y, color)
+            
+            # Draw ring shadow on planet with fade-out
+            for y in range(self.height):
+                for x in range(self.width):
+                    dx = (x - center_x) / planet_radius_x
+                    dy = (y - center_y) / planet_radius_y
+                    if dx*dx + dy*dy <= 1:
+                        shadow_x = x - center_x
+                        shadow_y = y - center_y
+                        rx = shadow_x * cos_a - shadow_y * sin_a
+                        ry = shadow_x * sin_a + shadow_y * sin_a
+                        shadow_dist = (rx / ring_outer_x)**2 + (ry / ring_outer_y)**2
+                        if 0.8 <= shadow_dist <= 1.2:
+                            if abs(dy) < 0.3:
+                                original = tuple(int(c * fade_intensity) for c in self.colors['saturn_dark'])
+                            else:
+                                original = tuple(int(c * fade_intensity) for c in self.colors['saturn_body'])
+                            shadow = tuple(int(c * fade_intensity) for c in self.colors['shadow'])
+                            blended = tuple(int(0.7 * o + 0.3 * s) for o, s in zip(original, shadow))
+                            self.safe_set_pixel(x, y, blended)
+            
+            # Draw stars with fade-out
+            star_positions = [
+                (5, 5), (25, 8), (8, 15), (28, 12), (3, 25),
+                (22, 30), (15, 35), (30, 35), (10, 38), (20, 38)
+            ]
+            
+            for x, y in star_positions:
+                if 0 <= x < self.width and 0 <= y < self.height:
+                    twinkle = abs(math.sin(self.star_timer * 0.1 + x + y)) * 0.5 + 0.5
+                    star_color = tuple(int(c * twinkle * fade_intensity) for c in self.colors['stars'])
+                    self.safe_set_pixel(x, y, star_color)
+            
+            # Update display
+            self.led.show()
+            
+            # Continue updating animation parameters during fade-out
+            self.ring_rotation += 0.1
+            self.sparkle_timer += 1
+            self.star_timer += 1
+            
+            time.sleep(0.1)  # 10 FPS for smooth fade-out
+        
         print("🪐 Saturn animation completed!")
         
-        # Clear display
+        # Clear display completely
         self.led.clear()
         self.led.show()
     

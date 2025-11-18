@@ -305,7 +305,7 @@ class LEDDisplayApp:
         # Play audio for this animation
         self.play_animation_audio('floating_clouds')
         
-        duration = 30  # 30 seconds duration
+        duration = 45  # 45 seconds duration
         start_time = time.time()
         
         print(f"🌤️ Floating clouds animation started (flag: {self.nature_animation_running}, duration: {duration}s)")
@@ -331,6 +331,59 @@ class LEDDisplayApp:
                 'drift_phase': random.uniform(0, 2 * math.pi)
             }
             clouds.append(cloud)
+        
+        # Draw first frame immediately to prevent blinking
+        self.led.clear()
+        sky_color = (10, 15, 25)  # Dimmed blue sky (same as truck animation)
+        for y in range(height):
+            for x in range(width):
+                self.led.set_pixel(x, y, sky_color)
+        
+        # Draw initial clouds
+        for cloud in clouds:
+            center_x = int(cloud['x'])
+            center_y = int(cloud['y'])
+            size = cloud['size']
+            
+            # Draw cloud with image-style colors and shape
+            for y in range(max(0, center_y - size), min(height, center_y + size)):
+                for x in range(max(0, center_x - size), min(width, center_x + size)):
+                    dx = x - center_x
+                    dy = y - center_y
+                    distance = math.sqrt(dx*dx + dy*dy)
+                    
+                    # Create organic cloud shape (not perfect circle)
+                    cloud_radius = size * (0.7 + math.sin(x * 0.3 + y * 0.2) * 0.3)
+                    
+                    if distance <= cloud_radius:
+                        # Calculate position within cloud for color variation
+                        cloud_progress = distance / cloud_radius
+                        
+                        # Main cloud body: creamy yellow/off-white (#FFFDD0)
+                        if dy < center_y - size * 0.2:  # Top part of cloud
+                            cloud_color = (255, 253, 208)  # Creamy yellow-white
+                        # Cloud underside: warm peach shadow (#E0B0A0)
+                        elif dy > center_y + size * 0.1:  # Bottom part of cloud
+                            cloud_color = (224, 176, 160)  # Warm peach
+                        # Middle transition area
+                        else:
+                            # Blend between creamy and peach
+                            blend = (dy - (center_y - size * 0.2)) / (size * 0.3)
+                            blend = max(0, min(1, blend))
+                            cloud_color = (
+                                int(255 * (1 - blend) + 224 * blend),
+                                int(253 * (1 - blend) + 176 * blend),
+                                int(208 * (1 - blend) + 160 * blend)
+                            )
+                        
+                        # Add soft edge fade
+                        edge_fade = 1.0 - cloud_progress * 0.3
+                        cloud_color = tuple(int(c * edge_fade) for c in cloud_color)
+                        
+                        self.led.set_pixel(x, y, cloud_color)
+        
+        self.led.show()
+        time.sleep(0.05)  # Small delay before starting animation loop
         
         # Run for the full duration - only stop if explicitly requested via animation_stop_flag
         while time.time() - start_time < duration and not getattr(self, 'animation_stop_flag', False):
