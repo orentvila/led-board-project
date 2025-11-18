@@ -22,7 +22,7 @@ Complete list of all animations, their buttons, sequences, and durations.
 - **Squares**: 16 squares appear randomly (one every 2 seconds), fade in over 1 second each, then fade out over 3 seconds
 - **Triangles**: 12 triangles appear one by one (one every 3 seconds), fade in over 1 second each, then fade out over 3 seconds
 - **Bubbles**: Bubbles rise from bottom with various sizes and colors
-- **Stars**: 8 stars appear one by one (one every 3 seconds)
+- **Stars**: 10 stars appear one by one (one every 3 seconds)
 
 ---
 

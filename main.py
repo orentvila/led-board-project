@@ -2137,7 +2137,7 @@ class LEDDisplayApp:
         print("🫧 Bubbles animation finished")
     
     def run_stars_animation(self):
-        """Run stars animation - 8 stars appear one by one."""
+        """Run stars animation - 10 stars appear one by one."""
         import math
         # Play audio for this animation
         self.play_animation_audio('stars')
@@ -2157,10 +2157,12 @@ class LEDDisplayApp:
             (253, 255, 194),  # #FDFFC2
             (148, 255, 216),  # #94FFD8
             (163, 216, 255),  # #A3D8FF
+            (255, 200, 150),  # #FFC896 - Additional color for 9th star
+            (200, 150, 255),  # #C896FF - Additional color for 10th star
         ]
         
-        # 8 stars total
-        num_stars = 8
+        # 10 stars total
+        num_stars = 10
         star_positions = []  # Will store (x, y, color, appear_time)
         
         # Generate random positions for stars (not filling entire screen)
