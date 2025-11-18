@@ -14,13 +14,13 @@ Complete list of all animations, their buttons, sequences, and durations.
 
 **Sequence:** Cycles through 4 animations
 1. **Squares** - 36 seconds total (33s main + 3s fade-out) | **Audio:** `squares.wav`
-2. **Triangles** - 28 seconds total (25s main + 3s fade-out) | **Audio:** `triangles.wav`
+2. **Triangles** - 40 seconds total (37s main + 3s fade-out) | **Audio:** `triangles.wav`
 3. **Bubbles** - 30 seconds | **Audio:** `bubbles.wav`
 4. **Stars** - 30 seconds | **Audio:** `stars.wav`
 
 **Details:**
 - **Squares**: 16 squares appear randomly (one every 2 seconds), fade in over 1 second each, then fade out over 3 seconds
-- **Triangles**: 12 triangles appear one by one (one every 2 seconds), fade in over 1 second each, then fade out over 3 seconds
+- **Triangles**: 12 triangles appear one by one (one every 3 seconds), fade in over 1 second each, then fade out over 3 seconds
 - **Bubbles**: Bubbles rise from bottom with various sizes and colors
 - **Stars**: 8 stars appear one by one (one every 3 seconds)
 
@@ -93,7 +93,10 @@ Complete list of all animations, their buttons, sequences, and durations.
 - House (Objects)
 - Balloon (Objects)
 
-### 28 seconds
+### 36 seconds
+- Squares (Shapes) - includes fade-out
+
+### 40 seconds
 - Triangles (Shapes) - includes fade-out
 
 ### 30 seconds

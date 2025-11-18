@@ -1868,13 +1868,13 @@ class LEDDisplayApp:
         ]
         
         # Calculate timing: enough time for all triangles to appear + fade-in + fade-out
-        # 12 triangles * 2 seconds = 24 seconds for all to appear
-        # Plus 1 second fade-in for last triangle + 3 seconds fade-out = 28 seconds total
-        time_between_triangles = 2  # 2 seconds between each triangle
-        triangles_appear_time = total_triangles * time_between_triangles  # 24 seconds for all triangles
+        # 12 triangles * 3 seconds = 36 seconds for all to appear
+        # Plus 1 second fade-in for last triangle + 3 seconds fade-out = 40 seconds total
+        time_between_triangles = 3  # 3 seconds between each triangle
+        triangles_appear_time = total_triangles * time_between_triangles  # 36 seconds for all triangles
         fade_in_time = 1  # 1 second fade-in for last triangle
         fade_out_duration = 3
-        main_animation_duration = triangles_appear_time + fade_in_time  # 25 seconds
+        main_animation_duration = triangles_appear_time + fade_in_time  # 37 seconds
         
         start_time = time.time()
         
