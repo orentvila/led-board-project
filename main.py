@@ -347,8 +347,9 @@ class LEDDisplayApp:
             for y in range(height):
                 # Gradient from darker blue at top to lighter blue at bottom
                 sky_intensity = 1.0 - (y / height) * 0.3
-                # Sky blue gradient: darker at top, lighter at bottom (20% darker for better cloud contrast)
-                sky_color = (int(64 * sky_intensity), int(96 * sky_intensity), int(144 * sky_intensity))
+                # Sky blue gradient: darker at top, lighter at bottom (30% darker than original for better cloud contrast)
+                # Original: (80, 120, 180), 30% darker: (56, 84, 126)
+                sky_color = (int(56 * sky_intensity), int(84 * sky_intensity), int(126 * sky_intensity))
                 
                 for x in range(width):
                     self.led.set_pixel(x, y, sky_color)
