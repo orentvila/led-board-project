@@ -111,6 +111,7 @@ class LEDDisplayApp:
             'clock': 'clock.wav',
             'traffic_lights': 'traffic_lights.wav',
             'truck': 'truck.wav',
+            'saturn': 'saturn.wav',
         }
         
         # Setup signal handlers for graceful shutdown
@@ -2416,6 +2417,9 @@ class LEDDisplayApp:
                 # Ensure flags are set before starting Saturn
                 self.animation_stop_flag = False
                 self.objects_animation_running = True
+                
+                # Play audio for this animation
+                self.play_animation_audio('saturn')
                 
                 def should_stop():
                     # Only check animation_stop_flag - don't check objects_animation_running

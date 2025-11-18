@@ -14,20 +14,31 @@ mkdir audio
 
 ### 2. Add Audio Files
 
-Place your audio files (`.wav` format recommended) in the `audio` folder with these exact names:
+Place your audio files in the `audio` folder. You can use **WAV, MP3, or OGG** formats. The file names should match exactly:
 
-- `big_rectangle.wav` - Sound for the big rectangle animation
-- `floating_clouds.wav` - Sound for floating clouds animation
-- `rain.wav` - Sound for rain animation
-- `growing_flowers.wav` - Sound for growing flowers animation
-- `bubbles.wav` - Sound for bubbles animation
-- `apple_tree.wav` - Sound for apple tree animation
-- `house.wav` - Sound for house animation
-- `clock.wav` - Sound for clock animation
+- `big_rectangle.wav` (or `.mp3`, `.ogg`) - Sound for the big rectangle animation
+- `floating_clouds.wav` (or `.mp3`, `.ogg`) - Sound for floating clouds animation
+- `rain.wav` (or `.mp3`, `.ogg`) - Sound for rain animation
+- `growing_flowers.wav` (or `.mp3`, `.ogg`) - Sound for growing flowers animation
+- `bubbles.wav` (or `.mp3`, `.ogg`) - Sound for bubbles animation
+- `apple_tree.wav` (or `.mp3`, `.ogg`) - Sound for apple tree animation
+- `house.wav` (or `.mp3`, `.ogg`) - Sound for house animation
+- `clock.wav` (or `.mp3`, `.ogg`) - Sound for clock animation
+- `truck.wav` (or `.mp3`, `.ogg`) - Sound for truck animation
+
+**Format Options:**
+- **WAV**: Recommended - Always supported, no codecs needed, best compatibility
+- **MP3**: Supported - Smaller file size, may require codecs on some systems
+- **OGG**: Supported - Good compression, open format
+
+**Note:** You can use any of these formats. WAV files are recommended for best compatibility, but MP3 and OGG work great too. Just update the file extension in `main.py` if you use a different format.
 
 ### 3. Audio File Requirements
 
-- **Format**: WAV format is recommended (pygame supports WAV, OGG, MP3, and others)
+- **Format**: **WAV (recommended), MP3, or OGG** - All formats are supported by pygame
+  - **WAV**: Recommended - Always supported, no codecs needed, best compatibility
+  - **MP3**: Supported - Smaller file size, may require codecs on some systems
+  - **OGG**: Supported - Good compression, open format
 - **Sample Rate**: 22050 Hz (or standard rates like 44100 Hz)
 - **Channels**: Mono or Stereo
 - **Looping**: Audio files will loop automatically while the animation plays
@@ -55,8 +66,13 @@ To add audio for a new animation:
    ```python
    self.animation_audio = {
        # ... existing mappings ...
-       'new_animation': 'new_animation.wav',
+       'new_animation': 'new_animation.wav',  # or .mp3, .ogg
    }
+   ```
+   
+   **Note:** You can use `.mp3` or `.ogg` extensions directly:
+   ```python
+       'new_animation': 'new_animation.mp3',  # MP3 format
    ```
 
 2. Add the audio playback call in the animation method:
@@ -77,8 +93,14 @@ To add audio for a new animation:
 - Ensure audio hardware is available (HDMI audio, 3.5mm jack, etc.)
 
 **Audio format issues:**
-- Convert files to WAV format using ffmpeg: `ffmpeg -i input.mp3 output.wav`
-- Or use online converters to convert to WAV format
+- **MP3 support**: MP3 files should work directly. If MP3 doesn't work on Raspberry Pi, install MP3 support:
+  ```bash
+  sudo apt-get install mpg123
+  ```
+- **Converting formats**: Convert files using ffmpeg:
+  - MP3 to WAV: `ffmpeg -i input.mp3 output.wav`
+  - WAV to MP3: `ffmpeg -i input.wav -acodec libmp3lame output.mp3`
+- Or use online converters to convert between formats
 
 **Raspberry Pi audio:**
 - Enable audio in `raspi-config`: `sudo raspi-config` → Advanced Options → Audio
