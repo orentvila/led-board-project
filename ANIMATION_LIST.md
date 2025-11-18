@@ -45,7 +45,7 @@ Complete list of all animations, their buttons, sequences, and durations.
 ## 🐾 Animals Animations (Button 27)
 
 **Sequence:** Cycles through 7 animations
-1. **Elephant** - 20 seconds (moves from left to center in 8s, then stays) | **Audio:** None
+1. **Elephant** - 20 seconds (moves from left to center in 8s, then stays) | **Audio:** `elephant.wav`
 2. **Horse** - 30 seconds | **Audio:** None
 3. **Snail** - 30 seconds | **Audio:** None
 4. **Deer** - 30 seconds | **Audio:** None
@@ -137,8 +137,9 @@ Complete list of all animations, their buttons, sequences, and durations.
 - Shapes: Squares, Triangles, Bubbles, Stars
 - Nature: Floating Clouds, Rain, Growing Flowers, Apple Tree
 - Objects: Truck, House, Saturn
+- Animals: Elephant
 
 **Animations without Audio:**
-- All Animals animations (Elephant, Horse, Snail, Deer, Cat, Jellyfish, Birds)
+- Animals: Horse, Snail, Deer, Cat, Jellyfish, Birds
 - Objects: Balloon
 
