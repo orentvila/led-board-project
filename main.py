@@ -146,14 +146,25 @@ class LEDDisplayApp:
             
             if os.path.exists(audio_path):
                 try:
+                    # Stop any currently playing audio first
+                    pygame.mixer.music.stop()
                     pygame.mixer.music.load(audio_path)
                     pygame.mixer.music.play(-1)  # Loop indefinitely
                     print(f"🔊 Playing audio for {animation_name}: {audio_file}")
+                    # Verify it's actually playing
+                    if pygame.mixer.music.get_busy():
+                        print(f"✅ Audio is playing: {audio_file}")
+                    else:
+                        print(f"⚠️ Audio loaded but not playing: {audio_file}")
                 except Exception as e:
                     print(f"⚠️ Error playing audio {audio_file}: {e}")
+                    import traceback
+                    traceback.print_exc()
             else:
                 print(f"⚠️ Audio file not found: {audio_path}")
                 print(f"   Looking for: {audio_path}")
+                print(f"   Script directory: {script_dir}")
+                print(f"   Audio directory exists: {os.path.exists(os.path.join(script_dir, 'audio'))}")
         else:
             print(f"⚠️ No audio mapped for animation: {animation_name}")
     
@@ -245,11 +256,11 @@ class LEDDisplayApp:
         self.stop_current_pattern()
         
         # Small delay to ensure everything is stopped
-        time.sleep(0.1)
+        time.sleep(0.15)
         
         # Reset animation stop flag so new animation can run
         self.animation_stop_flag = False
-        # Ensure nature animation flag is set
+        # Ensure nature animation flag is set BEFORE starting animation
         self.nature_animation_running = True
         
         # Cycle to next nature animation
@@ -337,7 +348,8 @@ class LEDDisplayApp:
             clouds.append(cloud)
         
         # Draw first frame immediately to prevent blinking (before entering loop)
-        # Don't clear here - let the first loop iteration handle it
+        # Clear first to ensure clean start
+        self.led.clear()
         sky_color = (10, 15, 25)  # Dimmed blue sky (same as truck animation)
         
         # Draw sky background first
@@ -472,9 +484,89 @@ class LEDDisplayApp:
             self.led.show()
             time.sleep(0.1)  # 10 FPS for gentle movement
         
+        # Fade out the clouds animation smoothly
+        print("🌤️ Fading out clouds animation...")
+        fade_out_duration = 2  # 2 seconds fade-out
+        fade_out_start = time.time()
+        
+        while time.time() - fade_out_start < fade_out_duration and self.nature_animation_running and not getattr(self, 'animation_stop_flag', False):
+            elapsed_fade = time.time() - fade_out_start
+            fade_progress = elapsed_fade / fade_out_duration
+            fade_intensity = 1.0 - fade_progress  # Fade from 1.0 to 0.0
+            
+            # Clear display
+            self.led.clear()
+            
+            # Draw sky background with fade-out
+            sky_color = tuple(int(c * fade_intensity) for c in (10, 15, 25))
+            for y in range(height):
+                for x in range(width):
+                    self.led.set_pixel(x, y, sky_color)
+            
+            # Draw clouds with fade-out
+            for cloud in clouds:
+                center_x = int(cloud['x'])
+                center_y = int(cloud['y'])
+                size = cloud['size']
+                
+                # Add gentle drift
+                drift_x = math.sin(cloud['drift_phase'] + (time.time() - start_time) * 0.02) * 2
+                drift_y = math.cos(cloud['drift_phase'] + (time.time() - start_time) * 0.015) * 1
+                
+                center_x += int(drift_x)
+                center_y += int(drift_y)
+                
+                # Draw cloud with fade-out
+                for cloud_y in range(max(0, center_y - size), min(height, center_y + size)):
+                    for cloud_x in range(max(0, center_x - size), min(width, center_x + size)):
+                        dx = cloud_x - center_x
+                        dy = cloud_y - center_y
+                        distance = math.sqrt(dx*dx + dy*dy)
+                        
+                        cloud_radius = size * (0.7 + math.sin(cloud_x * 0.3 + cloud_y * 0.2) * 0.3)
+                        
+                        if distance <= cloud_radius:
+                            cloud_progress = distance / cloud_radius
+                            
+                            # Main cloud body: creamy yellow/off-white (#FFFDD0)
+                            if dy < center_y - size * 0.2:
+                                cloud_color = (255, 253, 208)
+                            elif dy > center_y + size * 0.1:
+                                cloud_color = (224, 176, 160)
+                            else:
+                                blend = (dy - (center_y - size * 0.2)) / (size * 0.3)
+                                blend = max(0, min(1, blend))
+                                cloud_color = (
+                                    int(255 * (1 - blend) + 224 * blend),
+                                    int(253 * (1 - blend) + 176 * blend),
+                                    int(208 * (1 - blend) + 160 * blend)
+                                )
+                            
+                            # Add soft edge fade and fade-out intensity
+                            edge_fade = (1.0 - cloud_progress * 0.3) * fade_intensity
+                            cloud_color = tuple(int(c * edge_fade) for c in cloud_color)
+                            
+                            self.led.set_pixel(cloud_x, cloud_y, cloud_color)
+            
+            # Update cloud positions during fade-out
+            for cloud in clouds:
+                cloud['x'] += cloud['speed']
+                cloud['y'] += math.sin((time.time() - start_time) * 0.01 + cloud['drift_phase']) * 0.2
+                
+                if cloud['x'] > width + 20:
+                    cloud['x'] = -20
+                    cloud['y'] = random.randint(10, height - 10)
+            
+            self.led.show()
+            time.sleep(0.1)  # 10 FPS for smooth fade-out
+        
         # Animation completed
         elapsed = time.time() - start_time
         print(f"🌤️ Floating clouds animation completed (ran for {elapsed:.1f} seconds)")
+        
+        # Clear display completely
+        self.led.clear()
+        self.led.show()
     
     def run_rain_animation(self):
         """Run rain animation with gentle drops and soft colors."""
@@ -2952,6 +3044,8 @@ class LEDDisplayApp:
         # Stop pattern animations
         if hasattr(self, 'patterns'):
             self.patterns.stop()
+        
+        # Don't clear screen here - let the new animation draw its first frame immediately
         # if hasattr(self, 'squares_animation'):
         #     self.squares_animation.stop()  # File not found
         
