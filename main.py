@@ -679,6 +679,7 @@ class LEDDisplayApp:
             
             # Draw all flowers
             stem_color = (34, 139, 34)  # Forest green
+            leaf_color = (50, 180, 50)  # Bright green for leaves
             for flower in flowers:
                 # Draw stem (with one extra column for thickness)
                 for i in range(int(flower['stem_height'])):
@@ -690,7 +691,22 @@ class LEDDisplayApp:
                     if 0 <= y_pos < height and 0 <= flower['x'] + 1 < width:
                         self.led.set_pixel(flower['x'] + 1, y_pos, stem_color)
                 
+                # Draw 2 leaves on each stem
+                if flower['stem_height'] > 5:  # Only draw leaves if stem is tall enough
+                    # First leaf at 30% of stem height
+                    leaf1_y = height - 1 - int(flower['stem_height'] * 0.3)
+                    leaf1_x = flower['x'] - 1  # Left side of stem
+                    if 0 <= leaf1_x < width and 0 <= leaf1_y < height:
+                        self.led.set_pixel(leaf1_x, leaf1_y, leaf_color)
+                    
+                    # Second leaf at 60% of stem height
+                    leaf2_y = height - 1 - int(flower['stem_height'] * 0.6)
+                    leaf2_x = flower['x'] + 2  # Right side of stem
+                    if 0 <= leaf2_x < width and 0 <= leaf2_y < height:
+                        self.led.set_pixel(leaf2_x, leaf2_y, leaf_color)
+                
                 # Draw flower petals if bloomed (with gentle sway)
+                # Start showing flowers when stem is at 70% of its size
                 if flower['bloom_progress'] > 0.3:
                     # Calculate gentle sway for petals only
                     sway_x = math.sin(flower['sway_phase'] + (time.time() - start_time) * 0.3) * flower['sway_amount']
@@ -727,8 +743,8 @@ class LEDDisplayApp:
                     if flower['stem_height'] < flower['max_stem_height']:
                         flower['stem_height'] += 0.1
                     
-                    # Start blooming when stem is ready
-                    if flower['stem_height'] >= flower['max_stem_height'] * 0.8:
+                    # Start blooming when stem is at 70% of its size
+                    if flower['stem_height'] >= flower['max_stem_height'] * 0.7:
                         flower['bloom_progress'] = min(1.0, flower['bloom_progress'] + 0.02)
                         flower['petal_size'] = flower['max_petal_size'] * flower['bloom_progress']
                 
@@ -737,6 +753,107 @@ class LEDDisplayApp:
             
             self.led.show()
             time.sleep(0.1)  # 10 FPS for gentle movement
+        
+        # Fade out the flowers animation smoothly
+        print("🌸 Fading out flowers animation...")
+        fade_out_duration = 2  # 2 seconds fade-out
+        fade_out_start = time.time()
+        
+        while time.time() - fade_out_start < fade_out_duration and self.nature_animation_running and not getattr(self, 'animation_stop_flag', False):
+            elapsed_fade = time.time() - fade_out_start
+            fade_progress = elapsed_fade / fade_out_duration
+            fade_intensity = 1.0 - fade_progress  # Fade from 1.0 to 0.0
+            
+            # Clear display
+            self.led.clear()
+            
+            # Draw very dim light blue sky background with fade-out
+            dim_sky_color = tuple(int(c * fade_intensity) for c in (10, 15, 25))
+            for y in range(height):
+                for x in range(width):
+                    self.led.set_pixel(x, y, dim_sky_color)
+            
+            # Draw sun with fade-out
+            sun_x = width - 8
+            sun_y = 5
+            sun_color = (255, 200, 50)
+            sun_size = 3
+            
+            for dy in range(-sun_size, sun_size + 1):
+                for dx in range(-sun_size, sun_size + 1):
+                    distance = math.sqrt(dx*dx + dy*dy)
+                    if distance <= sun_size:
+                        x = sun_x + dx
+                        y = sun_y + dy
+                        if 0 <= x < width and 0 <= y < height:
+                            intensity = (1.0 - (distance / sun_size) * 0.3) * fade_intensity
+                            sun_pixel_color = (
+                                int(sun_color[0] * intensity),
+                                int(sun_color[1] * intensity),
+                                int(sun_color[2] * intensity)
+                            )
+                            self.led.set_pixel(x, y, sun_pixel_color)
+            
+            # Draw ground with fade-out
+            ground_color = tuple(int(c * fade_intensity) for c in (139, 69, 19))
+            for x in range(width):
+                for y in range(height - 3, height):
+                    self.led.set_pixel(x, y, ground_color)
+            
+            # Draw all flowers with fade-out
+            stem_color = tuple(int(c * fade_intensity) for c in (34, 139, 34))
+            leaf_color = tuple(int(c * fade_intensity) for c in (50, 180, 50))
+            for flower in flowers:
+                # Draw stem with fade-out
+                for i in range(int(flower['stem_height'])):
+                    y_pos = height - 1 - i
+                    if 0 <= y_pos < height and 0 <= flower['x'] < width:
+                        self.led.set_pixel(flower['x'], y_pos, stem_color)
+                    if 0 <= y_pos < height and 0 <= flower['x'] + 1 < width:
+                        self.led.set_pixel(flower['x'] + 1, y_pos, stem_color)
+                
+                # Draw leaves with fade-out
+                if flower['stem_height'] > 5:
+                    leaf1_y = height - 1 - int(flower['stem_height'] * 0.3)
+                    leaf1_x = flower['x'] - 1
+                    if 0 <= leaf1_x < width and 0 <= leaf1_y < height:
+                        self.led.set_pixel(leaf1_x, leaf1_y, leaf_color)
+                    
+                    leaf2_y = height - 1 - int(flower['stem_height'] * 0.6)
+                    leaf2_x = flower['x'] + 2
+                    if 0 <= leaf2_x < width and 0 <= leaf2_y < height:
+                        self.led.set_pixel(leaf2_x, leaf2_y, leaf_color)
+                
+                # Draw flower petals with fade-out
+                if flower['bloom_progress'] > 0.3:
+                    sway_x = math.sin(flower['sway_phase'] + (time.time() - start_time) * 0.3) * flower['sway_amount']
+                    petal_x = int(flower['x'] + sway_x)
+                    petal_size = int(flower['petal_size'] * flower['bloom_progress'])
+                    flower_y = height - 1 - int(flower['stem_height'])
+                    
+                    if petal_size > 0:
+                        for dy in range(-petal_size, petal_size + 1):
+                            for dx in range(-petal_size, petal_size + 1):
+                                distance = math.sqrt(dx*dx + dy*dy)
+                                if distance <= petal_size and distance > 0:
+                                    x = petal_x + dx
+                                    y = flower_y + dy
+                                    if 0 <= x < width and 0 <= y < height:
+                                        petal_intensity = (1.0 - (distance / petal_size) * 0.3) * fade_intensity
+                                        petal_color = (
+                                            int(flower['color'][0] * petal_intensity),
+                                            int(flower['color'][1] * petal_intensity),
+                                            int(flower['color'][2] * petal_intensity)
+                                        )
+                                        self.led.set_pixel(x, y, petal_color)
+            
+            self.led.show()
+            time.sleep(0.1)  # 10 FPS for smooth fade-out
+        
+        # Clear display completely
+        self.led.clear()
+        self.led.show()
+        print("🌸 Flowers animation finished")
     
     def run_bubbles_animation(self):
         """Run bubbles animation with colorful bubbles rising from bottom."""
