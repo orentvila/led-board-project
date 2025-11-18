@@ -497,6 +497,63 @@ class LEDDisplayApp:
             
             self.led.show()
             time.sleep(0.08)  # 12.5 FPS for smooth rain
+        
+        # Fade out the rain animation smoothly
+        print("🌧️ Fading out rain animation...")
+        fade_out_duration = 2  # 2 seconds fade-out
+        fade_out_start = time.time()
+        
+        while time.time() - fade_out_start < fade_out_duration and self.nature_animation_running and not getattr(self, 'animation_stop_flag', False):
+            elapsed_fade = time.time() - fade_out_start
+            fade_progress = elapsed_fade / fade_out_duration
+            fade_intensity = 1.0 - fade_progress  # Fade from 1.0 to 0.0
+            
+            # Clear display
+            self.led.clear()
+            
+            # Create black background
+            for y in range(height):
+                for x in range(width):
+                    self.led.set_pixel(x, y, (0, 0, 0))  # Pure black background
+            
+            # Draw rain drops with fade-out intensity
+            for drop in rain_drops:
+                # Draw the rain drop as a vertical line
+                for i in range(drop['length']):
+                    y_pos = int(drop['y']) - i
+                    if 0 <= y_pos < height:
+                        # Rain drop color: white to yellow gradient with fade-out
+                        intensity = drop['intensity'] * (1.0 - (i / drop['length']) * 0.3) * fade_intensity
+                        
+                        # Mix white and yellow based on drop position
+                        white_amount = random.uniform(0.3, 0.8)  # Vary between drops
+                        yellow_amount = 1.0 - white_amount
+                        
+                        rain_color = (
+                            int(255 * intensity * white_amount + 255 * intensity * yellow_amount),
+                            int(255 * intensity * white_amount + 200 * intensity * yellow_amount),
+                            int(255 * intensity * white_amount + 0 * intensity * yellow_amount)
+                        )
+                        self.led.set_pixel(int(drop['x']), y_pos, rain_color)
+            
+            # Update rain drop positions (continue moving during fade-out)
+            for drop in rain_drops:
+                drop['y'] += drop['speed']
+                
+                # Reset drop when it goes off screen
+                if drop['y'] > height + 10:
+                    drop['y'] = random.randint(-10, -5)
+                    drop['x'] = random.randint(0, width - 1)
+                    drop['speed'] = random.uniform(1.5, 3.0)
+                    drop['intensity'] = random.uniform(0.3, 1.0)
+            
+            self.led.show()
+            time.sleep(0.08)  # 12.5 FPS for smooth fade-out
+        
+        # Clear display completely
+        self.led.clear()
+        self.led.show()
+        print("🌧️ Rain animation finished")
     
     def run_growing_flowers_animation(self):
         """Run growing flowers animation with gentle swaying and blooming."""
@@ -2146,7 +2203,8 @@ class LEDDisplayApp:
         # Play audio for this animation
         self.play_animation_audio('stars')
         
-        duration = 30
+        # Duration: 10 stars * 4 seconds = 40 seconds
+        duration = 40
         start_time = time.time()
         width = 32
         height = 48
@@ -2178,9 +2236,9 @@ class LEDDisplayApp:
         while time.time() - start_time < duration and self.shape_animation_running:
             elapsed = time.time() - start_time
             
-            # Add a new star every 3 seconds
+            # Add a new star every 4 seconds
             if elapsed > 0 and len(star_positions) < num_stars:
-                next_star_time = len(star_positions) * 3
+                next_star_time = len(star_positions) * 4
                 if elapsed >= next_star_time:
                     # Find a valid position (not too close to other stars)
                     attempts = 0

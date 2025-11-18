@@ -16,13 +16,13 @@ Complete list of all animations, their buttons, sequences, and durations.
 1. **Squares** - 36 seconds total (33s main + 3s fade-out) | **Audio:** `squares.wav`
 2. **Triangles** - 40 seconds total (37s main + 3s fade-out) | **Audio:** `triangles.wav`
 3. **Bubbles** - 30 seconds | **Audio:** `bubbles.wav`
-4. **Stars** - 30 seconds | **Audio:** `stars.wav`
+4. **Stars** - 40 seconds | **Audio:** `stars.wav`
 
 **Details:**
 - **Squares**: 16 squares appear randomly (one every 2 seconds), fade in over 1 second each, then fade out over 3 seconds
 - **Triangles**: 12 triangles appear one by one (one every 3 seconds), fade in over 1 second each, then fade out over 3 seconds
 - **Bubbles**: Bubbles rise from bottom with various sizes and colors
-- **Stars**: 10 stars appear one by one (one every 3 seconds)
+- **Stars**: 10 stars appear one by one (one every 4 seconds)
 
 ---
 
@@ -98,13 +98,13 @@ Complete list of all animations, their buttons, sequences, and durations.
 
 ### 40 seconds
 - Triangles (Shapes) - includes fade-out
+- Stars (Shapes)
 
 ### 30 seconds
 - Horse (Animals)
 - Snail (Animals)
 - Deer (Animals)
 - Bubbles (Shapes)
-- Stars (Shapes)
 - Floating Clouds (Nature)
 - Rain (Nature)
 - Saturn (Objects)
