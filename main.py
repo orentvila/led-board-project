@@ -157,14 +157,20 @@ class LEDDisplayApp:
             print(f"⚠️ No audio mapped for animation: {animation_name}")
     
     def stop_animation_audio(self):
-        """Stop any currently playing animation audio."""
-        # Stop audio
+        """Stop any currently playing animation audio with fade out."""
+        # Stop audio with 2 second fade out
         if self.audio_available:
             try:
-                pygame.mixer.music.stop()
-                print("🔇 Stopped animation audio")
+                # Fade out over 2000 milliseconds (2 seconds)
+                pygame.mixer.music.fadeout(2000)
+                print("🔇 Fading out animation audio (2 seconds)")
             except Exception as e:
                 print(f"⚠️ Error stopping audio: {e}")
+                # Fallback to immediate stop if fadeout fails
+                try:
+                    pygame.mixer.music.stop()
+                except:
+                    pass
     
     def clear_screen(self):
         """Clear the screen (turn off all LEDs)."""
