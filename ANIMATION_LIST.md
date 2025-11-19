@@ -44,17 +44,19 @@ Complete list of all animations, their buttons, sequences, and durations.
 
 ## 🐾 Animals Animations (Button 27)
 
-**Sequence:** Cycles through 7 animations
+**Sequence:** Cycles through 8 animations
 1. **Elephant** - 20 seconds (moves from left to center in 8s, then stays) | **Audio:** `elephant.wav`
-2. **Horse** - 30 seconds | **Audio:** None
-3. **Snail** - 30 seconds | **Audio:** None
-4. **Deer** - 30 seconds | **Audio:** None
-5. **Cat** - 20 seconds | **Audio:** None
-6. **Jellyfish** - 5 seconds | **Audio:** None
-7. **Birds** - 5 seconds | **Audio:** None
+2. **Whale** - 12 seconds (12 frames shown twice) | **Audio:** `whale.wav`
+3. **Horse** - 30 seconds | **Audio:** None
+4. **Snail** - 30 seconds | **Audio:** None
+5. **Deer** - 30 seconds | **Audio:** None
+6. **Cat** - 20 seconds | **Audio:** None
+7. **Jellyfish** - 5 seconds | **Audio:** None
+8. **Birds** - 5 seconds | **Audio:** None
 
 **Details:**
 - **Elephant**: Moves horizontally from left side to center, stops at center with dimmed sky, sun, and clouds
+- **Whale**: Whale animation with 12 frames, each shown twice, white background dimmed 40%
 - **Horse**: Moves across screen with leg animation
 - **Snail**: Moves slowly across ground
 - **Deer**: Static bitmap animation

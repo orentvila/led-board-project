@@ -78,7 +78,7 @@ class LEDDisplayApp:
         
         # Animals animation system for Button 27
         self.animals_animations = [
-            "elephant_bitmap", "horse_bitmap", "snail_bitmap", "deer_bitmap", "cat_bitmap", 
+            "elephant_bitmap", "whale", "horse_bitmap", "snail_bitmap", "deer_bitmap", "cat_bitmap", 
             "jellyfish_bitmap", "birds_bitmap"
         ]
         self.current_animals_index = -1  # Start at -1 so first click shows elephant (index 0)
@@ -113,6 +113,7 @@ class LEDDisplayApp:
             'truck': 'truck.wav',
             'saturn': 'saturn.wav',
             'elephant': 'elephant.wav',
+            'whale': 'whale.wav',
         }
         
         # Setup signal handlers for graceful shutdown
@@ -1791,7 +1792,7 @@ class LEDDisplayApp:
         animation_name = self.animals_animations[self.current_animals_index]
         
         animal_names = [
-            "Elephant", "Horse", "Snail", "Deer", "Cat", "Jellyfish", "Birds"
+            "Elephant", "Whale", "Horse", "Snail", "Deer", "Cat", "Jellyfish", "Birds"
         ]
         animal_name = animal_names[self.current_animals_index]
         
@@ -1824,6 +1825,14 @@ class LEDDisplayApp:
                 
                 from elephant_bitmap_animation import ElephantBitmapAnimation
                 animation = ElephantBitmapAnimation()
+                animation.run_animation(should_stop)
+                animation.cleanup()
+            elif animation_name == "whale":
+                # Play audio for this animation
+                self.play_animation_audio('whale')
+                
+                from wale_animation import WhaleAnimation
+                animation = WhaleAnimation()
                 animation.run_animation(should_stop)
                 animation.cleanup()
             elif animation_name == "horse_bitmap":
