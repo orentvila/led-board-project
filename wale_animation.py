@@ -74,6 +74,11 @@ class WhaleAnimation:
         # Extract individual frames
         # Layout indicates frames are stacked vertically: [[0],[1],[2],...,[11]]
         frames = []
+        sprite_width, sprite_height = sprite_sheet.size
+        print(f"Sprite sheet size: {sprite_width}x{sprite_height}")
+        print(f"Expected frame size: {frame_width}x{frame_height}")
+        print(f"Expected total height: {frame_count * frame_height}")
+        
         for i in range(frame_count):
             # Each frame is at y position i * frame_height
             y_start = i * frame_height
@@ -85,6 +90,11 @@ class WhaleAnimation:
             # Convert to RGB if needed
             if frame.mode != 'RGB':
                 frame = frame.convert('RGB')
+            
+            # Debug: Check a sample pixel from each frame to verify they're different
+            if i < 3:  # Check first 3 frames
+                sample_pixel = frame.getpixel((frame_width // 2, frame_height // 2))
+                print(f"Frame {i} sample pixel (center): {sample_pixel}")
             
             frames.append(frame)
         
@@ -140,8 +150,13 @@ class WhaleAnimation:
         print(f"Total frames (each shown twice): {total_frames}")
         print(f"Frame duration: {frame_duration:.2f} seconds")
         
-        frame_index = 0
-        frame_repeat = 0  # Track if we've shown this frame once (0) or twice (1)
+        # Create a sequence where each frame appears twice
+        frame_sequence = []
+        for i in range(len(self.frames)):
+            frame_sequence.append(i)
+            frame_sequence.append(i)  # Add each frame twice
+        
+        frame_sequence_index = 0
         
         while time.time() - start_time < duration:
             # Check stop flag
@@ -149,20 +164,21 @@ class WhaleAnimation:
                 print("Whale animation stopped by user")
                 break
             
+            # Get the frame index from sequence
+            frame_index = frame_sequence[frame_sequence_index]
+            
             # Display current frame
             self.display_frame(frame_index)
+            
+            # Debug output every few frames
+            if frame_sequence_index % 6 == 0:
+                print(f"Displaying frame {frame_index} (sequence index {frame_sequence_index})")
             
             # Wait for frame duration
             time.sleep(frame_duration)
             
-            # Move to next frame or repeat current frame
-            if frame_repeat == 0:
-                # Show same frame again
-                frame_repeat = 1
-            else:
-                # Move to next frame
-                frame_index = (frame_index + 1) % len(self.frames)
-                frame_repeat = 0
+            # Move to next frame in sequence (loop)
+            frame_sequence_index = (frame_sequence_index + 1) % len(frame_sequence)
         
         print("Whale animation completed!")
         
