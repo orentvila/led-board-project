@@ -72,29 +72,21 @@ class WhaleAnimation:
         sprite_sheet = Image.open(io.BytesIO(image_data))
         
         # Extract individual frames
-        # Layout indicates frames are stacked vertically: [[0],[1],[2],...,[11]]
+        # Frames are arranged horizontally in the sprite sheet
         frames = []
         sprite_width, sprite_height = sprite_sheet.size
-        print(f"Sprite sheet size: {sprite_width}x{sprite_height}")
-        print(f"Expected frame size: {frame_width}x{frame_height}")
-        print(f"Expected total height: {frame_count * frame_height}")
         
         for i in range(frame_count):
-            # Each frame is at y position i * frame_height
-            y_start = i * frame_height
-            y_end = y_start + frame_height
+            # Each frame is at x position i * frame_width
+            x_start = i * frame_width
+            x_end = x_start + frame_width
             
-            # Crop frame from sprite sheet
-            frame = sprite_sheet.crop((0, y_start, frame_width, y_end))
+            # Crop frame from sprite sheet (horizontal layout)
+            frame = sprite_sheet.crop((x_start, 0, x_end, frame_height))
             
             # Convert to RGB if needed
             if frame.mode != 'RGB':
                 frame = frame.convert('RGB')
-            
-            # Debug: Check a sample pixel from each frame to verify they're different
-            if i < 3:  # Check first 3 frames
-                sample_pixel = frame.getpixel((frame_width // 2, frame_height // 2))
-                print(f"Frame {i} sample pixel (center): {sample_pixel}")
             
             frames.append(frame)
         
