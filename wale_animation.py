@@ -162,10 +162,6 @@ class WhaleAnimation:
             # Display current frame
             self.display_frame(frame_index)
             
-            # Debug output every few frames
-            if frame_sequence_index % 6 == 0:
-                print(f"Displaying frame {frame_index} (sequence index {frame_sequence_index})")
-            
             # Wait for frame duration
             time.sleep(frame_duration)
             
