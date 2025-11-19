@@ -93,7 +93,7 @@ class WhaleAnimation:
         return frames
     
     def replace_blue_color(self, r, g, b):
-        """Replace blue/cyan color with new color #77BEF0 (RGB(119, 190, 240))."""
+        """Replace blue/cyan color with new color #3B38A0 (RGB(59, 56, 160))."""
         # Detect cyan/light blue colors - very permissive to catch all variations
         # Check if it's a cyan/light blue color:
         # - Blue component is high (> 150)
@@ -101,8 +101,8 @@ class WhaleAnimation:
         # - Red is lower than blue (cyan characteristic)
         # This will catch #59f4ff and similar cyan shades
         if b > 150 and g > 100 and b > r:
-            # Replace with new blue color #77BEF0 = RGB(119, 190, 240)
-            return (119, 190, 240)
+            # Replace with new blue color #3B38A0 = RGB(59, 56, 160)
+            return (59, 56, 160)
         return (r, g, b)
     
     def dim_white_background(self, r, g, b):
