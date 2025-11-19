@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Whale Animation for LED Board
-Loads whale animation frames from C file format (15 seconds)
+Loads whale animation frames from C file format (12 seconds, 24 frames total)
 """
 
 import time
@@ -34,7 +34,8 @@ class WhaleAnimation:
     
     def argb_to_rgb(self, argb_value):
         """Convert ARGB uint32_t value to RGB tuple."""
-        # ARGB format: 0xAARRGGBB
+        # The C file uses ARGB format: 0xAARRGGBB
+        # Extract RGB components (ignore alpha)
         r = (argb_value >> 16) & 0xFF
         g = (argb_value >> 8) & 0xFF
         b = argb_value & 0xFF
@@ -112,23 +113,27 @@ class WhaleAnimation:
         self.led.show()
     
     def run_animation(self, should_stop=None):
-        """Run the whale animation for 15 seconds.
+        """Run the whale animation for 12 seconds (24 frames total - each frame shown twice).
         
         Args:
             should_stop: Optional callback function that returns True if animation should stop.
         """
-        duration = 15  # 15 seconds
+        duration = 12  # 12 seconds
         start_time = time.time()
         
-        # Frame duration: 15 seconds / 12 frames = 1.25 seconds per frame
-        frame_duration = duration / len(self.frames)
+        # Display each frame twice to get 24 frames total
+        # Frame duration: 12 seconds / 24 frames = 0.5 seconds per frame
+        total_frames = len(self.frames) * 2
+        frame_duration = duration / total_frames
         
         print("Starting whale animation...")
         print(f"Animation duration: {duration} seconds")
-        print(f"Frame count: {len(self.frames)}")
+        print(f"Original frame count: {len(self.frames)}")
+        print(f"Total frames (each shown twice): {total_frames}")
         print(f"Frame duration: {frame_duration:.2f} seconds")
         
         frame_index = 0
+        frame_repeat = 0  # Track if we've shown this frame once (0) or twice (1)
         
         while time.time() - start_time < duration:
             # Check stop flag
@@ -142,8 +147,14 @@ class WhaleAnimation:
             # Wait for frame duration
             time.sleep(frame_duration)
             
-            # Move to next frame (loop)
-            frame_index = (frame_index + 1) % len(self.frames)
+            # Move to next frame or repeat current frame
+            if frame_repeat == 0:
+                # Show same frame again
+                frame_repeat = 1
+            else:
+                # Move to next frame
+                frame_index = (frame_index + 1) % len(self.frames)
+                frame_repeat = 0
         
         print("Whale animation completed!")
         
