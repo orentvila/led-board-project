@@ -92,16 +92,26 @@ class WhaleAnimation:
         
         return frames
     
+    def replace_blue_color(self, r, g, b):
+        """Replace blue color (#59f4ff / RGB(89, 244, 255)) with new color #77BEF0 (RGB(119, 190, 240))."""
+        # Check if pixel is the blue color (with some tolerance for slight variations)
+        # Original blue: RGB(89, 244, 255) - #59f4ff
+        # Check if it's close to blue (high green and blue, lower red)
+        if g > 200 and b > 200 and r < 150:
+            # Replace with new blue color #77BEF0 = RGB(119, 190, 240)
+            return (119, 190, 240)
+        return (r, g, b)
+    
     def dim_white_background(self, r, g, b):
-        """Dim white/light background colors by 40% (reduce brightness to 60%)."""
+        """Dim white/light background colors by 30% (reduce brightness to 70%)."""
         # Check if pixel is white or light (brightness threshold)
         brightness = (r + g + b) / 3.0
         
-        # If brightness is above 200 (light/white), dim it by 40%
+        # If brightness is above 200 (light/white), dim it by 30%
         if brightness > 200:
-            r = int(r * 0.6)
-            g = int(g * 0.6)
-            b = int(b * 0.6)
+            r = int(r * 0.7)
+            g = int(g * 0.7)
+            b = int(b * 0.7)
         
         return (r, g, b)
     
@@ -131,7 +141,9 @@ class WhaleAnimation:
                 pixel_x = x + x_offset
                 if pixel_x < frame_width:
                     r, g, b = frame.getpixel((pixel_x, y))
-                    # Dim white background by 40%
+                    # Replace blue color with new color
+                    r, g, b = self.replace_blue_color(r, g, b)
+                    # Dim white background by 30%
                     r, g, b = self.dim_white_background(r, g, b)
                     self.safe_set_pixel(x, y, (r, g, b))
         
