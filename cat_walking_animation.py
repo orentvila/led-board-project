@@ -92,8 +92,14 @@ class CatWalkingAnimation:
             y_bounce: Vertical bounce offset for walking animation
         """
         # Calculate cat position
+        # The cat's bottom should align with the top of the ground
+        # Ground starts at: height - ground_height = 48 - 4 = 44
+        # Cat's bottom in bitmap is at: offset_y + cat_height = 15 + 20 = 35
+        # So we need: cat_y + 35 = 44, therefore cat_y = 9
         cat_x = x_pos - self.cat_offset_x
-        cat_y = (self.height - self.ground_height - self.cat_height) + y_bounce
+        ground_top = self.height - self.ground_height  # 44
+        cat_bottom_in_bitmap = self.cat_offset_y + self.cat_height  # 35
+        cat_y = ground_top - cat_bottom_in_bitmap + y_bounce  # 44 - 35 = 9
         
         # Draw cat pixels
         for y in range(48):
