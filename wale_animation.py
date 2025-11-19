@@ -92,6 +92,19 @@ class WhaleAnimation:
         
         return frames
     
+    def dim_white_background(self, r, g, b):
+        """Dim white/light background colors by 40% (reduce brightness to 60%)."""
+        # Check if pixel is white or light (brightness threshold)
+        brightness = (r + g + b) / 3.0
+        
+        # If brightness is above 200 (light/white), dim it by 40%
+        if brightness > 200:
+            r = int(r * 0.6)
+            g = int(g * 0.6)
+            b = int(b * 0.6)
+        
+        return (r, g, b)
+    
     def safe_set_pixel(self, x, y, color):
         """Safely set a pixel if coordinates are within bounds."""
         if 0 <= x < self.width and 0 <= y < self.height:
@@ -118,6 +131,8 @@ class WhaleAnimation:
                 pixel_x = x + x_offset
                 if pixel_x < frame_width:
                     r, g, b = frame.getpixel((pixel_x, y))
+                    # Dim white background by 40%
+                    r, g, b = self.dim_white_background(r, g, b)
                     self.safe_set_pixel(x, y, (r, g, b))
         
         self.led.show()
