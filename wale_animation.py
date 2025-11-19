@@ -46,40 +46,6 @@ class WhaleAnimation:
             self.frames = self.load_piskel_frames(None)
         
         print(f"Loaded {len(self.frames)} frames from Piskel data")
-        
-        # Debug: Scan first frame for blue pixels
-        if len(self.frames) > 0:
-            frame = self.frames[0]
-            blue_pixels_found = []
-            for y in range(min(48, frame.size[1])):
-                for x in range(min(36, frame.size[0])):
-                    r, g, b = frame.getpixel((x, y))
-                    # Check if it's blue-ish (low red, high green/blue)
-                    if r < 150 and g > 200 and b > 200:
-                        blue_pixels_found.append((x, y, (r, g, b)))
-                        if len(blue_pixels_found) >= 5:  # Just get first 5
-                            break
-                if len(blue_pixels_found) >= 5:
-                    break
-            if blue_pixels_found:
-                print(f"Found blue pixels: {blue_pixels_found}")
-            else:
-                print("No blue pixels found in frame 0 - checking all frames...")
-                # Check all frames
-                for frame_idx in range(len(self.frames)):
-                    frame = self.frames[frame_idx]
-                    for y in range(min(48, frame.size[1])):
-                        for x in range(min(36, frame.size[0])):
-                            r, g, b = frame.getpixel((x, y))
-                            if r < 150 and g > 200 and b > 200:
-                                print(f"Found blue pixel at frame {frame_idx}, pos ({x},{y}): RGB({r},{g},{b})")
-                                break
-                        else:
-                            continue
-                        break
-                    else:
-                        continue
-                    break
     
     def load_piskel_frames(self, piskel_file_path=None):
         """Load frames from Piskel file or embedded data."""
@@ -127,12 +93,14 @@ class WhaleAnimation:
         return frames
     
     def replace_blue_color(self, r, g, b):
-        """Replace blue color (#59f4ff / RGB(89, 244, 255)) with new color #77BEF0 (RGB(119, 190, 240))."""
-        # Original blue: RGB(89, 244, 255) - #59f4ff
-        # Check if pixel matches the blue color (cyan/light blue)
-        # The blue has: low red (~89), very high green (~244), very high blue (~255)
-        # Use more permissive matching to catch variations
-        if r < 130 and g > 200 and b > 230:
+        """Replace blue/cyan color with new color #77BEF0 (RGB(119, 190, 240))."""
+        # Detect cyan/light blue colors - very permissive to catch all variations
+        # Check if it's a cyan/light blue color:
+        # - Blue component is high (> 150)
+        # - Green component is also high (> 100)
+        # - Red is lower than blue (cyan characteristic)
+        # This will catch #59f4ff and similar cyan shades
+        if b > 150 and g > 100 and b > r:
             # Replace with new blue color #77BEF0 = RGB(119, 190, 240)
             return (119, 190, 240)
         return (r, g, b)
