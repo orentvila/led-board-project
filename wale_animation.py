@@ -46,6 +46,16 @@ class WhaleAnimation:
             self.frames = self.load_piskel_frames(None)
         
         print(f"Loaded {len(self.frames)} frames from Piskel data")
+        
+        # Debug: Check a few sample pixels from first frame to see actual colors
+        if len(self.frames) > 0:
+            frame = self.frames[0]
+            sample_pixels = [
+                frame.getpixel((10, 5)),
+                frame.getpixel((15, 5)),
+                frame.getpixel((20, 5)),
+            ]
+            print(f"Sample pixels from frame 0: {sample_pixels}")
     
     def load_piskel_frames(self, piskel_file_path=None):
         """Load frames from Piskel file or embedded data."""
@@ -94,10 +104,11 @@ class WhaleAnimation:
     
     def replace_blue_color(self, r, g, b):
         """Replace blue color (#59f4ff / RGB(89, 244, 255)) with new color #77BEF0 (RGB(119, 190, 240))."""
-        # Check if pixel is the blue color (with some tolerance for slight variations)
         # Original blue: RGB(89, 244, 255) - #59f4ff
-        # Check if it's close to blue (high green and blue, lower red)
-        if g > 200 and b > 200 and r < 150:
+        # Check if pixel matches the blue color (cyan/light blue)
+        # The blue has: low red (~89), very high green (~244), very high blue (~255)
+        # Use more permissive matching to catch variations
+        if r < 130 and g > 200 and b > 230:
             # Replace with new blue color #77BEF0 = RGB(119, 190, 240)
             return (119, 190, 240)
         return (r, g, b)
