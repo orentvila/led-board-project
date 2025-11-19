@@ -47,15 +47,39 @@ class WhaleAnimation:
         
         print(f"Loaded {len(self.frames)} frames from Piskel data")
         
-        # Debug: Check a few sample pixels from first frame to see actual colors
+        # Debug: Scan first frame for blue pixels
         if len(self.frames) > 0:
             frame = self.frames[0]
-            sample_pixels = [
-                frame.getpixel((10, 5)),
-                frame.getpixel((15, 5)),
-                frame.getpixel((20, 5)),
-            ]
-            print(f"Sample pixels from frame 0: {sample_pixels}")
+            blue_pixels_found = []
+            for y in range(min(48, frame.size[1])):
+                for x in range(min(36, frame.size[0])):
+                    r, g, b = frame.getpixel((x, y))
+                    # Check if it's blue-ish (low red, high green/blue)
+                    if r < 150 and g > 200 and b > 200:
+                        blue_pixels_found.append((x, y, (r, g, b)))
+                        if len(blue_pixels_found) >= 5:  # Just get first 5
+                            break
+                if len(blue_pixels_found) >= 5:
+                    break
+            if blue_pixels_found:
+                print(f"Found blue pixels: {blue_pixels_found}")
+            else:
+                print("No blue pixels found in frame 0 - checking all frames...")
+                # Check all frames
+                for frame_idx in range(len(self.frames)):
+                    frame = self.frames[frame_idx]
+                    for y in range(min(48, frame.size[1])):
+                        for x in range(min(36, frame.size[0])):
+                            r, g, b = frame.getpixel((x, y))
+                            if r < 150 and g > 200 and b > 200:
+                                print(f"Found blue pixel at frame {frame_idx}, pos ({x},{y}): RGB({r},{g},{b})")
+                                break
+                        else:
+                            continue
+                        break
+                    else:
+                        continue
+                    break
     
     def load_piskel_frames(self, piskel_file_path=None):
         """Load frames from Piskel file or embedded data."""
