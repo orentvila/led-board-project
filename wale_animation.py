@@ -142,11 +142,9 @@ class WhaleAnimation:
         print(f"Total frames (each shown twice): {total_frames}")
         print(f"Frame duration: {frame_duration:.2f} seconds")
         
-        # Create a sequence where each frame appears twice
-        frame_sequence = []
-        for i in range(len(self.frames)):
-            frame_sequence.append(i)
-            frame_sequence.append(i)  # Add each frame twice
+        # Create a sequence: play all frames once, then play them all again
+        # Order: 0,1,2,3,4,5,6,7,8,9,10,11,0,1,2,3,4,5,6,7,8,9,10,11
+        frame_sequence = list(range(len(self.frames))) * 2  # [0,1,2,...,11,0,1,2,...,11]
         
         frame_sequence_index = 0
         
