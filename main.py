@@ -1980,10 +1980,7 @@ class LEDDisplayApp:
                 animation.cleanup()
             elif animation_name == "birds_bitmap":
                 from bird_animation import BirdAnimation
-                # Try to load from Downloads folder
-                import os
-                bird_file = os.path.join(os.path.expanduser("~"), "Downloads", "bird.piskel")
-                animation = BirdAnimation(bird_file)
+                animation = BirdAnimation()
                 animation.run_animation(should_stop)
                 animation.cleanup()
             else:
