@@ -53,7 +53,7 @@ class TruckAnimation:
             self.truck_pixels.append(row_data)
         
         # Colors
-        self.truck_color = (96, 172, 99)  # #60AC63 - Green truck color
+        self.truck_color = (211, 65, 65)  # #D34141 - Red truck color
         self.ground_color = (123, 123, 123)  # #7B7B7B - Gray ground
         self.sky_color = (10, 15, 25)  # Dimmed blue sky
         self.sun_color = (255, 200, 50)  # Bright yellow sun

@@ -45,4 +45,9 @@ COLORS = {
 # Pattern Settings
 RAINBOW_SPEED = 0.01
 WAVE_SPEED = 0.05
-SCROLL_SPEED = 0.1 
+SCROLL_SPEED = 0.1
+
+# Animation Interruption Mode
+# False = no interrupts (animations cannot be switched mid-play)
+# True = allow interrupts (any button click switches animation immediately)
+ALLOW_ANIMATION_INTERRUPTION = False 

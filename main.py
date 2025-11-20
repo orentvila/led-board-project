@@ -88,6 +88,9 @@ class LEDDisplayApp:
         self.clock_animation_running = False
         self.lion_animation_running = False
         
+        # Animation interruption mode toggle tracking
+        self.last_toggle_check_time = 0
+        
         # Initialize audio system
         self.audio_available = False
         if AUDIO_AVAILABLE:
@@ -274,6 +277,27 @@ class LEDDisplayApp:
             self.current_shape_process = None
             print("✅ Shape animation stopped")
     
+    def check_toggle_interruption_mode(self):
+        """Check if buttons 0 and 3 are pressed together to toggle interruption mode."""
+        current_time = time.time()
+        # Debounce: only check every 0.5 seconds
+        if current_time - self.last_toggle_check_time < 0.5:
+            return
+        
+        self.last_toggle_check_time = current_time
+        
+        # Check if buttons 0 (Shapes) and 3 (Objects) are both pressed
+        button_0_pressed = self.button_controller.get_button_state(0)
+        button_3_pressed = self.button_controller.get_button_state(3)
+        
+        if button_0_pressed and button_3_pressed:
+            # Toggle the global config setting
+            config.ALLOW_ANIMATION_INTERRUPTION = not config.ALLOW_ANIMATION_INTERRUPTION
+            mode_text = "ENABLED (any click switches animation)" if config.ALLOW_ANIMATION_INTERRUPTION else "DISABLED (no interrupts during animation)"
+            print(f"🔄 Animation interruption mode: {mode_text}")
+            # Wait a bit to avoid rapid toggling
+            time.sleep(0.3)
+    
     def is_any_animation_running(self):
         """Check if any animation is currently running."""
         return (self.shape_animation_running or 
@@ -288,9 +312,14 @@ class LEDDisplayApp:
     
     def start_shapes_animation(self):
         """Start shapes animation - cycles through different shapes."""
+        # Check for toggle mode (buttons 0 and 3 together)
+        self.check_toggle_interruption_mode()
+        
         # Check if any animation is currently running
-        if self.is_any_animation_running():
+        # Only block if interruption mode is disabled (uses global config setting)
+        if not config.ALLOW_ANIMATION_INTERRUPTION and self.is_any_animation_running():
             print("⏸️ Animation already playing. Please wait for current animation to finish.")
+            print("💡 Tip: Press buttons 0 and 3 together to enable interruption mode")
             return
         
         print("🔷 Starting shapes animation...")
@@ -331,9 +360,14 @@ class LEDDisplayApp:
     
     def start_nature_animation(self):
         """Start nature animation - cycles through different nature scenes."""
+        # Check for toggle mode (buttons 0 and 3 together)
+        self.check_toggle_interruption_mode()
+        
         # Check if any animation is currently running
-        if self.is_any_animation_running():
+        # Only block if interruption mode is disabled (uses global config setting)
+        if not config.ALLOW_ANIMATION_INTERRUPTION and self.is_any_animation_running():
             print("⏸️ Animation already playing. Please wait for current animation to finish.")
+            print("💡 Tip: Press buttons 0 and 3 together to enable interruption mode")
             return
         
         print("🌿 Starting nature animation...")
@@ -1965,9 +1999,14 @@ class LEDDisplayApp:
     
     def start_animals_animation(self):
         """Start animals animation - cycles through different animal animations."""
+        # Check for toggle mode (buttons 0 and 3 together)
+        self.check_toggle_interruption_mode()
+        
         # Check if any animation is currently running
-        if self.is_any_animation_running():
+        # Only block if interruption mode is disabled (uses global config setting)
+        if not config.ALLOW_ANIMATION_INTERRUPTION and self.is_any_animation_running():
             print("⏸️ Animation already playing. Please wait for current animation to finish.")
+            print("💡 Tip: Press buttons 0 and 3 together to enable interruption mode")
             return
         
         print("🐾 Starting animals animation...")
@@ -2924,9 +2963,14 @@ class LEDDisplayApp:
     
     def start_objects_animation(self):
         """Start objects animation - cycles through different objects."""
+        # Check for toggle mode (buttons 0 and 3 together)
+        self.check_toggle_interruption_mode()
+        
         # Check if any animation is currently running
-        if self.is_any_animation_running():
+        # Only block if interruption mode is disabled (uses global config setting)
+        if not config.ALLOW_ANIMATION_INTERRUPTION and self.is_any_animation_running():
             print("⏸️ Animation already playing. Please wait for current animation to finish.")
+            print("💡 Tip: Press buttons 0 and 3 together to enable interruption mode")
             return
         
         print("🎯 Starting objects animation...")
