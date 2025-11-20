@@ -40,7 +40,7 @@ class BirdAnimation:
         print(f"Display dimensions: {self.width}x{self.height}")
         
         # Colors specified by user
-        self.blue_color = (0, 111, 217)  # #006fd9
+        self.blue_color = (10, 15, 25)  # Very dim light blue-gray (same as flowers animation)
         self.sun_color = (255, 202, 40)  # #ffca28
         self.cloud_color = (178, 178, 178)  # #b2b2b2
         self.bird_color = (1, 1, 1)  # #010101 (black)
