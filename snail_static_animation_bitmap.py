@@ -78,13 +78,18 @@ class SnailStaticAnimationBitmap:
         if 0 <= x < self.width and 0 <= y < self.height:
             self.led.set_pixel(x, y, color)
     
-    def draw_sky(self):
+    def draw_sky(self, fade_alpha=1.0):
         """Draw dark blue sky background."""
+        faded_sky = (
+            int(self.sky_color[0] * fade_alpha),
+            int(self.sky_color[1] * fade_alpha),
+            int(self.sky_color[2] * fade_alpha)
+        )
         for y in range(self.height - self.ground_height):
             for x in range(self.width):
-                self.safe_set_pixel(x, y, self.sky_color)
+                self.safe_set_pixel(x, y, faded_sky)
     
-    def draw_sun(self):
+    def draw_sun(self, fade_alpha=1.0):
         """Draw sun in the sky."""
         sun_x = self.width - 8  # Position sun on the right side, near top
         sun_y = 5  # Near the top
@@ -101,14 +106,19 @@ class SnailStaticAnimationBitmap:
                         # Fade edges for soft sun
                         intensity = 1.0 - (distance / sun_size) * 0.3
                         sun_pixel_color = (
-                            int(self.sun_color[0] * intensity),
-                            int(self.sun_color[1] * intensity),
-                            int(self.sun_color[2] * intensity)
+                            int(self.sun_color[0] * intensity * fade_alpha),
+                            int(self.sun_color[1] * intensity * fade_alpha),
+                            int(self.sun_color[2] * intensity * fade_alpha)
                         )
                         self.safe_set_pixel(x, y, sun_pixel_color)
     
-    def draw_clouds(self, phase=0):
+    def draw_clouds(self, phase=0, fade_alpha=1.0):
         """Draw clouds in the sky."""
+        faded_cloud = (
+            int(self.cloud_color[0] * fade_alpha),
+            int(self.cloud_color[1] * fade_alpha),
+            int(self.cloud_color[2] * fade_alpha)
+        )
         # Create a few clouds at different positions
         cloud_positions = [
             (5 + phase * 0.5, 8),   # Cloud 1 - left side
@@ -129,13 +139,18 @@ class SnailStaticAnimationBitmap:
                         if 0 <= x < self.width and 0 <= y < self.height - self.ground_height:
                             # Create cloud effect - make it puffy
                             if abs(dx) + abs(dy) <= 2:
-                                self.safe_set_pixel(x, y, self.cloud_color)
+                                self.safe_set_pixel(x, y, faded_cloud)
     
-    def draw_ground(self):
+    def draw_ground(self, fade_alpha=1.0):
         """Draw forest green ground at the bottom."""
+        faded_ground = (
+            int(self.ground_color[0] * fade_alpha),
+            int(self.ground_color[1] * fade_alpha),
+            int(self.ground_color[2] * fade_alpha)
+        )
         for y in range(self.height - self.ground_height, self.height):
             for x in range(self.width):
-                self.safe_set_pixel(x, y, self.ground_color)
+                self.safe_set_pixel(x, y, faded_ground)
     
     def draw_snail(self, x_pos, fade_alpha=1.0):
         """Draw the snail bitmap at position x_pos, positioned on ground.
@@ -208,10 +223,10 @@ class SnailStaticAnimationBitmap:
             
             # Clear and draw
             self.led.clear()
-            self.draw_sky()
-            self.draw_sun()
-            self.draw_clouds(cloud_phase)
-            self.draw_ground()
+            self.draw_sky(fade_alpha)
+            self.draw_sun(fade_alpha)
+            self.draw_clouds(cloud_phase, fade_alpha)
+            self.draw_ground(fade_alpha)
             self.draw_snail(x_pos, fade_alpha)
             self.led.show()
             

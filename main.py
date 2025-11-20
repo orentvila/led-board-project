@@ -79,7 +79,7 @@ class LEDDisplayApp:
         # Animals animation system for Button 27
         self.animals_animations = [
             "elephant_bitmap", "whale", "horse_bitmap", "cow", "sheep", "rooster", "duck",
-            "snail_bitmap", "deer_bitmap", "cat_bitmap", "jellyfish_bitmap", "birds_bitmap"
+            "snail_bitmap", "jellyfish_bitmap", "birds_bitmap"
         ]
         self.current_animals_index = -1  # Start at -1 so first click shows elephant (index 0)
         self.animals_animation_running = False
@@ -1885,7 +1885,7 @@ class LEDDisplayApp:
         
         animal_names = [
             "Elephant", "Whale", "Horse", "Cow", "Sheep", "Rooster", "Duck",
-            "Snail", "Deer", "Cat", "Jellyfish", "Birds"
+            "Snail", "Jellyfish", "Birds"
         ]
         animal_name = animal_names[self.current_animals_index]
         
@@ -1966,16 +1966,6 @@ class LEDDisplayApp:
                 
                 from duck_animation import DuckAnimation
                 animation = DuckAnimation()
-                animation.run_animation(should_stop)
-                animation.cleanup()
-            elif animation_name == "deer_bitmap":
-                from deer_static_animation_bitmap import DeerStaticAnimationBitmap
-                animation = DeerStaticAnimationBitmap()
-                animation.run_animation(should_stop)
-                animation.cleanup()
-            elif animation_name == "cat_bitmap":
-                from cat_static_animation_bitmap import CatStaticAnimationBitmap
-                animation = CatStaticAnimationBitmap()
                 animation.run_animation(should_stop)
                 animation.cleanup()
             elif animation_name == "snail_bitmap":
