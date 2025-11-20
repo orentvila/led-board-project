@@ -50,4 +50,4 @@ SCROLL_SPEED = 0.1
 # Animation Interruption Mode
 # False = no interrupts (animations cannot be switched mid-play)
 # True = allow interrupts (any button click switches animation immediately)
-ALLOW_ANIMATION_INTERRUPTION = False 
+ALLOW_ANIMATION_INTERRUPTION = True 
