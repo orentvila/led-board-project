@@ -2988,7 +2988,11 @@ class LEDDisplayApp:
                 from balloon_animation import BalloonAnimation
                 animation = BalloonAnimation()
                 
+                print(f"🎈 Starting balloon animation, animation_stop_flag={self.animation_stop_flag}")
+                animation_start_time = time.time()
                 animation.run_animation(should_stop)
+                animation_duration = time.time() - animation_start_time
+                print(f"🎈 Balloon animation finished after {animation_duration:.2f} seconds")
                 animation.cleanup()
             elif self.current_object_index == 3:
                 # Saturn animation
@@ -3016,11 +3020,21 @@ class LEDDisplayApp:
                 print(f"⚠️ Unknown object index: {self.current_object_index}")
         finally:
             self.objects_animation_running = False
-            # Stop audio when animation finishes normally (not if interrupted)
-            # If animation_stop_flag is False, it means animation completed normally
-            if not getattr(self, 'animation_stop_flag', False):
-                # Animation completed normally - stop the audio
-                self.stop_animation_audio()
+            # Check if animation was actually interrupted before stopping audio
+            animation_stop_flag = getattr(self, 'animation_stop_flag', False)
+            print(f"🔇 Finally block executed: animation_stop_flag={animation_stop_flag}, current_object_index={self.current_object_index}")
+            
+            # Only stop audio if animation completed normally (not interrupted)
+            if not animation_stop_flag:
+                # For balloon animation specifically, don't stop audio in finally block
+                # Let it continue playing - it will be stopped when next animation starts
+                if self.current_object_index == 2:  # Balloon animation
+                    print("🎈 Balloon animation finished - keeping audio playing")
+                    print("🎈 Audio will stop when next animation starts or user stops")
+                else:
+                    # For other animations, stop audio normally
+                    print(f"🔇 Stopping audio for completed animation (index {self.current_object_index})")
+                    self.stop_animation_audio()
             else:
                 # Animation was interrupted - audio will be stopped by the interrupt handler
                 print("🔇 Skipping audio stop (animation was interrupted)")
