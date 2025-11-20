@@ -129,7 +129,7 @@ class LEDDisplayApp:
             'traffic_lights': 'traffic_lights.wav',
             'truck': 'truck.wav',
             'saturn': 'saturn.wav',
-            'balloon': 'balloon.wav',
+            'balloon': 'balloon2.wav',
             'elephant': 'elephant.wav',
             'whale': 'whale.wav',
             'cow': 'cow.wav',
