@@ -269,8 +269,25 @@ class LEDDisplayApp:
             self.current_shape_process = None
             print("✅ Shape animation stopped")
     
+    def is_any_animation_running(self):
+        """Check if any animation is currently running."""
+        return (self.shape_animation_running or 
+                self.nature_animation_running or 
+                self.animals_animation_running or 
+                self.objects_animation_running or
+                self.house_animation_running or
+                self.clock_animation_running or
+                self.lion_animation_running or
+                (self.current_pattern and self.current_pattern.is_alive()) or
+                (self.current_shape_process and self.current_shape_process.poll() is None))
+    
     def start_shapes_animation(self):
         """Start shapes animation - cycles through different shapes."""
+        # Check if any animation is currently running
+        if self.is_any_animation_running():
+            print("⏸️ Animation already playing. Please wait for current animation to finish.")
+            return
+        
         print("🔷 Starting shapes animation...")
         self.stop_current_pattern()
         
@@ -309,6 +326,11 @@ class LEDDisplayApp:
     
     def start_nature_animation(self):
         """Start nature animation - cycles through different nature scenes."""
+        # Check if any animation is currently running
+        if self.is_any_animation_running():
+            print("⏸️ Animation already playing. Please wait for current animation to finish.")
+            return
+        
         print("🌿 Starting nature animation...")
         print(f"🔧 Current state - flag: {self.nature_animation_running}, index: {self.current_nature_index}")
         
@@ -1938,6 +1960,11 @@ class LEDDisplayApp:
     
     def start_animals_animation(self):
         """Start animals animation - cycles through different animal animations."""
+        # Check if any animation is currently running
+        if self.is_any_animation_running():
+            print("⏸️ Animation already playing. Please wait for current animation to finish.")
+            return
+        
         print("🐾 Starting animals animation...")
         self.stop_current_pattern()
         
@@ -2892,6 +2919,11 @@ class LEDDisplayApp:
     
     def start_objects_animation(self):
         """Start objects animation - cycles through different objects."""
+        # Check if any animation is currently running
+        if self.is_any_animation_running():
+            print("⏸️ Animation already playing. Please wait for current animation to finish.")
+            return
+        
         print("🎯 Starting objects animation...")
         self.stop_current_pattern()
         
