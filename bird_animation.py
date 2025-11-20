@@ -33,6 +33,7 @@ class BirdAnimation:
         
         if not self.frames:
             print("Warning: No frames loaded. Please provide animation data.")
+            print(f"Tried to load from: {piskel_file_path or os.path.join(os.path.expanduser('~'), 'Downloads', 'bird.piskel')}")
         
         print(f"Loaded {len(self.frames)} frames")
     
@@ -45,8 +46,11 @@ class BirdAnimation:
         Returns:
             List of PIL Image frames
         """
-        # TODO: Add embedded Piskel data or C array data here
-        # For now, return empty list - user will provide the file
+        # Try default path if not provided
+        if not piskel_file_path:
+            default_path = os.path.join(os.path.expanduser("~"), "Downloads", "bird.piskel")
+            if os.path.exists(default_path):
+                piskel_file_path = default_path
         
         # If file path provided, try to load it
         if piskel_file_path and os.path.exists(piskel_file_path):
@@ -56,40 +60,77 @@ class BirdAnimation:
         return []
     
     def load_piskel_frames(self, piskel_file_path):
-        """Load frames from Piskel file format."""
+        """Load frames from Piskel file format (supports multiple layers)."""
         with open(piskel_file_path, 'r') as f:
             piskel_data = json.load(f)
         
-        # Extract layer data
-        layer_data = json.loads(piskel_data['piskel']['layers'][0])
-        chunk = layer_data['chunks'][0]
-        
         # Get sprite sheet dimensions
-        frame_count = layer_data['frameCount']
         frame_width = piskel_data['piskel']['width']
         frame_height = piskel_data['piskel']['height']
         
-        # Decode base64 PNG sprite sheet
-        base64_data = chunk['base64PNG'].split(',')[1]
-        image_data = base64.b64decode(base64_data)
-        sprite_sheet = Image.open(io.BytesIO(image_data))
+        # Process all layers
+        all_frames = []
+        num_layers = len(piskel_data['piskel']['layers'])
         
-        # Extract individual frames (assuming horizontal layout)
-        frames = []
-        sprite_width, sprite_height = sprite_sheet.size
+        for layer_idx in range(num_layers):
+            # Extract layer data
+            layer_data = json.loads(piskel_data['piskel']['layers'][layer_idx])
+            chunk = layer_data['chunks'][0]
+            
+            # Get sprite sheet dimensions
+            frame_count = layer_data['frameCount']
+            
+            # Decode base64 PNG sprite sheet
+            base64_data = chunk['base64PNG'].split(',')[1]
+            image_data = base64.b64decode(base64_data)
+            sprite_sheet = Image.open(io.BytesIO(image_data))
+            
+            # Extract individual frames (assuming horizontal layout)
+            sprite_width, sprite_height = sprite_sheet.size
+            
+            layer_frames = []
+            for i in range(frame_count):
+                x_start = i * frame_width
+                x_end = x_start + frame_width
+                
+                frame = sprite_sheet.crop((x_start, 0, x_end, frame_height))
+                
+                if frame.mode != 'RGBA':
+                    frame = frame.convert('RGBA')
+                
+                layer_frames.append(frame)
+            
+            all_frames.append(layer_frames)
         
-        for i in range(frame_count):
-            x_start = i * frame_width
-            x_end = x_start + frame_width
+        # Combine layers (if multiple layers exist)
+        if len(all_frames) == 1:
+            # Single layer - just convert to RGB
+            frames = []
+            for frame in all_frames[0]:
+                if frame.mode != 'RGB':
+                    frame = frame.convert('RGB')
+                frames.append(frame)
+            return frames
+        else:
+            # Multiple layers - composite them
+            frames = []
+            for i in range(len(all_frames[0])):
+                # Start with first layer
+                composite = all_frames[0][i].copy()
+                
+                # Composite remaining layers on top
+                for layer_idx in range(1, len(all_frames)):
+                    if i < len(all_frames[layer_idx]):
+                        layer_frame = all_frames[layer_idx][i]
+                        composite = Image.alpha_composite(composite, layer_frame)
+                
+                # Convert to RGB
+                if composite.mode != 'RGB':
+                    composite = composite.convert('RGB')
+                
+                frames.append(composite)
             
-            frame = sprite_sheet.crop((x_start, 0, x_end, frame_height))
-            
-            if frame.mode != 'RGB':
-                frame = frame.convert('RGB')
-            
-            frames.append(frame)
-        
-        return frames
+            return frames
     
     def load_c_array_frames(self, c_array_data):
         """Load frames from C array format (similar to whale animation).
@@ -134,23 +175,24 @@ class BirdAnimation:
         Returns:
             Tuple of (r, g, b) with replaced colors
         """
-        # Map colors to specified palette
-        # Blue: #428DD5
-        if r >= 60 and r <= 80 and g >= 130 and g <= 150 and b >= 200 and b <= 230:
+        # Bird black: #010101 (check first, as it's most specific)
+        if r <= 20 and g <= 20 and b <= 20:
+            return self.bird_color
+        
+        # Blue: #428DD5 (RGB: 66, 141, 213)
+        # Check for blue colors (high blue component)
+        if b > r and b > g and b > 100:
             return self.blue_color
         
-        # Sun yellow: #ffca28
-        if r >= 240 and g >= 190 and g <= 220 and b >= 30 and b <= 60:
+        # Sun yellow: #ffca28 (RGB: 255, 202, 40)
+        # Check for yellow colors (high red and green, low blue)
+        if r > 200 and g > 150 and g < 250 and b < 100:
             return self.sun_color
         
-        # Clouds grey: #b2b2b2
-        if r >= 160 and r <= 200 and g >= 160 and g <= 200 and b >= 160 and b <= 200:
-            if abs(r - g) < 20 and abs(g - b) < 20:  # Grey-ish
-                return self.cloud_color
-        
-        # Bird black: #010101
-        if r <= 10 and g <= 10 and b <= 10:
-            return self.bird_color
+        # Clouds grey: #b2b2b2 (RGB: 178, 178, 178)
+        # Check for grey colors (similar RGB values, medium brightness)
+        if abs(r - g) < 30 and abs(g - b) < 30 and 120 < r < 220:
+            return self.cloud_color
         
         # Default: return original
         return (r, g, b)
