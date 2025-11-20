@@ -125,7 +125,7 @@ class WhaleAnimation:
         return (r, g, b)
     
     def replace_blue_color(self, r, g, b):
-        """Replace blue/cyan color with softer blue color."""
+        """Replace blue/cyan color (ocean/water) with #1A2A80 (RGB(26, 42, 128))."""
         # Detect cyan/light blue colors - very permissive to catch all variations
         # Check if it's a cyan/light blue color:
         # - Blue component is high (> 150)
@@ -133,9 +133,8 @@ class WhaleAnimation:
         # - Red is lower than blue (cyan characteristic)
         # This will catch #59f4ff and similar cyan shades
         if b > 150 and g > 100 and b > r:
-            # Use a softer blue color - lighter and less saturated version of #3B38A0
-            # Original: RGB(59, 56, 160) - make it softer
-            return (80, 78, 140)  # Softer, lighter blue
+            # Replace with ocean color #1A2A80 = RGB(26, 42, 128)
+            return (26, 42, 128)
         return (r, g, b)
     
     def dim_white_background(self, r, g, b):
