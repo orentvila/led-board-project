@@ -3020,24 +3020,8 @@ class LEDDisplayApp:
                 print(f"⚠️ Unknown object index: {self.current_object_index}")
         finally:
             self.objects_animation_running = False
-            # Check if animation was actually interrupted before stopping audio
-            animation_stop_flag = getattr(self, 'animation_stop_flag', False)
-            print(f"🔇 Finally block executed: animation_stop_flag={animation_stop_flag}, current_object_index={self.current_object_index}")
-            
-            # Only stop audio if animation completed normally (not interrupted)
-            if not animation_stop_flag:
-                # For balloon animation specifically, don't stop audio in finally block
-                # Let it continue playing - it will be stopped when next animation starts
-                if self.current_object_index == 2:  # Balloon animation
-                    print("🎈 Balloon animation finished - keeping audio playing")
-                    print("🎈 Audio will stop when next animation starts or user stops")
-                else:
-                    # For other animations, stop audio normally
-                    print(f"🔇 Stopping audio for completed animation (index {self.current_object_index})")
-                    self.stop_animation_audio()
-            else:
-                # Animation was interrupted - audio will be stopped by the interrupt handler
-                print("🔇 Skipping audio stop (animation was interrupted)")
+            # Stop audio when animation finishes (same simple mechanism as animals/nature animations)
+            self.stop_animation_audio()
     
     def run_clock_objects_animation(self):
         """Run clock animation with moving hands in a circle."""
