@@ -187,6 +187,7 @@ class LEDDisplayApp:
                     # Play the audio (loop indefinitely)
                     pygame.mixer.music.play(-1)
                     print(f"🔊 Playing audio for {animation_name}: {audio_file}")
+                    print(f"🔊 Audio set to loop: -1 (indefinitely)")
                     
                     # Give it a moment to start, then verify
                     import time
@@ -199,6 +200,21 @@ class LEDDisplayApp:
                         print(f"⚠️ Audio loaded but not playing: {audio_file}")
                         print(f"   Check audio output device settings")
                         print(f"   On Raspberry Pi, try: sudo raspi-config -> Advanced Options -> Audio")
+                    
+                    # Check audio file length if possible
+                    try:
+                        import wave
+                        if audio_file.endswith('.wav'):
+                            with wave.open(audio_path, 'rb') as wav_file:
+                                frames = wav_file.getnframes()
+                                sample_rate = wav_file.getframerate()
+                                duration = frames / float(sample_rate)
+                                print(f"🔊 Audio file duration: {duration:.2f} seconds")
+                                if duration < 3:
+                                    print(f"⚠️ WARNING: Audio file is very short ({duration:.2f}s). It should loop, but if it stops, the file might be corrupted.")
+                    except Exception as e:
+                        # Not a WAV file or can't read it - that's okay
+                        pass
                 except Exception as e:
                     print(f"⚠️ Error playing audio {audio_file}: {e}")
                     import traceback
@@ -3000,8 +3016,12 @@ class LEDDisplayApp:
                 print(f"⚠️ Unknown object index: {self.current_object_index}")
         finally:
             self.objects_animation_running = False
-            # Stop audio when animation finishes
-            self.stop_animation_audio()
+            # Stop audio when animation finishes (only if animation actually completed)
+            # Don't stop if animation was interrupted early
+            if not getattr(self, 'animation_stop_flag', False):
+                self.stop_animation_audio()
+            else:
+                print("🔇 Skipping audio stop (animation was interrupted)")
     
     def run_clock_objects_animation(self):
         """Run clock animation with moving hands in a circle."""
