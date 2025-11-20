@@ -88,11 +88,29 @@ class LEDDisplayApp:
         self.audio_available = False
         if AUDIO_AVAILABLE:
             try:
-                pygame.mixer.init(frequency=22050, size=-16, channels=2, buffer=512)
-                self.audio_available = True
-                print("🔊 Audio system initialized")
+                # Try different initialization methods for better compatibility
+                # First try with default settings
+                try:
+                    pygame.mixer.init()
+                    self.audio_available = True
+                    print("🔊 Audio system initialized (default settings)")
+                except:
+                    # If default fails, try with specific settings
+                    pygame.mixer.init(frequency=22050, size=-16, channels=2, buffer=512)
+                    self.audio_available = True
+                    print("🔊 Audio system initialized (22050 Hz)")
+                
+                # Verify audio is actually working
+                if pygame.mixer.get_init():
+                    print(f"✅ Audio system verified: {pygame.mixer.get_init()}")
+                else:
+                    print("⚠️ Audio system initialized but get_init() returned None")
+                    self.audio_available = False
+                    
             except Exception as e:
                 print(f"⚠️ Audio system not available: {e}")
+                import traceback
+                traceback.print_exc()
                 self.audio_available = False
         
         # Audio file mapping for animations
@@ -143,6 +161,7 @@ class LEDDisplayApp:
     def play_animation_audio(self, animation_name):
         """Play audio for the specified animation."""
         if not self.audio_available:
+            print(f"⚠️ Audio not available, skipping audio for {animation_name}")
             return
         
         if animation_name in self.animation_audio:
@@ -155,14 +174,29 @@ class LEDDisplayApp:
                 try:
                     # Stop any currently playing audio first
                     pygame.mixer.music.stop()
+                    
+                    # Load the audio file
+                    print(f"🔊 Loading audio file: {audio_path}")
                     pygame.mixer.music.load(audio_path)
-                    pygame.mixer.music.play(-1)  # Loop indefinitely
+                    
+                    # Set volume (0.0 to 1.0)
+                    pygame.mixer.music.set_volume(1.0)
+                    
+                    # Play the audio (loop indefinitely)
+                    pygame.mixer.music.play(-1)
                     print(f"🔊 Playing audio for {animation_name}: {audio_file}")
+                    
+                    # Give it a moment to start, then verify
+                    import time
+                    time.sleep(0.1)
+                    
                     # Verify it's actually playing
                     if pygame.mixer.music.get_busy():
                         print(f"✅ Audio is playing: {audio_file}")
                     else:
                         print(f"⚠️ Audio loaded but not playing: {audio_file}")
+                        print(f"   Check audio output device settings")
+                        print(f"   On Raspberry Pi, try: sudo raspi-config -> Advanced Options -> Audio")
                 except Exception as e:
                     print(f"⚠️ Error playing audio {audio_file}: {e}")
                     import traceback
@@ -172,6 +206,8 @@ class LEDDisplayApp:
                 print(f"   Looking for: {audio_path}")
                 print(f"   Script directory: {script_dir}")
                 print(f"   Audio directory exists: {os.path.exists(os.path.join(script_dir, 'audio'))}")
+                if os.path.exists(os.path.join(script_dir, 'audio')):
+                    print(f"   Files in audio directory: {os.listdir(os.path.join(script_dir, 'audio'))}")
         else:
             print(f"⚠️ No audio mapped for animation: {animation_name}")
     
