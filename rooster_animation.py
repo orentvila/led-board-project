@@ -46,12 +46,21 @@ class RoosterAnimation:
                 row_data.append(pixel_bit)
             self.rooster_pixels.append(row_data)
         
-        self.rooster_color = (255, 140, 0)  # Orange rooster
+        self.rooster_color = (243, 242, 236)  # #F3F2EC - Light beige/cream rooster
+        self.beak_color = (230, 39, 39)  # #E62727 - Red beak
     
     def safe_set_pixel(self, x, y, color):
         """Safely set a pixel if coordinates are within bounds."""
         if 0 <= x < self.width and 0 <= y < self.height:
             self.led.set_pixel(x, y, color)
+    
+    def is_beak_pixel(self, x, y):
+        """Check if pixel is part of the beak (lower front area)."""
+        # Beak is typically in the lower front area of the rooster head
+        # Approximate beak area: x around 12-20, y around 8-15
+        if 12 <= x <= 20 and 8 <= y <= 15:
+            return True
+        return False
     
     def draw_rooster(self):
         """Draw the rooster bitmap."""
@@ -59,7 +68,11 @@ class RoosterAnimation:
         for y in range(min(self.height, 48)):
             for x in range(min(self.width, 32)):
                 if self.rooster_pixels[y][x] == 1:
-                    self.safe_set_pixel(x, y, self.rooster_color)
+                    # Check if this is a beak pixel
+                    if self.is_beak_pixel(x, y):
+                        self.safe_set_pixel(x, y, self.beak_color)
+                    else:
+                        self.safe_set_pixel(x, y, self.rooster_color)
         self.led.show()
     
     def run_animation(self, should_stop=None):

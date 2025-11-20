@@ -46,12 +46,21 @@ class DuckAnimation:
                 row_data.append(pixel_bit)
             self.duck_pixels.append(row_data)
         
-        self.duck_color = (255, 200, 0)  # Yellow duck
+        self.duck_color = (243, 242, 236)  # #F3F2EC - Light beige/cream duck
+        self.beak_color = (230, 39, 39)  # #E62727 - Red beak
     
     def safe_set_pixel(self, x, y, color):
         """Safely set a pixel if coordinates are within bounds."""
         if 0 <= x < self.width and 0 <= y < self.height:
             self.led.set_pixel(x, y, color)
+    
+    def is_beak_pixel(self, x, y):
+        """Check if pixel is part of the beak (front area)."""
+        # Beak is typically in the front area of the duck head
+        # Approximate beak area: x around 18-26, y around 10-18
+        if 18 <= x <= 26 and 10 <= y <= 18:
+            return True
+        return False
     
     def draw_duck(self):
         """Draw the duck bitmap."""
@@ -59,7 +68,11 @@ class DuckAnimation:
         for y in range(min(self.height, 48)):
             for x in range(min(self.width, 32)):
                 if self.duck_pixels[y][x] == 1:
-                    self.safe_set_pixel(x, y, self.duck_color)
+                    # Check if this is a beak pixel
+                    if self.is_beak_pixel(x, y):
+                        self.safe_set_pixel(x, y, self.beak_color)
+                    else:
+                        self.safe_set_pixel(x, y, self.duck_color)
         self.led.show()
     
     def run_animation(self, should_stop=None):
