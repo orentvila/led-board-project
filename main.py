@@ -3016,12 +3016,11 @@ class LEDDisplayApp:
                 print(f"⚠️ Unknown object index: {self.current_object_index}")
         finally:
             self.objects_animation_running = False
-            # Stop audio when animation finishes (only if animation actually completed)
-            # Don't stop if animation was interrupted early
-            if not getattr(self, 'animation_stop_flag', False):
-                self.stop_animation_audio()
-            else:
-                print("🔇 Skipping audio stop (animation was interrupted)")
+            # Don't stop audio here - let it continue playing for the full duration
+            # Audio will be stopped when:
+            # 1. Next animation starts (play_animation_audio stops previous audio)
+            # 2. User manually stops (handled elsewhere)
+            # This ensures audio plays for the full animation duration
     
     def run_clock_objects_animation(self):
         """Run clock animation with moving hands in a circle."""
