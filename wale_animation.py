@@ -182,6 +182,10 @@ class WhaleAnimation:
                     r, g, b = self.dim_white_background(r, g, b)
                     # Soften all colors for a softer overall appearance
                     r, g, b = self.soften_color(r, g, b, softness=0.75)
+                    # Reduce overall brightness by 40% (multiply by 0.6)
+                    r = int(r * 0.6)
+                    g = int(g * 0.6)
+                    b = int(b * 0.6)
                     self.safe_set_pixel(x, y, (r, g, b))
         
         self.led.show()
