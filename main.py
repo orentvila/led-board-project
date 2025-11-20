@@ -2033,6 +2033,9 @@ class LEDDisplayApp:
                 animation.run_animation(should_stop)
                 animation.cleanup()
             elif animation_name == "snail_bitmap":
+                # Play audio for this animation
+                self.play_animation_audio('snail')
+                
                 from snail_static_animation_bitmap import SnailStaticAnimationBitmap
                 animation = SnailStaticAnimationBitmap()
                 animation.run_animation(should_stop)
