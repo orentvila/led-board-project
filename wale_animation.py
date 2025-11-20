@@ -191,7 +191,7 @@ class WhaleAnimation:
         self.led.show()
     
     def run_animation(self, should_stop=None):
-        """Run the whale animation for 24 seconds (48 frames total - frames 1-12 shown four times).
+        """Run the whale animation for 24 seconds (36 frames total - frames 1-12 shown three times).
         
         Args:
             should_stop: Optional callback function that returns True if animation should stop.
@@ -199,20 +199,20 @@ class WhaleAnimation:
         duration = 24  # 24 seconds
         start_time = time.time()
         
-        # Display frames 1-12 four times to get 48 frames total
-        # Frame duration: 24 seconds / 48 frames = 0.5 seconds per frame
-        total_frames = len(self.frames) * 4
+        # Display frames 1-12 three times to get 36 frames total
+        # Frame duration: 24 seconds / 36 frames = 0.67 seconds per frame
+        total_frames = len(self.frames) * 3
         frame_duration = duration / total_frames
         
         print("Starting whale animation...")
         print(f"Animation duration: {duration} seconds")
         print(f"Original frame count: {len(self.frames)}")
-        print(f"Total frames (shown four times): {total_frames}")
+        print(f"Total frames (shown three times): {total_frames}")
         print(f"Frame duration: {frame_duration:.2f} seconds")
         
-        # Create a sequence: play all frames four times
-        # Order: 0,1,2,3,4,5,6,7,8,9,10,11,0,1,2,3,4,5,6,7,8,9,10,11,0,1,2,3,4,5,6,7,8,9,10,11,0,1,2,3,4,5,6,7,8,9,10,11
-        frame_sequence = list(range(len(self.frames))) * 4  # [0,1,2,...,11] repeated 4 times
+        # Create a sequence: play all frames three times
+        # Order: 0,1,2,3,4,5,6,7,8,9,10,11,0,1,2,3,4,5,6,7,8,9,10,11,0,1,2,3,4,5,6,7,8,9,10,11
+        frame_sequence = list(range(len(self.frames))) * 3  # [0,1,2,...,11] repeated 3 times
         
         frame_sequence_index = 0
         
