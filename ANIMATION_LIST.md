@@ -44,20 +44,28 @@ Complete list of all animations, their buttons, sequences, and durations.
 
 ## 🐾 Animals Animations (Button 27)
 
-**Sequence:** Cycles through 8 animations
+**Sequence:** Cycles through 12 animations
 1. **Elephant** - 20 seconds (moves from left to center in 8s, then stays) | **Audio:** `elephant.wav`
-2. **Whale** - 12 seconds (12 frames shown twice) | **Audio:** `whale.wav`
-3. **Horse** - 30 seconds | **Audio:** None
-4. **Snail** - 30 seconds | **Audio:** None
-5. **Deer** - 30 seconds | **Audio:** None
-6. **Cat** - 20 seconds | **Audio:** None
-7. **Jellyfish** - 5 seconds | **Audio:** None
-8. **Birds** - 5 seconds | **Audio:** None
+2. **Whale** - 24 seconds (12 frames shown four times) | **Audio:** `whale.wav`
+3. **Horse** - 30 seconds | **Audio:** `horse.wav`
+4. **Cow** - 8 seconds | **Audio:** `cow.wav`
+5. **Sheep** - 8 seconds | **Audio:** `sheep.wav`
+6. **Rooster** - 8 seconds | **Audio:** `rooster.wav`
+7. **Duck** - 8 seconds | **Audio:** `duck.wav`
+8. **Snail** - 30 seconds | **Audio:** None
+9. **Deer** - 30 seconds | **Audio:** None
+10. **Cat** - 20 seconds | **Audio:** None
+11. **Jellyfish** - 5 seconds | **Audio:** None
+12. **Birds** - 5 seconds | **Audio:** None
 
 **Details:**
 - **Elephant**: Moves horizontally from left side to center, stops at center with dimmed sky, sun, and clouds
-- **Whale**: Whale animation with 12 frames, each shown twice, white background dimmed 40%
+- **Whale**: Whale animation with 12 frames, each shown four times, white background dimmed 30%, blue color #3B38A0
 - **Horse**: Moves across screen with leg animation
+- **Cow**: Static brown cow bitmap
+- **Sheep**: Static white sheep bitmap
+- **Rooster**: Static orange rooster bitmap
+- **Duck**: Static yellow duck bitmap
 - **Snail**: Moves slowly across ground
 - **Deer**: Static bitmap animation
 - **Cat**: Cat animation
@@ -88,6 +96,12 @@ Complete list of all animations, their buttons, sequences, and durations.
 - Jellyfish (Animals)
 - Birds (Animals)
 
+### 8 seconds
+- Cow (Animals)
+- Sheep (Animals)
+- Rooster (Animals)
+- Duck (Animals)
+
 ### 20 seconds
 - Elephant (Animals)
 - Cat (Animals)
@@ -101,6 +115,9 @@ Complete list of all animations, their buttons, sequences, and durations.
 ### 40 seconds
 - Triangles (Shapes) - includes fade-out
 - Stars (Shapes)
+
+### 24 seconds
+- Whale (Animals)
 
 ### 30 seconds
 - Horse (Animals)
@@ -139,8 +156,8 @@ Complete list of all animations, their buttons, sequences, and durations.
 - Shapes: Squares, Triangles, Bubbles, Stars
 - Nature: Floating Clouds, Rain, Growing Flowers, Apple Tree
 - Objects: Truck, House, Balloon, Saturn
-- Animals: Elephant
+- Animals: Elephant, Whale, Horse, Cow, Sheep, Rooster, Duck
 
 **Animations without Audio:**
-- Animals: Horse, Snail, Deer, Cat, Jellyfish, Birds
+- Animals: Snail, Deer, Cat, Jellyfish, Birds
 
