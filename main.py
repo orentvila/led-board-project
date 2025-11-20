@@ -138,6 +138,7 @@ class LEDDisplayApp:
             'sheep': 'sheep.wav',
             'rooster': 'rooster.wav',
             'duck': 'duck.wav',
+            'snail': 'snail.wav',
         }
         
         # Setup signal handlers for graceful shutdown
