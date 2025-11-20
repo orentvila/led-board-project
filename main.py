@@ -83,6 +83,11 @@ class LEDDisplayApp:
         self.current_animals_index = -1  # Start at -1 so first click shows elephant (index 0)
         self.animals_animation_running = False
         
+        # Additional animation flags
+        self.house_animation_running = False
+        self.clock_animation_running = False
+        self.lion_animation_running = False
+        
         # Initialize audio system
         self.audio_available = False
         if AUDIO_AVAILABLE:
