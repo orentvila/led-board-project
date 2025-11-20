@@ -1979,8 +1979,8 @@ class LEDDisplayApp:
                 animation.run_animation(should_stop)
                 animation.cleanup()
             elif animation_name == "birds_bitmap":
-                from birds_static_animation_bitmap import BirdsStaticAnimationBitmap
-                animation = BirdsStaticAnimationBitmap()
+                from bird_animation import BirdAnimation
+                animation = BirdAnimation()
                 animation.run_animation(should_stop)
                 animation.cleanup()
             else:
