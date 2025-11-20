@@ -92,8 +92,40 @@ class WhaleAnimation:
         
         return frames
     
+    def soften_color(self, r, g, b, softness=0.7):
+        """Soften colors by reducing saturation and brightness.
+        
+        Args:
+            r, g, b: RGB color values
+            softness: Softness factor (0.0-1.0). Lower = softer. Default 0.7 = 30% softer.
+        """
+        # Calculate brightness (luminance)
+        brightness = (r + g + b) / 3.0
+        
+        # Reduce saturation by mixing with gray (desaturate)
+        # Mix original color with gray at the same brightness level
+        gray_mix = int(brightness)
+        mix_factor = 1.0 - softness  # How much gray to mix in
+        
+        r = int(r * softness + gray_mix * mix_factor)
+        g = int(g * softness + gray_mix * mix_factor)
+        b = int(b * softness + gray_mix * mix_factor)
+        
+        # Slightly reduce overall brightness for softer appearance
+        brightness_reduction = 0.9  # Reduce by 10%
+        r = int(r * brightness_reduction)
+        g = int(g * brightness_reduction)
+        b = int(b * brightness_reduction)
+        
+        # Ensure values stay in valid range
+        r = max(0, min(255, r))
+        g = max(0, min(255, g))
+        b = max(0, min(255, b))
+        
+        return (r, g, b)
+    
     def replace_blue_color(self, r, g, b):
-        """Replace blue/cyan color with new color #3B38A0 (RGB(59, 56, 160))."""
+        """Replace blue/cyan color with softer blue color."""
         # Detect cyan/light blue colors - very permissive to catch all variations
         # Check if it's a cyan/light blue color:
         # - Blue component is high (> 150)
@@ -101,20 +133,21 @@ class WhaleAnimation:
         # - Red is lower than blue (cyan characteristic)
         # This will catch #59f4ff and similar cyan shades
         if b > 150 and g > 100 and b > r:
-            # Replace with new blue color #3B38A0 = RGB(59, 56, 160)
-            return (59, 56, 160)
+            # Use a softer blue color - lighter and less saturated version of #3B38A0
+            # Original: RGB(59, 56, 160) - make it softer
+            return (80, 78, 140)  # Softer, lighter blue
         return (r, g, b)
     
     def dim_white_background(self, r, g, b):
-        """Dim white/light background colors by 30% (reduce brightness to 70%)."""
+        """Dim white/light background colors by 40% (reduce brightness to 60%)."""
         # Check if pixel is white or light (brightness threshold)
         brightness = (r + g + b) / 3.0
         
-        # If brightness is above 200 (light/white), dim it by 30%
+        # If brightness is above 200 (light/white), dim it by 40% (more aggressive)
         if brightness > 200:
-            r = int(r * 0.7)
-            g = int(g * 0.7)
-            b = int(b * 0.7)
+            r = int(r * 0.6)
+            g = int(g * 0.6)
+            b = int(b * 0.6)
         
         return (r, g, b)
     
@@ -144,10 +177,12 @@ class WhaleAnimation:
                 pixel_x = x + x_offset
                 if pixel_x < frame_width:
                     r, g, b = frame.getpixel((pixel_x, y))
-                    # Replace blue color with new color
+                    # Replace blue color with softer color
                     r, g, b = self.replace_blue_color(r, g, b)
-                    # Dim white background by 30%
+                    # Dim white background
                     r, g, b = self.dim_white_background(r, g, b)
+                    # Soften all colors for a softer overall appearance
+                    r, g, b = self.soften_color(r, g, b, softness=0.75)
                     self.safe_set_pixel(x, y, (r, g, b))
         
         self.led.show()
