@@ -1495,12 +1495,10 @@ class LEDDisplayApp:
         
         print("✅ Started house animation")
     
-    def run_house_animation(self):
-        """Run house animation with smoke rising from chimney."""
+    def run_house_animation_inline(self, should_stop=None):
+        """Run house animation with smoke rising from chimney (inline version - runs synchronously)."""
         import math
         import random
-        # Play audio for this animation
-        self.play_animation_audio('house')
         
         duration = 20
         start_time = time.time()
@@ -1751,7 +1749,11 @@ class LEDDisplayApp:
         fade_duration = 3  # 3 seconds for fade out
         main_duration = duration - fade_duration  # 17 seconds for main animation
         
-        while time.time() - start_time < duration and (self.objects_animation_running or self.house_animation_running) and not getattr(self, 'animation_stop_flag', False):
+        while time.time() - start_time < duration:
+            # Check stop flag
+            if should_stop and should_stop():
+                print("🏠 House animation stopped by user")
+                break
             elapsed = time.time() - start_time
             
             # Calculate fade alpha (1.0 = fully visible, 0.0 = invisible)
@@ -2951,7 +2953,20 @@ class LEDDisplayApp:
                 animation.run_animation(should_stop)
                 animation.cleanup()
             elif self.current_object_index == 1:
-                self.run_house_animation()
+                # House animation - run synchronously (not in a thread) so it completes before next animation
+                # Play audio for this animation
+                self.play_animation_audio('house')
+                
+                # Ensure flags are set before starting house
+                self.animation_stop_flag = False
+                self.objects_animation_running = True
+                
+                def should_stop():
+                    stop_requested = getattr(self, 'animation_stop_flag', False)
+                    return stop_requested
+                
+                # Run house animation synchronously (inline)
+                self.run_house_animation_inline(should_stop)
             elif self.current_object_index == 2:
                 # Balloon animation
                 # Play audio for this animation
