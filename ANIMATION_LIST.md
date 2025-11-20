@@ -78,13 +78,13 @@ Complete list of all animations, their buttons, sequences, and durations.
 
 **Sequence:** Cycles through 4 animations
 1. **Truck** - 20 seconds (moves from left to right across screen) | **Audio:** `truck.wav`
-2. **House** - 20 seconds (house with smoke rising from chimney) | **Audio:** `house.wav`
+2. **House** - 20 seconds (house with smoke rising from chimney, fades out at end) | **Audio:** `house.wav`
 3. **Balloon** - 20 seconds (rises from bottom to top) | **Audio:** `balloon.wav`
 4. **Saturn** - 30 seconds (rotating planet with rings and stars) | **Audio:** `saturn.wav`
 
 **Details:**
 - **Truck**: Red truck (#E74D49) moves across gray ground (#7B7B7B) with dimmed blue sky and sun
-- **House**: Orange house with red roof, blue windows, and white smoke rising
+- **House**: Orange house with red roof, blue windows, and white smoke rising, fades out over last 3 seconds
 - **Balloon**: Hot air balloon rises from bottom of screen to top
 - **Saturn**: Planet with rotating rings, stars in background
 

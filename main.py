@@ -1470,17 +1470,27 @@ class LEDDisplayApp:
         smoke_particles = []
         smoke_start_time = 2  # Start smoke after 2 seconds
         
-        def draw_house_body():
+        def draw_house_body(fade_alpha=1.0):
             """Draw the main house body (orange rectangle)."""
+            faded_house = (
+                int(orange_house[0] * fade_alpha),
+                int(orange_house[1] * fade_alpha),
+                int(orange_house[2] * fade_alpha)
+            )
             for y in range(house_height):
                 for x in range(house_width):
                     pixel_x = house_x + x
                     pixel_y = house_y - y
                     if 0 <= pixel_x < width and 0 <= pixel_y < height:
-                        self.led.set_pixel(pixel_x, pixel_y, orange_house)
+                        self.led.set_pixel(pixel_x, pixel_y, faded_house)
         
-        def draw_roof():
+        def draw_roof(fade_alpha=1.0):
             """Draw the triangular roof sitting properly on the house."""
+            faded_roof = (
+                int(red_roof[0] * fade_alpha),
+                int(red_roof[1] * fade_alpha),
+                int(red_roof[2] * fade_alpha)
+            )
             # House top is at: house_y - house_height
             # Roof base sits on house top
             roof_base_y = house_y - house_height
@@ -1504,19 +1514,34 @@ class LEDDisplayApp:
                     for i in range(pixels_to_draw):
                         x_pos = start_x + i
                         if 0 <= x_pos < width and 0 <= y_pos < height:
-                            self.led.set_pixel(x_pos, y_pos, red_roof)
+                            self.led.set_pixel(x_pos, y_pos, faded_roof)
         
-        def draw_chimney():
+        def draw_chimney(fade_alpha=1.0):
             """Draw the brown chimney sitting on top of roof."""
+            faded_chimney = (
+                int(brown_chimney[0] * fade_alpha),
+                int(brown_chimney[1] * fade_alpha),
+                int(brown_chimney[2] * fade_alpha)
+            )
             for y in range(chimney_height):
                 for x in range(chimney_width):
                     pixel_x = chimney_x + x
                     pixel_y = chimney_y - y
                     if 0 <= pixel_x < width and 0 <= pixel_y < height:
-                        self.led.set_pixel(pixel_x, pixel_y, brown_chimney)
+                        self.led.set_pixel(pixel_x, pixel_y, faded_chimney)
         
-        def draw_window():
+        def draw_window(fade_alpha=1.0):
             """Draw the window with frame and panes."""
+            faded_frame = (
+                int(light_gray_window_frame[0] * fade_alpha),
+                int(light_gray_window_frame[1] * fade_alpha),
+                int(light_gray_window_frame[2] * fade_alpha)
+            )
+            faded_window = (
+                int(blue_window[0] * fade_alpha),
+                int(blue_window[1] * fade_alpha),
+                int(blue_window[2] * fade_alpha)
+            )
             # Draw window frame
             for y in range(window_size + 2):
                 for x in range(window_size + 2):
@@ -1525,10 +1550,10 @@ class LEDDisplayApp:
                     if 0 <= pixel_x < width and 0 <= pixel_y < height:
                         # Frame
                         if x == 0 or x == window_size + 1 or y == 0 or y == window_size + 1:
-                            self.led.set_pixel(pixel_x, pixel_y, light_gray_window_frame)
+                            self.led.set_pixel(pixel_x, pixel_y, faded_frame)
                         # Window panes
                         else:
-                            self.led.set_pixel(pixel_x, pixel_y, blue_window)
+                            self.led.set_pixel(pixel_x, pixel_y, faded_window)
             
             # Draw cross frame
             center_x = window_x + window_size // 2
@@ -1537,12 +1562,12 @@ class LEDDisplayApp:
             # Vertical line
             for y in range(window_y, window_y + window_size):
                 if 0 <= center_x < width and 0 <= y < height:
-                    self.led.set_pixel(center_x, y, light_gray_window_frame)
+                    self.led.set_pixel(center_x, y, faded_frame)
             
             # Horizontal line
             for x in range(window_x, window_x + window_size):
                 if 0 <= x < width and 0 <= center_y < height:
-                    self.led.set_pixel(x, center_y, light_gray_window_frame)
+                    self.led.set_pixel(x, center_y, faded_frame)
         
         def add_smoke_particle():
             """Add a new smoke particle at the chimney top."""
@@ -1579,7 +1604,7 @@ class LEDDisplayApp:
             for i in reversed(particles_to_remove):
                 smoke_particles.pop(i)
         
-        def draw_smoke():
+        def draw_smoke(fade_alpha=1.0):
             """Draw all smoke particles."""
             for particle in smoke_particles:
                 x = int(particle['x'])
@@ -1588,9 +1613,16 @@ class LEDDisplayApp:
                 if 0 <= x < width and 0 <= y < height:
                     # Fade smoke based on life
                     if particle['life'] > 0.7:
-                        color = white_smoke
+                        base_color = white_smoke
                     else:
-                        color = light_smoke
+                        base_color = light_smoke
+                    
+                    # Apply fade alpha to smoke color
+                    color = (
+                        int(base_color[0] * fade_alpha),
+                        int(base_color[1] * fade_alpha),
+                        int(base_color[2] * fade_alpha)
+                    )
                     
                     self.led.set_pixel(x, y, color)
                     
@@ -1603,13 +1635,18 @@ class LEDDisplayApp:
                                 random.random() < 0.6):  # Random smoke texture
                                 self.led.set_pixel(smoke_x, smoke_y, color)
         
-        def draw_ground():
+        def draw_ground(fade_alpha=1.0):
             """Draw forest green ground at the bottom."""
+            faded_ground = (
+                int(ground_color[0] * fade_alpha),
+                int(ground_color[1] * fade_alpha),
+                int(ground_color[2] * fade_alpha)
+            )
             for x in range(width):
                 for y in range(height - ground_height, height):
-                    self.led.set_pixel(x, y, ground_color)
+                    self.led.set_pixel(x, y, faded_ground)
         
-        def draw_sun():
+        def draw_sun(fade_alpha=1.0):
             """Draw small sun in the top left part of the screen (same as flowers animation)."""
             sun_x = 8  # Position sun on the left side, near top
             sun_y = 5  # Near the top
@@ -1627,33 +1664,46 @@ class LEDDisplayApp:
                             # Fade edges for soft sun
                             intensity = 1.0 - (distance / sun_size) * 0.3
                             sun_pixel_color = (
-                                int(sun_color[0] * intensity),
-                                int(sun_color[1] * intensity),
-                                int(sun_color[2] * intensity)
+                                int(sun_color[0] * intensity * fade_alpha),
+                                int(sun_color[1] * intensity * fade_alpha),
+                                int(sun_color[2] * intensity * fade_alpha)
                             )
                             self.led.set_pixel(x, y, sun_pixel_color)
         
+        fade_duration = 3  # 3 seconds for fade out
+        main_duration = duration - fade_duration  # 17 seconds for main animation
+        
         while time.time() - start_time < duration and (self.objects_animation_running or self.house_animation_running) and not getattr(self, 'animation_stop_flag', False):
             elapsed = time.time() - start_time
+            
+            # Calculate fade alpha (1.0 = fully visible, 0.0 = invisible)
+            if elapsed < main_duration:
+                # Main animation phase - fully visible
+                fade_alpha = 1.0
+            else:
+                # Fade out phase - fade from 1.0 to 0.0
+                fade_elapsed = elapsed - main_duration
+                fade_alpha = max(0.0, 1.0 - (fade_elapsed / fade_duration))
             
             # Clear display
             self.led.clear()
             
             # Draw ground first (so house sits on top)
-            draw_ground()
+            draw_ground(fade_alpha)
             
             # Draw sun in top left
-            draw_sun()
+            draw_sun(fade_alpha)
             
             # Draw house components
-            draw_house_body()
-            draw_roof()
-            draw_chimney()
-            draw_window()
+            draw_house_body(fade_alpha)
+            draw_roof(fade_alpha)
+            draw_chimney(fade_alpha)
+            draw_window(fade_alpha)
             
-            # Update and draw smoke
-            update_smoke(elapsed)
-            draw_smoke()
+            # Update and draw smoke (only update during main phase, but fade during fade phase)
+            if elapsed < main_duration:
+                update_smoke(elapsed)
+            draw_smoke(fade_alpha)
             
             # Show the frame
             self.led.show()
