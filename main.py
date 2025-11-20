@@ -1798,8 +1798,8 @@ class LEDDisplayApp:
         # Clear display
         self.led.clear()
         self.led.show()
-        # Stop audio when animation finishes
-        self.stop_animation_audio()
+        # Don't stop audio here - let run_objects_animation() finally block handle it
+        # Otherwise it will stop the next animation's audio if running in a thread
         print("🏠 Animation finished")
     
     def start_clock_animation(self):
