@@ -884,7 +884,8 @@ class LEDDisplayApp:
                         self.led.set_pixel(flower['x'] + 1, y_pos, stem_color)
                 
                 # Draw 2 leaves on each stem (each leaf made of 3 LEDs)
-                if flower['stem_height'] > 5:  # Only draw leaves if stem is tall enough
+                # Leaves appear at the same time as the flower starts blooming
+                if flower['bloom_progress'] > 0:  # Only draw leaves when flower starts blooming
                     # First leaf at 30% of stem height (left side)
                     leaf1_y = height - 1 - int(flower['stem_height'] * 0.3)
                     leaf1_x = flower['x'] - 1  # Left side of stem
@@ -1019,7 +1020,8 @@ class LEDDisplayApp:
                         self.led.set_pixel(flower['x'] + 1, y_pos, stem_color)
                 
                 # Draw leaves with fade-out (each leaf made of 3 LEDs)
-                if flower['stem_height'] > 5:
+                # Leaves appear at the same time as the flower starts blooming
+                if flower['bloom_progress'] > 0:
                     # First leaf at 30% of stem height (left side)
                     leaf1_y = height - 1 - int(flower['stem_height'] * 0.3)
                     leaf1_x = flower['x'] - 1
