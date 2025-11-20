@@ -266,8 +266,8 @@ class BirdAnimation:
             return
         
         duration = 14  # 14 seconds total
-        fade_duration = 3  # 3 seconds for fade out
-        main_duration = duration - fade_duration  # 11 seconds for main animation
+        fade_duration = 2  # 2 seconds for fade out
+        main_duration = duration - fade_duration  # 12 seconds for main animation
         
         start_time = time.time()
         

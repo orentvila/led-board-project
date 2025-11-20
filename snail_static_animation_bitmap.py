@@ -185,7 +185,7 @@ class SnailStaticAnimationBitmap:
     def run_animation(self, should_stop=None):
         """Run the snail animation - moves from left to right once, then fades out."""
         duration = 20  # 20 seconds total
-        fade_duration = 3  # 3 seconds for fade out
+        fade_duration = 2  # 2 seconds for fade out
         start_time = time.time()
         
         print("🐌 Starting snail animation...")

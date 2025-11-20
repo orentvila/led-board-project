@@ -105,7 +105,7 @@ class HorseStaticAnimationBitmap:
     
     def run_animation(self, should_stop=None):
         """Display the horse as a static image centered on the screen."""
-        duration = 30  # 30 seconds
+        duration = 6  # 6 seconds
         start_time = time.time()
         
         print("🐴 Starting horse static display...")
