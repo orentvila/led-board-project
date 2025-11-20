@@ -16,7 +16,7 @@ TOTAL_HEIGHT = PANELS_COUNT * PANEL_HEIGHT  # 48 pixels (6 panels stacked)
 TOTAL_LEDS = TOTAL_WIDTH * TOTAL_HEIGHT  # 1536 LEDs
 
 # Display Settings
-BRIGHTNESS = 0.05  # Brightness level (0.0 to 1.0)
+BRIGHTNESS = 0.2  # Brightness level (0.0 to 1.0)
 DEFAULT_COLOR = (0, 0, 0)  # Default color (black)
 
 # Animation Settings

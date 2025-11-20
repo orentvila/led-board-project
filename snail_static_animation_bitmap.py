@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 """
 Snail Animation for LED Board
-Displays a snail on light green ground
+Displays a snail moving from left to right on light green ground with sun and clouds
 """
 
 import time
+import math
 from led_controller_exact import LEDControllerExact
 import config
 
@@ -50,6 +51,9 @@ class SnailStaticAnimationBitmap:
         self.snail_color = (56, 66, 71)
         # Ground: same as horse (forest green)
         self.ground_color = (34, 139, 34)  # Forest green ground
+        self.sky_color = (5, 8, 12)  # Dramatically dimmed dark blue sky
+        self.sun_color = (255, 200, 50)  # Bright yellow sun
+        self.cloud_color = (255, 255, 255)  # White clouds
         self.ground_height = 7  # Height of ground at bottom
         
         # Find snail dimensions
@@ -74,18 +78,83 @@ class SnailStaticAnimationBitmap:
         if 0 <= x < self.width and 0 <= y < self.height:
             self.led.set_pixel(x, y, color)
     
+    def draw_sky(self):
+        """Draw dark blue sky background."""
+        for y in range(self.height - self.ground_height):
+            for x in range(self.width):
+                self.safe_set_pixel(x, y, self.sky_color)
+    
+    def draw_sun(self):
+        """Draw sun in the sky."""
+        sun_x = self.width - 8  # Position sun on the right side, near top
+        sun_y = 5  # Near the top
+        sun_size = 3  # Small sun radius
+        
+        # Draw sun as a circle
+        for dy in range(-sun_size, sun_size + 1):
+            for dx in range(-sun_size, sun_size + 1):
+                distance = math.sqrt(dx*dx + dy*dy)
+                if distance <= sun_size:
+                    x = sun_x + dx
+                    y = sun_y + dy
+                    if 0 <= x < self.width and 0 <= y < self.height - self.ground_height:
+                        # Fade edges for soft sun
+                        intensity = 1.0 - (distance / sun_size) * 0.3
+                        sun_pixel_color = (
+                            int(self.sun_color[0] * intensity),
+                            int(self.sun_color[1] * intensity),
+                            int(self.sun_color[2] * intensity)
+                        )
+                        self.safe_set_pixel(x, y, sun_pixel_color)
+    
+    def draw_clouds(self, phase=0):
+        """Draw clouds in the sky."""
+        # Create a few clouds at different positions
+        cloud_positions = [
+            (5 + phase * 0.5, 8),   # Cloud 1 - left side
+            (15 + phase * 0.3, 6),  # Cloud 2 - middle-left
+            (22 + phase * 0.4, 9),  # Cloud 3 - middle-right
+        ]
+        
+        for cloud_x, cloud_y in cloud_positions:
+            cloud_x = int(cloud_x) % (self.width + 10) - 5
+            
+            if 0 <= cloud_x < self.width:
+                # Draw cloud shape (simple puffy cloud)
+                for dy in range(-1, 2):
+                    for dx in range(-3, 4):
+                        x = cloud_x + dx
+                        y = cloud_y + dy
+                        
+                        if 0 <= x < self.width and 0 <= y < self.height - self.ground_height:
+                            # Create cloud effect - make it puffy
+                            if abs(dx) + abs(dy) <= 2:
+                                self.safe_set_pixel(x, y, self.cloud_color)
+    
     def draw_ground(self):
         """Draw forest green ground at the bottom."""
         for y in range(self.height - self.ground_height, self.height):
             for x in range(self.width):
                 self.safe_set_pixel(x, y, self.ground_color)
     
-    def draw_snail(self, x_pos):
-        """Draw the snail bitmap at position x_pos, positioned on ground."""
+    def draw_snail(self, x_pos, fade_alpha=1.0):
+        """Draw the snail bitmap at position x_pos, positioned on ground.
+        
+        Args:
+            x_pos: Horizontal position of the snail
+            fade_alpha: Fade alpha value (1.0 = fully visible, 0.0 = invisible)
+        """
         # Position snail vertically (bottom on ground)
         ground_y = self.height - self.ground_height
         snail_bottom_y = ground_y  # Snail bottom on ground line
         vertical_offset = snail_bottom_y - (self.snail_offset_y + self.snail_actual_height)
+        
+        # Apply fade to snail color
+        faded_color = (
+            int(self.snail_color[0] * fade_alpha),
+            int(self.snail_color[1] * fade_alpha),
+            int(self.snail_color[2] * fade_alpha)
+        )
         
         # Draw snail pixels
         for y in range(48):
@@ -96,17 +165,21 @@ class SnailStaticAnimationBitmap:
                     
                     # Only draw if snail is on or above ground and within screen bounds
                     if 0 <= screen_x < self.width and 0 <= screen_y <= ground_y:
-                        self.safe_set_pixel(screen_x, screen_y, self.snail_color)
+                        self.safe_set_pixel(screen_x, screen_y, faded_color)
     
     def run_animation(self, should_stop=None):
-        """Run the snail animation - moves from left to right across the screen."""
-        duration = 30  # 30 seconds
+        """Run the snail animation - moves from left to right once, then fades out."""
+        duration = 20  # 20 seconds total
+        fade_duration = 3  # 3 seconds for fade out
         start_time = time.time()
         
         print("🐌 Starting snail animation...")
         
         # Animation parameters
-        speed = 4.0  # pixels per second (slower than horse - snails are slow!)
+        # Calculate speed so snail crosses screen in (duration - fade_duration) seconds
+        travel_time = duration - fade_duration  # 17 seconds for movement
+        total_distance = self.width + self.snail_actual_width
+        speed = total_distance / travel_time  # pixels per second
         
         while time.time() - start_time < duration:
             elapsed = time.time() - start_time
@@ -116,15 +189,30 @@ class SnailStaticAnimationBitmap:
                 print("🐌 Snail animation stopped by user")
                 break
             
-            # Calculate horizontal position (snail moves from left to right, looping)
-            # Start off-screen left, move across, then loop
-            total_distance = self.width + self.snail_actual_width
-            x_pos = int((elapsed * speed) % total_distance) - self.snail_actual_width
+            # Calculate horizontal position (snail moves from left to right once)
+            # Start off-screen left, move across screen
+            if elapsed < travel_time:
+                # Moving phase
+                x_pos = int(elapsed * speed) - self.snail_actual_width
+                fade_alpha = 1.0
+            else:
+                # Fade out phase
+                # Keep snail at final position
+                x_pos = int(travel_time * speed) - self.snail_actual_width
+                # Calculate fade alpha (1.0 -> 0.0)
+                fade_elapsed = elapsed - travel_time
+                fade_alpha = max(0.0, 1.0 - (fade_elapsed / fade_duration))
+            
+            # Cloud animation phase (for drifting clouds)
+            cloud_phase = elapsed * 0.1  # Slow cloud drift
             
             # Clear and draw
             self.led.clear()
+            self.draw_sky()
+            self.draw_sun()
+            self.draw_clouds(cloud_phase)
             self.draw_ground()
-            self.draw_snail(x_pos)
+            self.draw_snail(x_pos, fade_alpha)
             self.led.show()
             
             time.sleep(0.05)  # 20 FPS for smooth animation

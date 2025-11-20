@@ -52,7 +52,7 @@ Complete list of all animations, their buttons, sequences, and durations.
 5. **Sheep** - 8 seconds | **Audio:** `sheep.wav`
 6. **Rooster** - 8 seconds | **Audio:** `rooster.wav`
 7. **Duck** - 8 seconds | **Audio:** `duck.wav`
-8. **Snail** - 30 seconds | **Audio:** None
+8. **Snail** - 20 seconds (moves from left to right once, then fades out) | **Audio:** None
 9. **Deer** - 30 seconds | **Audio:** None
 10. **Cat** - 20 seconds | **Audio:** None
 11. **Jellyfish** - 5 seconds | **Audio:** None
@@ -66,7 +66,7 @@ Complete list of all animations, their buttons, sequences, and durations.
 - **Sheep**: Static white sheep bitmap
 - **Rooster**: Static orange rooster bitmap
 - **Duck**: Static yellow duck bitmap
-- **Snail**: Moves slowly across ground
+- **Snail**: Moves slowly from left to right once across ground, with sun and clouds in sky, fades out at end
 - **Deer**: Static bitmap animation
 - **Cat**: Cat animation
 - **Jellyfish**: Short jellyfish animation
@@ -105,9 +105,13 @@ Complete list of all animations, their buttons, sequences, and durations.
 ### 20 seconds
 - Elephant (Animals)
 - Cat (Animals)
+- Snail (Animals)
 - Truck (Objects)
 - House (Objects)
 - Balloon (Objects)
+
+### 24 seconds
+- Whale (Animals)
 
 ### 36 seconds
 - Squares (Shapes) - includes fade-out
@@ -116,12 +120,8 @@ Complete list of all animations, their buttons, sequences, and durations.
 - Triangles (Shapes) - includes fade-out
 - Stars (Shapes)
 
-### 24 seconds
-- Whale (Animals)
-
 ### 30 seconds
 - Horse (Animals)
-- Snail (Animals)
 - Deer (Animals)
 - Bubbles (Shapes)
 - Floating Clouds (Nature)
