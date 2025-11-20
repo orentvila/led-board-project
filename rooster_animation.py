@@ -46,7 +46,7 @@ class RoosterAnimation:
                 row_data.append(pixel_bit)
             self.rooster_pixels.append(row_data)
         
-        self.rooster_color = (243, 242, 236)  # #F3F2EC - Light beige/cream rooster
+        self.rooster_color = (204, 208, 212)  # #CCD0D4 - Light gray rooster
         self.beak_color = (230, 39, 39)  # #E62727 - Red beak
     
     def safe_set_pixel(self, x, y, color):
