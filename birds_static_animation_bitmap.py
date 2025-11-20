@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 """
-Birds Bitmap Static Image for LED Board
-Displays a static birds bitmap image for 5 seconds
+Birds Bitmap Animation for LED Board
+Displays birds with animated wing flapping motion
 """
 
 import time
+import math
 from led_controller_exact import LEDControllerExact
 import config
 
@@ -45,29 +46,79 @@ class BirdsStaticAnimationBitmap:
         
         self.birds_color = (255, 255, 255)
         
+        # Find bird body center and wing regions
+        # Analyze pixels to identify body vs wings
+        self.body_center_x = 16  # Approximate center of 32-wide display
+        self.wing_animation_amplitude = 1  # Pixels to move wings up/down
+        self.wing_flap_speed = 4.0  # Flaps per second
+        
     def safe_set_pixel(self, x, y, color):
         if 0 <= x < self.width and 0 <= y < self.height:
             self.led.set_pixel(x, y, color)
     
-    def draw_birds(self):
+    def is_wing_pixel(self, x, y):
+        """Determine if a pixel is part of a wing (not body).
+        Wings are typically pixels on the sides, away from center."""
+        # Calculate distance from center
+        center_x = self.body_center_x
+        distance_from_center = abs(x - center_x)
+        
+        # Pixels far from center are likely wings
+        # Also check if pixel is in upper/middle region (where wings typically are)
+        if y < 30:  # Upper/middle region where wings are
+            # If pixel is more than 3 pixels from center, it's likely a wing
+            if distance_from_center > 3:
+                return True
+        return False
+    
+    def draw_birds(self, wing_phase=0.0):
+        """Draw birds with animated wing flapping.
+        
+        Args:
+            wing_phase: Animation phase (0.0 to 1.0) for wing flapping
+        """
         self.led.clear()
+        
+        # Calculate wing offset based on phase
+        # Use sine wave: -1 to +1, so wings go up and down
+        wing_offset = math.sin(wing_phase * 2 * math.pi) * self.wing_animation_amplitude
+        
         for y in range(min(self.height, 48)):
             for x in range(min(self.width, 32)):
                 if self.birds_pixels[y][x] == 1:
-                    self.safe_set_pixel(x, y, self.birds_color)
+                    # Check if this is a wing pixel
+                    if self.is_wing_pixel(x, y):
+                        # Apply vertical offset to wing pixels
+                        wing_y = int(y + wing_offset)
+                        if 0 <= wing_y < self.height:
+                            self.safe_set_pixel(x, wing_y, self.birds_color)
+                    else:
+                        # Body pixel - draw at original position
+                        self.safe_set_pixel(x, y, self.birds_color)
+        
         self.led.show()
     
     def run_animation(self, should_stop=None):
         duration = 5
         start_time = time.time()
-        print("🐦 Starting birds bitmap static image...")
-        self.draw_birds()
+        print("🐦 Starting birds animation with wing flapping...")
+        
         while time.time() - start_time < duration:
             if should_stop and should_stop():
-                print("🐦 Birds bitmap image stopped by user")
+                print("🐦 Birds animation stopped by user")
                 break
-            time.sleep(0.1)
-        print("🐦 Birds bitmap image completed!")
+            
+            elapsed = time.time() - start_time
+            
+            # Calculate wing flapping phase (0.0 to 1.0 cycles)
+            wing_phase = (elapsed * self.wing_flap_speed) % 1.0
+            
+            # Draw birds with animated wings
+            self.draw_birds(wing_phase)
+            
+            time.sleep(0.05)  # 20 FPS for smooth animation
+        
+        print("🐦 Birds animation completed!")
         self.led.clear()
         self.led.show()
     

@@ -54,7 +54,7 @@ Complete list of all animations, their buttons, sequences, and durations.
 7. **Duck** - 8 seconds | **Audio:** `duck.wav`
 8. **Snail** - 20 seconds (moves from left to right once, then fades out) | **Audio:** None
 9. **Jellyfish** - 5 seconds | **Audio:** None
-10. **Birds** - 5 seconds | **Audio:** None
+10. **Birds** - 5 seconds (wings flap up and down) | **Audio:** None
 
 **Details:**
 - **Elephant**: Moves horizontally from left side to center, stops at center with dimmed sky, sun, and clouds
@@ -66,7 +66,7 @@ Complete list of all animations, their buttons, sequences, and durations.
 - **Duck**: Static yellow duck bitmap
 - **Snail**: Moves slowly from left to right once across ground, with sun and clouds in sky, fades out over last 3 seconds
 - **Jellyfish**: Short jellyfish animation
-- **Birds**: Short birds animation
+- **Birds**: Birds with animated wing flapping motion (wings move up and down while body stays static)
 
 ---
 
