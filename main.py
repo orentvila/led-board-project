@@ -78,8 +78,8 @@ class LEDDisplayApp:
         
         # Animals animation system for Button 27
         self.animals_animations = [
-            "elephant_bitmap", "whale", "horse_bitmap", "cow", "sheep", "rooster", "duck",
-            "snail_bitmap", "jellyfish_bitmap", "birds_bitmap"
+            "birds_bitmap", "elephant_bitmap", "whale", "horse_bitmap", "cow", "sheep", "rooster", "duck",
+            "snail_bitmap", "jellyfish_bitmap"
         ]
         self.current_animals_index = -1  # Start at -1 so first click shows elephant (index 0)
         self.animals_animation_running = False
@@ -1884,8 +1884,8 @@ class LEDDisplayApp:
         animation_name = self.animals_animations[self.current_animals_index]
         
         animal_names = [
-            "Elephant", "Whale", "Horse", "Cow", "Sheep", "Rooster", "Duck",
-            "Snail", "Jellyfish", "Birds"
+            "Birds", "Elephant", "Whale", "Horse", "Cow", "Sheep", "Rooster", "Duck",
+            "Snail", "Jellyfish"
         ]
         animal_name = animal_names[self.current_animals_index]
         

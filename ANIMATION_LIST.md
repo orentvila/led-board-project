@@ -45,18 +45,19 @@ Complete list of all animations, their buttons, sequences, and durations.
 ## 🐾 Animals Animations (Button 27)
 
 **Sequence:** Cycles through 10 animations
-1. **Elephant** - 20 seconds (moves from left to center in 8s, then stays) | **Audio:** `elephant.wav`
-2. **Whale** - 24 seconds (12 frames shown four times) | **Audio:** `whale.wav`
-3. **Horse** - 30 seconds | **Audio:** `horse.wav`
-4. **Cow** - 8 seconds | **Audio:** `cow.wav`
-5. **Sheep** - 8 seconds | **Audio:** `sheep.wav`
-6. **Rooster** - 8 seconds | **Audio:** `rooster.wav`
-7. **Duck** - 8 seconds | **Audio:** `duck.wav`
-8. **Snail** - 20 seconds (moves from left to right once, then fades out) | **Audio:** None
-9. **Jellyfish** - 5 seconds | **Audio:** None
-10. **Birds** - 5 seconds (wings flap up and down) | **Audio:** None
+1. **Birds** - 20 seconds | **Audio:** None
+2. **Elephant** - 20 seconds (moves from left to center in 8s, then stays) | **Audio:** `elephant.wav`
+3. **Whale** - 24 seconds (12 frames shown four times) | **Audio:** `whale.wav`
+4. **Horse** - 30 seconds | **Audio:** `horse.wav`
+5. **Cow** - 8 seconds | **Audio:** `cow.wav`
+6. **Sheep** - 8 seconds | **Audio:** `sheep.wav`
+7. **Rooster** - 8 seconds | **Audio:** `rooster.wav`
+8. **Duck** - 8 seconds | **Audio:** `duck.wav`
+9. **Snail** - 20 seconds (moves from left to right once, then fades out) | **Audio:** None
+10. **Jellyfish** - 5 seconds | **Audio:** None
 
 **Details:**
+- **Birds**: Bird animation with blue sky (#428DD5), sun (#ffca28), clouds (#b2b2b2), and black bird (#010101)
 - **Elephant**: Moves horizontally from left side to center, stops at center with dimmed sky, sun, and clouds
 - **Whale**: Whale animation with 12 frames, each shown four times, white background dimmed 30%, blue color #3B38A0
 - **Horse**: Moves across screen with leg animation
@@ -66,7 +67,6 @@ Complete list of all animations, their buttons, sequences, and durations.
 - **Duck**: Static yellow duck bitmap
 - **Snail**: Moves slowly from left to right once across ground, with sun and clouds in sky, fades out over last 3 seconds
 - **Jellyfish**: Short jellyfish animation
-- **Birds**: Birds with animated wing flapping motion (wings move up and down while body stays static)
 
 ---
 
