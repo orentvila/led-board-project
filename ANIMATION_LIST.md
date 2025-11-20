@@ -32,20 +32,20 @@ Complete list of all animations, their buttons, sequences, and durations.
 1. **Floating Clouds** - 30 seconds | **Audio:** `floating_clouds.wav`
 2. **Rain** - 30 seconds | **Audio:** `rain.wav`
 3. **Growing Flowers** - 39 seconds (flowers grow sequentially + 5 seconds after last flower) | **Audio:** `growing_flowers.wav`
-4. **Apple Tree** - Variable duration (apples grow sequentially, then fall) | **Audio:** `apple_tree.wav`
+4. **Apple Tree** - Variable duration (apples fall sequentially, then 5 seconds pause + 3 second fade-out) | **Audio:** `apple_tree.wav`
 
 **Details:**
 - **Floating Clouds**: Clouds drift across sky with gentle movement
 - **Rain**: Raindrops fall from top to bottom
 - **Growing Flowers**: Multiple flowers grow from ground sequentially
-- **Apple Tree**: Tree grows, apples appear, then fall one by one
+- **Apple Tree**: Tree with apples that fall one by one, then 5 seconds pause with apples on ground, followed by 3-second fade-out
 
 ---
 
 ## 🐾 Animals Animations (Button 27)
 
 **Sequence:** Cycles through 10 animations
-1. **Birds** - 20 seconds | **Audio:** None
+1. **Birds** - 14 seconds (fades out over last 3 seconds) | **Audio:** `birds.wav`
 2. **Elephant** - 20 seconds (moves from left to center in 8s, then stays) | **Audio:** `elephant.wav`
 3. **Whale** - 24 seconds (12 frames shown four times) | **Audio:** `whale.wav`
 4. **Horse** - 30 seconds | **Audio:** `horse.wav`
@@ -57,7 +57,7 @@ Complete list of all animations, their buttons, sequences, and durations.
 10. **Jellyfish** - 5 seconds | **Audio:** None
 
 **Details:**
-- **Birds**: Bird animation with blue sky (#428DD5), sun (#ffca28), clouds (#b2b2b2), and black bird (#010101)
+- **Birds**: Bird animation with blue sky (#428DD5), sun (#ffca28), clouds (#b2b2b2), and black bird (#010101), fades out over last 3 seconds
 - **Elephant**: Moves horizontally from left side to center, stops at center with dimmed sky, sun, and clouds
 - **Whale**: Whale animation with 12 frames, each shown four times, white background dimmed 30%, blue color #3B38A0
 - **Horse**: Moves across screen with leg animation
@@ -143,8 +143,8 @@ Complete list of all animations, their buttons, sequences, and durations.
 - Shapes: Squares, Triangles, Bubbles, Stars
 - Nature: Floating Clouds, Rain, Growing Flowers, Apple Tree
 - Objects: Truck, House, Balloon, Saturn
-- Animals: Elephant, Whale, Horse, Cow, Sheep, Rooster, Duck
+- Animals: Birds, Elephant, Whale, Horse, Cow, Sheep, Rooster, Duck
 
 **Animations without Audio:**
-- Animals: Snail, Jellyfish, Birds
+- Animals: Snail, Jellyfish
 

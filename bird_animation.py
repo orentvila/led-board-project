@@ -219,8 +219,13 @@ class BirdAnimation:
         if 0 <= x < self.width and 0 <= y < self.height:
             self.led.set_pixel(x, y, color)
     
-    def display_frame(self, frame_index):
-        """Display a single frame from the animation."""
+    def display_frame(self, frame_index, fade_alpha=1.0):
+        """Display a single frame from the animation.
+        
+        Args:
+            frame_index: Index of the frame to display
+            fade_alpha: Fade alpha value (1.0 = fully visible, 0.0 = invisible)
+        """
         if frame_index >= len(self.frames):
             return
         
@@ -240,12 +245,18 @@ class BirdAnimation:
                 if 0 <= pixel_x < self.width and 0 <= pixel_y < self.height:
                     r, g, b = frame.getpixel((x, y))
                     r, g, b = self.replace_colors(r, g, b)
-                    self.safe_set_pixel(pixel_x, pixel_y, (r, g, b))
+                    # Apply fade alpha
+                    faded_color = (
+                        int(r * fade_alpha),
+                        int(g * fade_alpha),
+                        int(b * fade_alpha)
+                    )
+                    self.safe_set_pixel(pixel_x, pixel_y, faded_color)
         
         self.led.show()
     
     def run_animation(self, should_stop=None):
-        """Run the bird animation for 20 seconds.
+        """Run the bird animation for 14 seconds with fade out.
         
         Args:
             should_stop: Optional callback function that returns True if animation should stop.
@@ -254,15 +265,18 @@ class BirdAnimation:
             print("Error: No frames loaded. Please provide animation data.")
             return
         
-        duration = 20  # 20 seconds
+        duration = 14  # 14 seconds total
+        fade_duration = 3  # 3 seconds for fade out
+        main_duration = duration - fade_duration  # 11 seconds for main animation
+        
         start_time = time.time()
         
         print("Starting bird animation...")
-        print(f"Animation duration: {duration} seconds")
+        print(f"Animation duration: {duration} seconds (with {fade_duration}s fade out)")
         print(f"Number of frames: {len(self.frames)}")
         
-        # Calculate frame duration
-        frame_duration = duration / len(self.frames)
+        # Calculate frame duration for main animation
+        frame_duration = main_duration / len(self.frames)
         
         frame_index = 0
         while time.time() - start_time < duration:
@@ -270,14 +284,26 @@ class BirdAnimation:
                 print("Bird animation stopped by user")
                 break
             
-            # Display current frame
-            self.display_frame(frame_index)
+            elapsed = time.time() - start_time
+            
+            # Calculate fade alpha (1.0 = fully visible, 0.0 = invisible)
+            if elapsed < main_duration:
+                # Main animation phase - fully visible
+                fade_alpha = 1.0
+            else:
+                # Fade out phase - fade from 1.0 to 0.0
+                fade_elapsed = elapsed - main_duration
+                fade_alpha = max(0.0, 1.0 - (fade_elapsed / fade_duration))
+            
+            # Display current frame with fade
+            self.display_frame(frame_index, fade_alpha)
             
             # Wait for frame duration
             time.sleep(frame_duration)
             
-            # Move to next frame
-            frame_index = (frame_index + 1) % len(self.frames)
+            # Move to next frame (only during main phase)
+            if elapsed < main_duration:
+                frame_index = (frame_index + 1) % len(self.frames)
         
         print("Bird animation completed!")
         

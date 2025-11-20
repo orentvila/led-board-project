@@ -139,6 +139,7 @@ class LEDDisplayApp:
             'rooster': 'rooster.wav',
             'duck': 'duck.wav',
             'snail': 'snail.wav',
+            'birds': 'birds.wav',
         }
         
         # Setup signal handlers for graceful shutdown
@@ -1227,18 +1228,25 @@ class LEDDisplayApp:
         seconds_between_apples = 3  # 3 seconds between each apple
         falling_apple_fall_duration = 3  # Takes 3 seconds to fall
         
-        # Calculate animation duration: last apple finishes + 3 seconds
+        # Calculate animation duration: last apple finishes + 5 seconds + fade out
         num_apples = len(apple_positions)
         last_apple_index = num_apples - 1
         last_apple_start_time = falling_apple_start_delay + (last_apple_index * seconds_between_apples)
         last_apple_finish_time = last_apple_start_time + falling_apple_fall_duration
-        duration = last_apple_finish_time + 3  # Add 3 seconds after last apple falls
+        extra_time_after_apples = 5  # 5 seconds after all apples are on ground
+        fade_duration = 3  # 3 seconds for fade out
+        duration = last_apple_finish_time + extra_time_after_apples + fade_duration
         
         # Ground level
         ground_y = 44
         
-        def draw_trunk():
+        def draw_trunk(fade_alpha=1.0):
             """Draw the tree trunk (no branches)."""
+            faded_trunk = (
+                int(brown_trunk[0] * fade_alpha),
+                int(brown_trunk[1] * fade_alpha),
+                int(brown_trunk[2] * fade_alpha)
+            )
             # Main trunk only (no branches)
             for y in range(trunk_height):
                 for x in range(trunk_width):
@@ -1247,10 +1255,15 @@ class LEDDisplayApp:
                     if 0 <= pixel_x < width and 0 <= pixel_y < height:
                         # Only draw trunk pixels that are above ground level
                         if pixel_y < ground_y:
-                            self.led.set_pixel(pixel_x, pixel_y, brown_trunk)
+                            self.led.set_pixel(pixel_x, pixel_y, faded_trunk)
         
-        def draw_leaves():
+        def draw_leaves(fade_alpha=1.0):
             """Draw the tree canopy/leaves."""
+            faded_leaves = (
+                int(green_leaves[0] * fade_alpha),
+                int(green_leaves[1] * fade_alpha),
+                int(green_leaves[2] * fade_alpha)
+            )
             # Main canopy area - larger and more realistic
             center_x = 16
             center_y = 18
@@ -1268,12 +1281,23 @@ class LEDDisplayApp:
                         # Add some texture variation
                         if (x + y) % 3 == 0:  # Skip some pixels for texture
                             continue
-                        self.led.set_pixel(x, y, green_leaves)
+                        self.led.set_pixel(x, y, faded_leaves)
         
-        def draw_apples(exclude_falling_indices=None):
+        def draw_apples(exclude_falling_indices=None, fade_alpha=1.0):
             """Draw all apples except the ones that are falling."""
             if exclude_falling_indices is None:
                 exclude_falling_indices = set()
+            
+            faded_apple = (
+                int(red_apple[0] * fade_alpha),
+                int(red_apple[1] * fade_alpha),
+                int(red_apple[2] * fade_alpha)
+            )
+            faded_stem = (
+                int(apple_stem[0] * fade_alpha),
+                int(apple_stem[1] * fade_alpha),
+                int(apple_stem[2] * fade_alpha)
+            )
             
             for i, (apple_x, apple_y) in enumerate(apple_positions):
                 # Skip apples that are falling
@@ -1281,12 +1305,12 @@ class LEDDisplayApp:
                     continue
                     
                 # Draw apple
-                self.led.set_pixel(apple_x, apple_y, red_apple)
+                self.led.set_pixel(apple_x, apple_y, faded_apple)
                 # Draw stem
                 if apple_y > 0:
-                    self.led.set_pixel(apple_x, apple_y - 1, apple_stem)
+                    self.led.set_pixel(apple_x, apple_y - 1, faded_stem)
         
-        def draw_falling_apple(apple_index, progress):
+        def draw_falling_apple(apple_index, progress, fade_alpha=1.0):
             """Draw a falling apple with gravity effect."""
             # Get the starting position of this apple
             start_pos = apple_positions[apple_index]
@@ -1304,48 +1328,86 @@ class LEDDisplayApp:
             current_x = max(0, min(width - 1, int(current_x)))
             current_y = max(0, min(height - 1, int(current_y)))
             
+            faded_apple = (
+                int(red_apple[0] * fade_alpha),
+                int(red_apple[1] * fade_alpha),
+                int(red_apple[2] * fade_alpha)
+            )
+            faded_stem = (
+                int(apple_stem[0] * fade_alpha),
+                int(apple_stem[1] * fade_alpha),
+                int(apple_stem[2] * fade_alpha)
+            )
+            
             # Draw falling apple
             if 0 <= current_x < width and 0 <= current_y < height:
-                self.led.set_pixel(current_x, current_y, red_apple)
+                self.led.set_pixel(current_x, current_y, faded_apple)
                 # Draw stem
                 if current_y > 0:
-                    self.led.set_pixel(current_x, current_y - 1, apple_stem)
+                    self.led.set_pixel(current_x, current_y - 1, faded_stem)
             
             return current_x  # Return x position for ground placement
         
-        def draw_apple_on_ground(apple_x):
+        def draw_apple_on_ground(apple_x, fade_alpha=1.0):
             """Draw an apple on the ground at the specified x position."""
+            faded_apple = (
+                int(red_apple[0] * fade_alpha),
+                int(red_apple[1] * fade_alpha),
+                int(red_apple[2] * fade_alpha)
+            )
+            faded_stem = (
+                int(apple_stem[0] * fade_alpha),
+                int(apple_stem[1] * fade_alpha),
+                int(apple_stem[2] * fade_alpha)
+            )
             # Draw apple at ground level
             ground_apple_y = ground_y  # Ground level
             if 0 <= apple_x < width and 0 <= ground_apple_y < height:
-                self.led.set_pixel(apple_x, ground_apple_y, red_apple)
+                self.led.set_pixel(apple_x, ground_apple_y, faded_apple)
                 # Draw stem above the apple
                 if ground_apple_y > 0:
-                    self.led.set_pixel(apple_x, ground_apple_y - 1, apple_stem)
+                    self.led.set_pixel(apple_x, ground_apple_y - 1, faded_stem)
         
-        def draw_ground():
+        def draw_ground(fade_alpha=1.0):
             """Draw brown soil ground."""
+            faded_soil = (
+                int(brown_soil[0] * fade_alpha),
+                int(brown_soil[1] * fade_alpha),
+                int(brown_soil[2] * fade_alpha)
+            )
             for x in range(width):
                 for y in range(ground_y, height):
-                    self.led.set_pixel(x, y, brown_soil)
+                    self.led.set_pixel(x, y, faded_soil)
         
         # Track apples that have fallen to the ground (apple_index: ground_x_position)
         fallen_apples = {}
         
+        # Calculate fade start time (after all apples are on ground + 5 seconds)
+        fade_start_time = last_apple_finish_time + extra_time_after_apples
+        
         while time.time() - start_time < duration and self.nature_animation_running and not getattr(self, 'animation_stop_flag', False):
             elapsed = time.time() - start_time
+            
+            # Calculate fade alpha (1.0 = fully visible, 0.0 = invisible)
+            if elapsed < fade_start_time:
+                # Main animation phase - fully visible
+                fade_alpha = 1.0
+            else:
+                # Fade out phase - fade from 1.0 to 0.0
+                fade_elapsed = elapsed - fade_start_time
+                fade_alpha = max(0.0, 1.0 - (fade_elapsed / fade_duration))
             
             # Clear display
             self.led.clear()
             
             # Draw ground first (background)
-            draw_ground()
+            draw_ground(fade_alpha)
             
             # Draw tree trunk
-            draw_trunk()
+            draw_trunk(fade_alpha)
             
             # Draw leaves
-            draw_leaves()
+            draw_leaves(fade_alpha)
             
             # Handle falling apples - each starts 3 seconds after the previous one
             falling_indices = set()
@@ -1365,7 +1427,7 @@ class LEDDisplayApp:
                     if fall_progress < 1.0:
                         # Apple is still falling
                         falling_indices.add(i)
-                        apple_x = draw_falling_apple(i, fall_progress)
+                        apple_x = draw_falling_apple(i, fall_progress, fade_alpha)
                     else:
                         # Apple has finished falling - add to fallen apples
                         start_pos = apple_positions[i]
@@ -1374,11 +1436,11 @@ class LEDDisplayApp:
             
             # Draw all apples that are still on the tree (not falling and not fallen)
             all_removed_indices = falling_indices | set(fallen_apples.keys())
-            draw_apples(exclude_falling_indices=all_removed_indices)
+            draw_apples(exclude_falling_indices=all_removed_indices, fade_alpha=fade_alpha)
             
             # Draw fallen apples on the ground
             for apple_index, ground_x in fallen_apples.items():
-                draw_apple_on_ground(ground_x)
+                draw_apple_on_ground(ground_x, fade_alpha)
             
             # Show the frame
             self.led.show()
@@ -1386,9 +1448,8 @@ class LEDDisplayApp:
             # Frame rate
             time.sleep(0.05)  # 20 FPS
         
-        # Keep final frame for a moment
+        # Animation completed (fade out handled in loop)
         print("🌳 Apple Tree Animation completed!")
-        time.sleep(2)
         
         # Clear display
         self.led.clear()
@@ -1980,6 +2041,9 @@ class LEDDisplayApp:
                 animation.run_animation(should_stop)
                 animation.cleanup()
             elif animation_name == "birds_bitmap":
+                # Play audio for this animation
+                self.play_animation_audio('birds')
+                
                 from bird_animation import BirdAnimation
                 animation = BirdAnimation()
                 animation.run_animation(should_stop)
