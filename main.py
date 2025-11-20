@@ -78,8 +78,7 @@ class LEDDisplayApp:
         
         # Animals animation system for Button 27
         self.animals_animations = [
-            "birds_bitmap", "elephant_bitmap", "whale", "horse_bitmap", "cow", "sheep", "rooster", "duck",
-            "snail_bitmap", "jellyfish_bitmap"
+            "elephant_bitmap", "birds_bitmap", "snail_bitmap", "whale", "cow", "sheep", "rooster", "duck"
         ]
         self.current_animals_index = -1  # Start at -1 so first click shows elephant (index 0)
         self.animals_animation_running = False
@@ -133,7 +132,6 @@ class LEDDisplayApp:
             'balloon': 'balloon.wav',
             'elephant': 'elephant.wav',
             'whale': 'whale.wav',
-            'horse': 'horse.wav',
             'cow': 'cow.wav',
             'sheep': 'sheep.wav',
             'rooster': 'rooster.wav',
@@ -1964,8 +1962,7 @@ class LEDDisplayApp:
         animation_name = self.animals_animations[self.current_animals_index]
         
         animal_names = [
-            "Birds", "Elephant", "Whale", "Horse", "Cow", "Sheep", "Rooster", "Duck",
-            "Snail", "Jellyfish"
+            "Elephant", "Birds", "Snail", "Whale", "Cow", "Sheep", "Rooster", "Duck"
         ]
         animal_name = animal_names[self.current_animals_index]
         
@@ -2008,14 +2005,6 @@ class LEDDisplayApp:
                 animation = WhaleAnimation()
                 animation.run_animation(should_stop)
                 animation.cleanup()
-            elif animation_name == "horse_bitmap":
-                # Play audio for this animation
-                self.play_animation_audio('horse')
-                
-                from horse_static_animation_bitmap import HorseStaticAnimationBitmap
-                animation = HorseStaticAnimationBitmap()
-                animation.run_animation(should_stop)
-                animation.cleanup()
             elif animation_name == "cow":
                 # Play audio for this animation
                 self.play_animation_audio('cow')
@@ -2054,11 +2043,6 @@ class LEDDisplayApp:
                 
                 from snail_static_animation_bitmap import SnailStaticAnimationBitmap
                 animation = SnailStaticAnimationBitmap()
-                animation.run_animation(should_stop)
-                animation.cleanup()
-            elif animation_name == "jellyfish_bitmap":
-                from jellyfish_static_animation_bitmap import JellyfishStaticAnimationBitmap
-                animation = JellyfishStaticAnimationBitmap()
                 animation.run_animation(should_stop)
                 animation.cleanup()
             elif animation_name == "birds_bitmap":
