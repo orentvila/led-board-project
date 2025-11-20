@@ -112,6 +112,7 @@ class LEDDisplayApp:
             'traffic_lights': 'traffic_lights.wav',
             'truck': 'truck.wav',
             'saturn': 'saturn.wav',
+            'balloon': 'balloon.wav',
             'elephant': 'elephant.wav',
             'whale': 'whale.wav',
         }
@@ -2766,6 +2767,9 @@ class LEDDisplayApp:
                 self.run_house_animation()
             elif self.current_object_index == 2:
                 # Balloon animation
+                # Play audio for this animation
+                self.play_animation_audio('balloon')
+                
                 # Ensure flags are set before starting balloon
                 self.animation_stop_flag = False
                 self.objects_animation_running = True

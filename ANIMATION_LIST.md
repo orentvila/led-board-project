@@ -71,7 +71,7 @@ Complete list of all animations, their buttons, sequences, and durations.
 **Sequence:** Cycles through 4 animations
 1. **Truck** - 20 seconds (moves from left to right across screen) | **Audio:** `truck.wav`
 2. **House** - 20 seconds (house with smoke rising from chimney) | **Audio:** `house.wav`
-3. **Balloon** - 20 seconds (rises from bottom to top) | **Audio:** None
+3. **Balloon** - 20 seconds (rises from bottom to top) | **Audio:** `balloon.wav`
 4. **Saturn** - 30 seconds (rotating planet with rings and stars) | **Audio:** `saturn.wav`
 
 **Details:**
@@ -138,10 +138,9 @@ Complete list of all animations, their buttons, sequences, and durations.
 **Animations with Audio:**
 - Shapes: Squares, Triangles, Bubbles, Stars
 - Nature: Floating Clouds, Rain, Growing Flowers, Apple Tree
-- Objects: Truck, House, Saturn
+- Objects: Truck, House, Balloon, Saturn
 - Animals: Elephant
 
 **Animations without Audio:**
 - Animals: Horse, Snail, Deer, Cat, Jellyfish, Birds
-- Objects: Balloon
 
