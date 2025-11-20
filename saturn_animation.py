@@ -45,9 +45,9 @@ class SaturnAnimation:
         center_x = self.width // 2
         center_y = self.height // 2
         
-        # Saturn planet body (oval shape)
-        planet_radius_x = 8
-        planet_radius_y = 6
+        # Saturn planet body (round ball shape)
+        planet_radius_x = 7
+        planet_radius_y = 7  # Equal radii for perfect circle
         
         # Draw planet body
         for y in range(self.height):
@@ -201,8 +201,8 @@ class SaturnAnimation:
             # Draw Saturn with rotating rings (with fade-out)
             center_x = self.width // 2
             center_y = self.height // 2
-            planet_radius_x = 8
-            planet_radius_y = 6
+            planet_radius_x = 7
+            planet_radius_y = 7  # Equal radii for perfect circle
             
             # Draw planet body with fade-out
             for y in range(self.height):
